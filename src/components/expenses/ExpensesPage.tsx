@@ -1,83 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Receipt } from "lucide-react";
-import { ExpenseForm, ExpenseData } from "./ExpenseForm";
+import { ExpenseForm } from "./ExpenseForm";
 import { ExpensesList } from "./ExpensesList";
 import { ExpenseStats } from "./ExpenseStats";
-import { toast } from "@/hooks/use-toast";
-
-// Initial mock data
-const initialExpenses: ExpenseData[] = [
-  {
-    id: "1",
-    title: "شارژ ماهانه آذر",
-    amount: 60000000,
-    category: "charge",
-    date: "2024-12-01",
-    description: "شارژ ماهانه تمام واحدها",
-    paidBy: "ساکنین",
-  },
-  {
-    id: "2",
-    title: "تعمیر آسانسور",
-    amount: 15000000,
-    category: "elevator",
-    date: "2024-12-05",
-    description: "تعویض سیم بکسل آسانسور",
-    paidBy: "صندوق ساختمان",
-  },
-  {
-    id: "3",
-    title: "نظافت راهرو و پارکینگ",
-    amount: 5000000,
-    category: "cleaning",
-    date: "2024-12-10",
-    description: "نظافت هفتگی",
-    paidBy: "مدیریت",
-  },
-  {
-    id: "4",
-    title: "برق مشاعات",
-    amount: 3500000,
-    category: "electricity",
-    date: "2024-12-12",
-    description: "قبض برق مشترک",
-    paidBy: "مدیریت",
-  },
-  {
-    id: "5",
-    title: "تعمیر لوله آب",
-    amount: 8000000,
-    category: "repair",
-    date: "2024-11-20",
-    description: "تعمیر لوله اصلی آب",
-    paidBy: "صندوق ساختمان",
-  },
-];
 
 export function ExpensesPage() {
-  const [expenses, setExpenses] = useState<ExpenseData[]>(initialExpenses);
   const [showForm, setShowForm] = useState(false);
-
-  const handleAddExpense = (expense: ExpenseData) => {
-    setExpenses((prev) => [expense, ...prev]);
-  };
-
-  const handleDeleteExpense = (id: string) => {
-    setExpenses((prev) => prev.filter((exp) => exp.id !== id));
-    toast({
-      title: "حذف شد",
-      description: "هزینه با موفقیت حذف شد",
-    });
-  };
-
-  const handleEditExpense = (expense: ExpenseData) => {
-    // For now, just show a toast - could open edit modal
-    toast({
-      title: "ویرایش",
-      description: `ویرایش هزینه: ${expense.title}`,
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -101,22 +30,15 @@ export function ExpensesPage() {
       </div>
 
       {/* Stats */}
-      <ExpenseStats expenses={expenses} />
+      <ExpenseStats />
 
       {/* Add Expense Form */}
       {showForm && (
-        <ExpenseForm 
-          onClose={() => setShowForm(false)} 
-          onSubmit={handleAddExpense} 
-        />
+        <ExpenseForm onClose={() => setShowForm(false)} />
       )}
 
       {/* Expenses List */}
-      <ExpensesList 
-        expenses={expenses} 
-        onEdit={handleEditExpense}
-        onDelete={handleDeleteExpense}
-      />
+      <ExpensesList />
     </div>
   );
 }

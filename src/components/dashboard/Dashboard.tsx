@@ -1,10 +1,27 @@
-import { Building2, Users, CreditCard, AlertCircle } from "lucide-react";
+import { Building2, Users, CreditCard, AlertCircle, Loader2 } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { UnitsTable } from "./UnitsTable";
 import { RecentPayments } from "./RecentPayments";
 import { QuickActions } from "./QuickActions";
+import { useUnits } from "@/hooks/useUnits";
+import { useExpenses } from "@/hooks/useExpenses";
+import { usePayments } from "@/hooks/usePayments";
+
+const formatAmount = (amount: number) => {
+  return new Intl.NumberFormat("fa-IR").format(amount);
+};
 
 export function Dashboard() {
+  const { data: units = [], isLoading: unitsLoading } = useUnits();
+  const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+
+  const isLoading = unitsLoading || expensesLoading || paymentsLoading;
+  
+  const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+  const occupiedUnits = units.filter(u => u.is_occupied).length;
+
   return (
     <div className="space-y-6">
       {/* Page Title */}
@@ -17,33 +34,33 @@ export function Dashboard() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="تعداد واحدها"
-          value="۲۴"
+          value={isLoading ? "-" : units.length.toString()}
           icon={Building2}
           iconColor="bg-primary"
           delay={100}
         />
         <StatsCard
-          title="ساکنین"
-          value="۸۶"
-          change="+۳ نفر این ماه"
-          changeType="positive"
+          title="واحدهای سکونت"
+          value={isLoading ? "-" : occupiedUnits.toString()}
+          change={`از ${units.length} واحد`}
+          changeType="neutral"
           icon={Users}
           iconColor="bg-success"
           delay={200}
         />
         <StatsCard
           title="مجموع دریافتی"
-          value="۴۵,۰۰۰,۰۰۰"
-          change="تومان این ماه"
-          changeType="neutral"
+          value={isLoading ? "-" : formatAmount(totalPayments)}
+          change="تومان"
+          changeType="positive"
           icon={CreditCard}
           iconColor="bg-accent"
           delay={300}
         />
         <StatsCard
-          title="بدهی معوق"
-          value="۱۲,۵۰۰,۰۰۰"
-          change="از ۳ واحد"
+          title="مجموع هزینه‌ها"
+          value={isLoading ? "-" : formatAmount(totalExpenses)}
+          change="تومان"
           changeType="negative"
           icon={AlertCircle}
           iconColor="bg-destructive"

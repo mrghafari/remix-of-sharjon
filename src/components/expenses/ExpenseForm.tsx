@@ -11,25 +11,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Plus, X } from "lucide-react";
+import { Calendar, Plus, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useCreateExpense, type CreateExpenseData } from "@/hooks/useExpenses";
+import type { Database } from "@/integrations/supabase/types";
+
+type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 
 interface ExpenseFormProps {
   onClose: () => void;
-  onSubmit: (expense: ExpenseData) => void;
 }
 
-export interface ExpenseData {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  date: string;
-  description: string;
-  paidBy: string;
-}
-
-const categories = [
+export const categories: { id: ExpenseCategory; label: string; icon: string }[] = [
   { id: "charge", label: "شارژ ماهانه", icon: "💰" },
   { id: "repair", label: "تعمیرات", icon: "🔧" },
   { id: "cleaning", label: "نظافت", icon: "🧹" },
@@ -38,19 +31,20 @@ const categories = [
   { id: "water", label: "آب مشاع", icon: "💧" },
   { id: "gas", label: "گاز مشاع", icon: "🔥" },
   { id: "security", label: "نگهبانی", icon: "🛡️" },
-  { id: "garden", label: "فضای سبز", icon: "🌿" },
+  { id: "parking", label: "پارکینگ", icon: "🚗" },
   { id: "other", label: "سایر", icon: "📋" },
 ];
 
-export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
+export function ExpenseForm({ onClose }: ExpenseFormProps) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<ExpenseCategory | "">("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [description, setDescription] = useState("");
-  const [paidBy, setPaidBy] = useState("مدیریت");
+  
+  const createExpense = useCreateExpense();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !amount || !category) {
@@ -62,22 +56,19 @@ export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
       return;
     }
 
-    const expense: ExpenseData = {
-      id: Date.now().toString(),
+    const expense: CreateExpenseData = {
       title: title.trim(),
       amount: parseFloat(amount),
-      category,
-      date,
-      description: description.trim(),
-      paidBy,
+      category: category as ExpenseCategory,
+      expense_date: date,
+      description: description.trim() || undefined,
     };
 
-    onSubmit(expense);
-    toast({
-      title: "موفق",
-      description: "هزینه با موفقیت ثبت شد",
+    createExpense.mutate(expense, {
+      onSuccess: () => {
+        onClose();
+      },
     });
-    onClose();
   };
 
   return (
@@ -121,7 +112,7 @@ export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="category">دسته‌بندی *</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)}>
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب کنید" />
                 </SelectTrigger>
@@ -153,17 +144,6 @@ export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="paidBy">پرداخت کننده</Label>
-            <Input
-              id="paidBy"
-              placeholder="مثال: مدیریت ساختمان"
-              value={paidBy}
-              onChange={(e) => setPaidBy(e.target.value)}
-              maxLength={50}
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="description">توضیحات</Label>
             <Textarea
               id="description"
@@ -176,8 +156,15 @@ export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1">
-              ثبت هزینه
+            <Button type="submit" className="flex-1" disabled={createExpense.isPending}>
+              {createExpense.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                  در حال ثبت...
+                </>
+              ) : (
+                "ثبت هزینه"
+              )}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               انصراف
@@ -188,5 +175,3 @@ export function ExpenseForm({ onClose, onSubmit }: ExpenseFormProps) {
     </Card>
   );
 }
-
-export { categories };

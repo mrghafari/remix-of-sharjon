@@ -14,7 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      expenses: {
+        Row: {
+          amount: number
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          description: string | null
+          expense_date: string
+          id: string
+          is_paid: boolean | null
+          title: string
+          unit_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          id?: string
+          is_paid?: boolean | null
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          description?: string | null
+          expense_date?: string
+          id?: string
+          is_paid?: boolean | null
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          month: number
+          payment_date: string
+          unit_id: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month: number
+          payment_date?: string
+          unit_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: number
+          payment_date?: string
+          unit_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      units: {
+        Row: {
+          area: number | null
+          created_at: string
+          floor: number | null
+          id: string
+          is_occupied: boolean | null
+          owner_name: string
+          phone: string | null
+          unit_number: string
+          updated_at: string
+        }
+        Insert: {
+          area?: number | null
+          created_at?: string
+          floor?: number | null
+          id?: string
+          is_occupied?: boolean | null
+          owner_name: string
+          phone?: string | null
+          unit_number: string
+          updated_at?: string
+        }
+        Update: {
+          area?: number | null
+          created_at?: string
+          floor?: number | null
+          id?: string
+          is_occupied?: boolean | null
+          owner_name?: string
+          phone?: string | null
+          unit_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +146,17 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      expense_category:
+        | "charge"
+        | "repair"
+        | "cleaning"
+        | "water"
+        | "electricity"
+        | "gas"
+        | "elevator"
+        | "parking"
+        | "security"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +283,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      expense_category: [
+        "charge",
+        "repair",
+        "cleaning",
+        "water",
+        "electricity",
+        "gas",
+        "elevator",
+        "parking",
+        "security",
+        "other",
+      ],
+    },
   },
 } as const

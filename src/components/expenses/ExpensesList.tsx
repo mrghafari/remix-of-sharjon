@@ -9,8 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Edit, Trash2, Filter } from "lucide-react";
-import { ExpenseData, categories } from "./ExpenseForm";
+import { Trash2, Filter, Loader2 } from "lucide-react";
+import { categories } from "./ExpenseForm";
 import {
   Select,
   SelectContent,
@@ -19,14 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { useExpenses, useDeleteExpense, type Expense } from "@/hooks/useExpenses";
+import type { Database } from "@/integrations/supabase/types";
 
-interface ExpensesListProps {
-  expenses: ExpenseData[];
-  onEdit?: (expense: ExpenseData) => void;
-  onDelete?: (id: string) => void;
-}
+type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 
-const getCategoryInfo = (categoryId: string) => {
+const getCategoryInfo = (categoryId: ExpenseCategory) => {
   return categories.find((cat) => cat.id === categoryId) || { label: "سایر", icon: "📋" };
 };
 
@@ -39,7 +37,7 @@ const formatDate = (dateString: string) => {
   return new Intl.DateTimeFormat("fa-IR").format(date);
 };
 
-const getCategoryColor = (categoryId: string) => {
+const getCategoryColor = (categoryId: ExpenseCategory) => {
   const colors: Record<string, string> = {
     charge: "bg-primary",
     repair: "bg-warning",
@@ -49,20 +47,33 @@ const getCategoryColor = (categoryId: string) => {
     water: "bg-blue-500",
     gas: "bg-orange-500",
     security: "bg-purple-500",
-    garden: "bg-green-500",
+    parking: "bg-cyan-500",
     other: "bg-muted-foreground",
   };
   return colors[categoryId] || "bg-muted-foreground";
 };
 
-export function ExpensesList({ expenses, onEdit, onDelete }: ExpensesListProps) {
+export function ExpensesList() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  
+  const { data: expenses = [], isLoading } = useExpenses();
+  const deleteExpense = useDeleteExpense();
 
   const filteredExpenses = filterCategory === "all" 
     ? expenses 
     : expenses.filter(exp => exp.category === filterCategory);
 
-  const totalAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalAmount = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+
+  if (isLoading) {
+    return (
+      <Card variant="elevated" className="animate-fade-in">
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card variant="elevated" className="animate-fade-in">
@@ -108,7 +119,7 @@ export function ExpensesList({ expenses, onEdit, onDelete }: ExpensesListProps) 
                   <TableHead className="text-right">دسته‌بندی</TableHead>
                   <TableHead className="text-right">مبلغ</TableHead>
                   <TableHead className="text-right">تاریخ</TableHead>
-                  <TableHead className="text-right">پرداخت کننده</TableHead>
+                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -137,25 +148,22 @@ export function ExpensesList({ expenses, onEdit, onDelete }: ExpensesListProps) 
                         </Badge>
                       </TableCell>
                       <TableCell className="font-bold">
-                        {formatAmount(expense.amount)} تومان
+                        {formatAmount(Number(expense.amount))} تومان
                       </TableCell>
-                      <TableCell>{formatDate(expense.date)}</TableCell>
-                      <TableCell>{expense.paidBy}</TableCell>
+                      <TableCell>{formatDate(expense.expense_date)}</TableCell>
+                      <TableCell>
+                        <Badge variant={expense.is_paid ? "default" : "secondary"}>
+                          {expense.is_paid ? "پرداخت شده" : "در انتظار"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => onEdit?.(expense)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
                             className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => onDelete?.(expense.id)}
+                            onClick={() => deleteExpense.mutate(expense.id)}
+                            disabled={deleteExpense.isPending}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
