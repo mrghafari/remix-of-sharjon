@@ -21,6 +21,7 @@ import {
 import { useState } from "react";
 import { useExpenses, useDeleteExpense, type Expense } from "@/hooks/useExpenses";
 import type { Database } from "@/integrations/supabase/types";
+import { formatJalaliDate } from "@/lib/jalaliDate";
 
 type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 
@@ -33,8 +34,7 @@ const formatAmount = (amount: number) => {
 };
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("fa-IR").format(date);
+  return formatJalaliDate(dateString);
 };
 
 const getCategoryColor = (categoryId: ExpenseCategory) => {

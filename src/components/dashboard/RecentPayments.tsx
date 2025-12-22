@@ -2,14 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUpLeft, TrendingUp, Loader2 } from "lucide-react";
 import { usePayments } from "@/hooks/usePayments";
+import { formatJalaliDate } from "@/lib/jalaliDate";
 
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat("fa-IR").format(amount);
 };
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("fa-IR").format(date);
+  return formatJalaliDate(dateString);
 };
 
 export function RecentPayments() {
