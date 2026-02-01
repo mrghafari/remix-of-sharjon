@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
+export type FundType = "charge" | "extra_charge";
 
 export interface Expense {
   id: string;
@@ -14,6 +15,7 @@ export interface Expense {
   expense_date: string;
   is_paid: boolean;
   unit_id: string | null;
+  fund_type: FundType;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +28,7 @@ export interface CreateExpenseData {
   expense_date?: string;
   is_paid?: boolean;
   unit_id?: string;
+  fund_type?: FundType;
 }
 
 export function useExpenses() {

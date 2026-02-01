@@ -25,6 +25,11 @@ import { formatJalaliDate } from "@/lib/jalaliDate";
 
 type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 
+const fundTypeLabels: Record<string, string> = {
+  charge: "صندوق شارژ",
+  extra_charge: "صندوق فوق شارژ",
+};
+
 const getCategoryInfo = (categoryId: ExpenseCategory) => {
   return categories.find((cat) => cat.id === categoryId) || { label: "سایر", icon: "📋" };
 };
@@ -118,6 +123,7 @@ export function ExpensesList() {
                   <TableHead className="text-right">عنوان</TableHead>
                   <TableHead className="text-right">دسته‌بندی</TableHead>
                   <TableHead className="text-right">مبلغ</TableHead>
+                  <TableHead className="text-right">صندوق</TableHead>
                   <TableHead className="text-right">تاریخ</TableHead>
                   <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">عملیات</TableHead>
@@ -149,6 +155,11 @@ export function ExpensesList() {
                       </TableCell>
                       <TableCell className="font-bold">
                         {formatAmount(Number(expense.amount))} تومان
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={expense.fund_type === "charge" ? "default" : "secondary"}>
+                          {fundTypeLabels[expense.fund_type] || "شارژ"}
+                        </Badge>
                       </TableCell>
                       <TableCell>{formatDate(expense.expense_date)}</TableCell>
                       <TableCell>

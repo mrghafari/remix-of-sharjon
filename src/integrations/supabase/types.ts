@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           description: string | null
           expense_date: string
+          fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
           is_paid: boolean | null
           title: string
@@ -33,6 +34,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           expense_date?: string
+          fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           is_paid?: boolean | null
           title: string
@@ -45,6 +47,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           expense_date?: string
+          fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           is_paid?: boolean | null
           title?: string

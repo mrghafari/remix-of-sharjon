@@ -35,12 +35,18 @@ export const categories: { id: ExpenseCategory; label: string; icon: string }[] 
   { id: "other", label: "سایر", icon: "📋" },
 ];
 
+const fundTypes = [
+  { value: "charge", label: "صندوق شارژ" },
+  { value: "extra_charge", label: "صندوق فوق شارژ" },
+];
+
 export function ExpenseForm({ onClose }: ExpenseFormProps) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<ExpenseCategory | "">("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [description, setDescription] = useState("");
+  const [fundType, setFundType] = useState<string>("charge");
   
   const createExpense = useCreateExpense();
 
@@ -62,6 +68,7 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       category: category as ExpenseCategory,
       expense_date: date,
       description: description.trim() || undefined,
+      fund_type: fundType as "charge" | "extra_charge",
     };
 
     createExpense.mutate(expense, {
@@ -141,6 +148,22 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>صندوق پرداخت *</Label>
+            <Select value={fundType} onValueChange={setFundType}>
+              <SelectTrigger>
+                <SelectValue placeholder="انتخاب صندوق" />
+              </SelectTrigger>
+              <SelectContent>
+                {fundTypes.map((fund) => (
+                  <SelectItem key={fund.value} value={fund.value}>
+                    {fund.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
