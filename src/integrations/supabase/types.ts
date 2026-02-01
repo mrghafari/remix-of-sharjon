@@ -66,6 +66,7 @@ export type Database = {
           amount: number
           created_at: string
           description: string | null
+          fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
           month: number
           payment_date: string
@@ -76,6 +77,7 @@ export type Database = {
           amount: number
           created_at?: string
           description?: string | null
+          fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month: number
           payment_date?: string
@@ -86,6 +88,7 @@ export type Database = {
           amount?: number
           created_at?: string
           description?: string | null
+          fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month?: number
           payment_date?: string
@@ -169,6 +172,7 @@ export type Database = {
         | "parking"
         | "security"
         | "other"
+      fund_type: "charge" | "extra_charge"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -308,6 +312,7 @@ export const Constants = {
         "security",
         "other",
       ],
+      fund_type: ["charge", "extra_charge"],
     },
   },
 } as const

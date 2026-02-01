@@ -36,6 +36,11 @@ const persianMonths = [
   { value: 12, label: "اسفند" },
 ];
 
+const fundTypes = [
+  { value: "charge", label: "صندوق شارژ" },
+  { value: "extra_charge", label: "صندوق فوق شارژ" },
+];
+
 export function PaymentForm() {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,6 +48,7 @@ export function PaymentForm() {
     amount: "",
     month: "",
     year: "",
+    fund_type: "charge",
     description: "",
   });
 
@@ -58,6 +64,7 @@ export function PaymentForm() {
         amount: Number(formData.amount),
         month: Number(formData.month),
         year: Number(formData.year),
+        fund_type: formData.fund_type as "charge" | "extra_charge",
         payment_date: new Date().toISOString().split("T")[0],
         description: formData.description || null,
       },
@@ -69,6 +76,7 @@ export function PaymentForm() {
             amount: "",
             month: "",
             year: "",
+            fund_type: "charge",
             description: "",
           });
         },
@@ -175,6 +183,28 @@ export function PaymentForm() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Fund Type */}
+          <div className="space-y-2">
+            <Label>نوع صندوق</Label>
+            <Select
+              value={formData.fund_type}
+              onValueChange={(value) =>
+                setFormData({ ...formData, fund_type: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="انتخاب صندوق" />
+              </SelectTrigger>
+              <SelectContent>
+                {fundTypes.map((fund) => (
+                  <SelectItem key={fund.value} value={fund.value}>
+                    {fund.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Description */}

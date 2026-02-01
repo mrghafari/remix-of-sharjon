@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+export type FundType = "charge" | "extra_charge";
+
 export interface Payment {
   id: string;
   unit_id: string;
@@ -10,6 +12,7 @@ export interface Payment {
   month: number;
   year: number;
   description: string | null;
+  fund_type: FundType;
   created_at: string;
 }
 

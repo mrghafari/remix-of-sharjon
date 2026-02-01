@@ -27,6 +27,11 @@ const persianMonths: Record<number, string> = {
   12: "اسفند",
 };
 
+const fundTypeLabels: Record<string, string> = {
+  charge: "صندوق شارژ",
+  extra_charge: "صندوق فوق شارژ",
+};
+
 export function PaymentsList() {
   const { data: payments, isLoading } = usePayments();
   const deletePayment = useDeletePayment();
@@ -66,6 +71,7 @@ export function PaymentsList() {
             <TableHead className="text-right">واحد</TableHead>
             <TableHead className="text-right">مالک</TableHead>
             <TableHead className="text-right">مبلغ</TableHead>
+            <TableHead className="text-right">صندوق</TableHead>
             <TableHead className="text-right">ماه/سال</TableHead>
             <TableHead className="text-right">تاریخ پرداخت</TableHead>
             <TableHead className="text-right">توضیحات</TableHead>
@@ -87,6 +93,11 @@ export function PaymentsList() {
                 <span className="text-primary font-semibold">
                   {formatAmount(payment.amount)}
                 </span>
+              </TableCell>
+              <TableCell>
+                <Badge variant={payment.fund_type === "charge" ? "default" : "secondary"}>
+                  {fundTypeLabels[payment.fund_type] || "شارژ"}
+                </Badge>
               </TableCell>
               <TableCell>
                 {persianMonths[payment.month]} {payment.year}
