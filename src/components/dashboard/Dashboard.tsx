@@ -1,8 +1,9 @@
-import { Building2, Users, CreditCard, AlertCircle, Loader2 } from "lucide-react";
+import { Building2, Users, CreditCard, AlertCircle } from "lucide-react";
 import { StatsCard } from "./StatsCard";
 import { UnitsTable } from "./UnitsTable";
 import { RecentPayments } from "./RecentPayments";
 import { QuickActions } from "./QuickActions";
+import { FundBalance } from "./FundBalance";
 import { useUnits } from "@/hooks/useUnits";
 import { useExpenses } from "@/hooks/useExpenses";
 import { usePayments } from "@/hooks/usePayments";
@@ -80,6 +81,9 @@ export function Dashboard() {
           <QuickActions />
         </div>
       </div>
+
+      {/* Fund Balance */}
+      <FundBalance />
 
       {/* Recent Payments */}
       <RecentPayments />
