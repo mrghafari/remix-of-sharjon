@@ -72,21 +72,17 @@ export function Dashboard() {
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Units Table - Takes 2 columns */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <UnitsTable />
+          <RecentPayments />
         </div>
 
-        {/* Quick Actions */}
-        <div>
+        {/* Right Side - Quick Actions + Fund Balance */}
+        <div className="space-y-6">
           <QuickActions />
+          <FundBalance />
         </div>
       </div>
-
-      {/* Fund Balance */}
-      <FundBalance />
-
-      {/* Recent Payments */}
-      <RecentPayments />
     </div>
   );
 }
