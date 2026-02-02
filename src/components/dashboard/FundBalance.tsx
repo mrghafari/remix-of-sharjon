@@ -67,37 +67,37 @@ function FundTransactions({ fundType }: { fundType: FundType }) {
   }
 
   return (
-    <div className="mt-2 border rounded-lg overflow-hidden">
+    <div className="mt-2 border rounded-lg overflow-hidden" dir="rtl">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
             <TableHead className="text-right text-xs py-2 h-8">تاریخ</TableHead>
             <TableHead className="text-right text-xs py-2 h-8">شرح</TableHead>
-            <TableHead className="text-center text-xs py-2 h-8 w-20">بد</TableHead>
-            <TableHead className="text-center text-xs py-2 h-8 w-20">بس</TableHead>
-            <TableHead className="text-center text-xs py-2 h-8 w-24">مانده</TableHead>
+            <TableHead className="text-right text-xs py-2 h-8 w-20">بدهکار</TableHead>
+            <TableHead className="text-right text-xs py-2 h-8 w-20">بستانکار</TableHead>
+            <TableHead className="text-right text-xs py-2 h-8 w-24">مانده</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {displayTransactions.slice(0, 10).map((t) => (
             <TableRow key={t.id} className="text-xs">
-              <TableCell className="py-1.5 text-muted-foreground">
+              <TableCell className="py-1.5 text-right text-muted-foreground">
                 {formatJalaliDate(t.date)}
               </TableCell>
-              <TableCell className="py-1.5 max-w-[120px] truncate">
+              <TableCell className="py-1.5 text-right max-w-[120px] truncate">
                 {t.description}
               </TableCell>
-              <TableCell className="py-1.5 text-center">
+              <TableCell className="py-1.5 text-right">
                 {t.type === "debit" ? (
                   <span className="text-red-600">{formatAmount(t.amount)}</span>
                 ) : "-"}
               </TableCell>
-              <TableCell className="py-1.5 text-center">
+              <TableCell className="py-1.5 text-right">
                 {t.type === "credit" ? (
                   <span className="text-green-600">{formatAmount(t.amount)}</span>
                 ) : "-"}
               </TableCell>
-              <TableCell className="py-1.5 text-center font-medium">
+              <TableCell className="py-1.5 text-right font-medium">
                 <span className={t.balance >= 0 ? "text-green-600" : "text-red-600"}>
                   {formatAmount(Math.abs(t.balance))}
                   {t.balance < 0 && "-"}
