@@ -16,7 +16,9 @@ export type Database = {
     Tables: {
       expenses: {
         Row: {
+          allocation_type: Database["public"]["Enums"]["allocation_type"]
           amount: number
+          area_ratio: number | null
           category: Database["public"]["Enums"]["expense_category"]
           created_at: string
           description: string | null
@@ -29,7 +31,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allocation_type?: Database["public"]["Enums"]["allocation_type"]
           amount: number
+          area_ratio?: number | null
           category?: Database["public"]["Enums"]["expense_category"]
           created_at?: string
           description?: string | null
@@ -42,7 +46,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allocation_type?: Database["public"]["Enums"]["allocation_type"]
           amount?: number
+          area_ratio?: number | null
           category?: Database["public"]["Enums"]["expense_category"]
           created_at?: string
           description?: string | null
@@ -164,6 +170,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      allocation_type:
+        | "single_unit"
+        | "by_area"
+        | "by_residents"
+        | "by_area_residents"
+        | "equal"
       expense_category:
         | "charge"
         | "repair"
@@ -303,6 +315,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      allocation_type: [
+        "single_unit",
+        "by_area",
+        "by_residents",
+        "by_area_residents",
+        "equal",
+      ],
       expense_category: [
         "charge",
         "repair",

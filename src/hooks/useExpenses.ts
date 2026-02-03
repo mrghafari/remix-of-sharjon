@@ -5,6 +5,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 export type FundType = "charge" | "extra_charge";
+export type AllocationType = "single_unit" | "by_area" | "by_residents" | "by_area_residents" | "equal";
 
 export interface Expense {
   id: string;
@@ -16,6 +17,8 @@ export interface Expense {
   is_paid: boolean;
   unit_id: string | null;
   fund_type: FundType;
+  allocation_type: AllocationType;
+  area_ratio: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +32,8 @@ export interface CreateExpenseData {
   is_paid?: boolean;
   unit_id?: string;
   fund_type?: FundType;
+  allocation_type?: AllocationType;
+  area_ratio?: number;
 }
 
 export function useExpenses() {
