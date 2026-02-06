@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_allocation_settings: {
+        Row: {
+          allowed_allocation_types: Database["public"]["Enums"]["allocation_type"][]
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at: string
+          default_allocation_type: Database["public"]["Enums"]["allocation_type"]
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
+          category: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
+          category?: Database["public"]["Enums"]["expense_category"]
+          created_at?: string
+          default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           allocation_type: Database["public"]["Enums"]["allocation_type"]
