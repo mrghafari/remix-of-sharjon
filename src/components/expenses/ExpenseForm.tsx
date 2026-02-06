@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { Calendar, Plus, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCreateExpense, type CreateExpenseData, type AllocationType } from "@/hooks/useExpenses";
 import { useUnits } from "@/hooks/useUnits";
+import { useCategorySettings } from "@/hooks/useCategorySettings";
 import type { Database } from "@/integrations/supabase/types";
 
 type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
@@ -64,7 +65,19 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
   
   const createExpense = useCreateExpense();
   const { data: units } = useUnits();
+  const { data: categorySettings } = useCategorySettings();
 
+  // Get current category settings
+  const currentCategorySetting = categorySettings?.find(s => s.category === category);
+  const allowedTypes = currentCategorySetting?.allowed_allocation_types || [];
+  const filteredAllocationTypes = allocationTypes.filter(t => allowedTypes.includes(t.value));
+
+  // Reset allocation type when category changes
+  useEffect(() => {
+    if (currentCategorySetting) {
+      setAllocationType(currentCategorySetting.default_allocation_type as AllocationType);
+    }
+  }, [currentCategorySetting]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -206,25 +219,26 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
           </div>
 
           {/* Allocation Type Section */}
-          <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
-            <Label className="text-base font-semibold">نوع تسهیم هزینه *</Label>
-            <RadioGroup
-              value={allocationType}
-              onValueChange={(v) => setAllocationType(v as AllocationType)}
-              className="grid gap-2"
-            >
-              {allocationTypes.map((type) => (
-                <div key={type.value} className="flex items-start gap-3 p-3 rounded-md border bg-background hover:bg-accent/50 transition-colors">
-                  <RadioGroupItem value={type.value} id={type.value} className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor={type.value} className="font-medium cursor-pointer">
-                      {type.label}
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">{type.description}</p>
+          {category && filteredAllocationTypes.length > 0 && (
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
+              <Label className="text-base font-semibold">نوع تسهیم هزینه *</Label>
+              <RadioGroup
+                value={allocationType}
+                onValueChange={(v) => setAllocationType(v as AllocationType)}
+                className="grid gap-2"
+              >
+                {filteredAllocationTypes.map((type) => (
+                  <div key={type.value} className="flex items-start gap-3 p-3 rounded-md border bg-background hover:bg-accent/50 transition-colors">
+                    <RadioGroupItem value={type.value} id={type.value} className="mt-1" />
+                    <div className="flex-1">
+                      <Label htmlFor={type.value} className="font-medium cursor-pointer">
+                        {type.label}
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-0.5">{type.description}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </RadioGroup>
+                ))}
+              </RadioGroup>
 
             {/* Unit Selection for single_unit */}
             {allocationType === "single_unit" && (
@@ -266,7 +280,14 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
                 </div>
               </div>
             )}
-          </div>
+            </div>
+          )}
+
+          {category && filteredAllocationTypes.length === 0 && (
+            <div className="p-4 bg-muted/30 rounded-lg border text-center text-muted-foreground">
+              <p>لطفاً ابتدا دسته‌بندی را انتخاب کنید</p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" className="flex-1" disabled={createExpense.isPending}>
