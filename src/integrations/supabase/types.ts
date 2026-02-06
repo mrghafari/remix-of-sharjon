@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           allowed_allocation_types: Database["public"]["Enums"]["allocation_type"][]
           category: Database["public"]["Enums"]["expense_category"]
+          category_id: string | null
           created_at: string
           default_allocation_type: Database["public"]["Enums"]["allocation_type"]
           id: string
@@ -26,6 +27,7 @@ export type Database = {
         Insert: {
           allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
           category: Database["public"]["Enums"]["expense_category"]
+          category_id?: string | null
           created_at?: string
           default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
           id?: string
@@ -34,10 +36,46 @@ export type Database = {
         Update: {
           allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
           category?: Database["public"]["Enums"]["expense_category"]
+          category_id?: string | null
           created_at?: string
           default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
           id?: string
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_allocation_settings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: true
+            referencedRelation: "expense_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expense_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_system: boolean
+          label: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_system?: boolean
+          label: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_system?: boolean
+          label?: string
+          name?: string
         }
         Relationships: []
       }

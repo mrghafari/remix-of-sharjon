@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { ExpensesPage } from "@/components/expenses/ExpensesPage";
 import { UnitsPage } from "@/components/units/UnitsPage";
 import { PaymentsPage } from "@/components/payments/PaymentsPage";
+import { SettingsPage } from "@/components/settings/SettingsPage";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -19,6 +20,8 @@ const Index = () => {
         return <ExpensesPage />;
       case "payments":
         return <PaymentsPage />;
+      case "settings":
+        return <SettingsPage />;
       default:
         return (
           <div className="flex items-center justify-center h-[60vh]">
