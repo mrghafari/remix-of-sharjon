@@ -17,16 +17,14 @@ import { Calendar, Plus, X, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCreateExpense, type CreateExpenseData, type AllocationType } from "@/hooks/useExpenses";
 import { useUnits } from "@/hooks/useUnits";
-import { useCategorySettings } from "@/hooks/useCategorySettings";
-import type { Database } from "@/integrations/supabase/types";
-
-type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
+import { useCategoriesWithSettings } from "@/hooks/useExpenseCategories";
 
 interface ExpenseFormProps {
   onClose: () => void;
 }
 
-export const categories: { id: ExpenseCategory; label: string; icon: string }[] = [
+// Keep this export for backwards compatibility with ExpensesList
+export const categories = [
   { id: "charge", label: "شارژ ماهانه", icon: "💰" },
   { id: "repair", label: "تعمیرات", icon: "🔧" },
   { id: "cleaning", label: "نظافت", icon: "🧹" },
@@ -55,7 +53,7 @@ const allocationTypes: { value: AllocationType; label: string; description: stri
 export function ExpenseForm({ onClose }: ExpenseFormProps) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<ExpenseCategory | "">("");
+  const [category, setCategory] = useState<string>("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [description, setDescription] = useState("");
   const [fundType, setFundType] = useState<string>("charge");
@@ -65,17 +63,17 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
   
   const createExpense = useCreateExpense();
   const { data: units } = useUnits();
-  const { data: categorySettings } = useCategorySettings();
+  const { data: categoriesWithSettings } = useCategoriesWithSettings();
 
   // Get current category settings
-  const currentCategorySetting = categorySettings?.find(s => s.category === category);
-  const allowedTypes = currentCategorySetting?.allowed_allocation_types || [];
+  const currentCategorySetting = categoriesWithSettings?.find(c => c.name === category);
+  const allowedTypes = currentCategorySetting?.allocation_settings?.allowed_allocation_types || [];
   const filteredAllocationTypes = allocationTypes.filter(t => allowedTypes.includes(t.value));
 
   // Reset allocation type when category changes
   useEffect(() => {
-    if (currentCategorySetting) {
-      setAllocationType(currentCategorySetting.default_allocation_type as AllocationType);
+    if (currentCategorySetting?.allocation_settings) {
+      setAllocationType(currentCategorySetting.allocation_settings.default_allocation_type as AllocationType);
     }
   }, [currentCategorySetting]);
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,7 +100,7 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
     const expense: CreateExpenseData = {
       title: title.trim(),
       amount: parseFloat(amount),
-      category: category as ExpenseCategory,
+      category: category as any,
       expense_date: date,
       description: description.trim() || undefined,
       fund_type: fundType as "charge" | "extra_charge",
@@ -159,13 +157,13 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="category">دسته‌بندی *</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)}>
+              <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب کنید" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
+                  {categoriesWithSettings?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.name}>
                       <span className="flex items-center gap-2">
                         <span>{cat.icon}</span>
                         {cat.label}

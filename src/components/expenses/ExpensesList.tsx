@@ -10,7 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Trash2, Filter, Loader2 } from "lucide-react";
-import { categories } from "./ExpenseForm";
 import {
   Select,
   SelectContent,
@@ -20,18 +19,12 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { useExpenses, useDeleteExpense, type Expense } from "@/hooks/useExpenses";
-import type { Database } from "@/integrations/supabase/types";
+import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { formatJalaliDate } from "@/lib/jalaliDate";
-
-type ExpenseCategory = Database["public"]["Enums"]["expense_category"];
 
 const fundTypeLabels: Record<string, string> = {
   charge: "صندوق شارژ",
   extra_charge: "صندوق فوق شارژ",
-};
-
-const getCategoryInfo = (categoryId: ExpenseCategory) => {
-  return categories.find((cat) => cat.id === categoryId) || { label: "سایر", icon: "📋" };
 };
 
 const formatAmount = (amount: number) => {
@@ -42,7 +35,7 @@ const formatDate = (dateString: string) => {
   return formatJalaliDate(dateString);
 };
 
-const getCategoryColor = (categoryId: ExpenseCategory) => {
+const getCategoryColor = (categoryId: string) => {
   const colors: Record<string, string> = {
     charge: "bg-primary",
     repair: "bg-warning",
@@ -62,6 +55,7 @@ export function ExpensesList() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   
   const { data: expenses = [], isLoading } = useExpenses();
+  const { data: categories = [] } = useExpenseCategories();
   const deleteExpense = useDeleteExpense();
 
   const filteredExpenses = filterCategory === "all" 
@@ -98,7 +92,7 @@ export function ExpensesList() {
             <SelectContent>
               <SelectItem value="all">همه دسته‌ها</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
+                <SelectItem key={cat.id} value={cat.name}>
                   <span className="flex items-center gap-2">
                     <span>{cat.icon}</span>
                     {cat.label}
@@ -131,7 +125,7 @@ export function ExpensesList() {
               </TableHeader>
               <TableBody>
                 {filteredExpenses.map((expense) => {
-                  const categoryInfo = getCategoryInfo(expense.category);
+                  const categoryInfo = categories.find(c => c.name === expense.category) || { label: "سایر", icon: "📋" };
                   return (
                     <TableRow key={expense.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell>
