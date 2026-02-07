@@ -8,8 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Loader2, TrendingUp, TrendingDown, Eye, Wallet, Receipt, Scale } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Wallet, Receipt, Scale } from "lucide-react";
 import { useUnitBalance } from "@/hooks/useUnitBalance";
 
 interface UnitBalanceReportProps {
@@ -93,12 +92,15 @@ export function UnitBalanceReport({ onSelectUnit }: UnitBalanceReportProps) {
                 <TableHead className="text-right">هزینه‌های تسهیم‌شده</TableHead>
                 <TableHead className="text-right">مانده</TableHead>
                 <TableHead className="text-right">وضعیت</TableHead>
-                <TableHead className="text-center">جزئیات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {unitBalances.map((ub) => (
-                <TableRow key={ub.unit.id}>
+                <TableRow 
+                  key={ub.unit.id}
+                  className="cursor-pointer hover:bg-muted/80 transition-colors"
+                  onClick={() => onSelectUnit(ub.unit.id)}
+                >
                   <TableCell className="font-medium">{ub.unit.unit_number}</TableCell>
                   <TableCell>{ub.unit.owner_name}</TableCell>
                   <TableCell className="text-green-600">
@@ -123,20 +125,11 @@ export function UnitBalanceReport({ onSelectUnit }: UnitBalanceReportProps) {
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onSelectUnit(ub.unit.id)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
                 </TableRow>
               ))}
               {unitBalances.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     هنوز واحدی ثبت نشده است
                   </TableCell>
                 </TableRow>
