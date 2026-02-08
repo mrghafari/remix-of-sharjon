@@ -10,3 +10,7 @@ export const formatJalaliDateFull = (dateString: string) => {
   const date = new Date(dateString);
   return format(date, "d MMMM yyyy", { locale: faIR });
 };
+
+export const toJalaliString = (date: Date) => {
+  return format(date, "yyyy/MM/dd", { locale: faIR });
+};
