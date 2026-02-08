@@ -17,7 +17,7 @@ export type Database = {
       category_allocation_settings: {
         Row: {
           allowed_allocation_types: Database["public"]["Enums"]["allocation_type"][]
-          category: Database["public"]["Enums"]["expense_category"]
+          category: Database["public"]["Enums"]["expense_category"] | null
           category_id: string | null
           created_at: string
           default_allocation_type: Database["public"]["Enums"]["allocation_type"]
@@ -26,7 +26,7 @@ export type Database = {
         }
         Insert: {
           allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
-          category: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           category_id?: string | null
           created_at?: string
           default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
@@ -35,7 +35,7 @@ export type Database = {
         }
         Update: {
           allowed_allocation_types?: Database["public"]["Enums"]["allocation_type"][]
-          category?: Database["public"]["Enums"]["expense_category"]
+          category?: Database["public"]["Enums"]["expense_category"] | null
           category_id?: string | null
           created_at?: string
           default_allocation_type?: Database["public"]["Enums"]["allocation_type"]
