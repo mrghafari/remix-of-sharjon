@@ -9,18 +9,19 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, TrendingDown, Wallet, Receipt, Scale } from "lucide-react";
-import { useUnitBalance } from "@/hooks/useUnitBalance";
+import { useUnitBalanceFiltered, DateRange } from "@/hooks/useUnitBalanceFiltered";
 
 interface UnitBalanceReportProps {
   onSelectUnit: (unitId: string) => void;
+  dateRange: DateRange;
 }
 
 function formatNumber(num: number): string {
   return new Intl.NumberFormat("fa-IR").format(Math.round(num));
 }
 
-export function UnitBalanceReport({ onSelectUnit }: UnitBalanceReportProps) {
-  const { unitBalances, isLoading, totals } = useUnitBalance();
+export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReportProps) {
+  const { unitBalances, isLoading, totals } = useUnitBalanceFiltered(dateRange);
 
   if (isLoading) {
     return (

@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -16,14 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Receipt, Wallet, TrendingUp, TrendingDown, Building2 } from "lucide-react";
-import { useUnitBalance } from "@/hooks/useUnitBalance";
+import { Loader2, Receipt, Wallet, TrendingUp, TrendingDown, Building2, FileDown } from "lucide-react";
+import { useUnitBalanceFiltered, DateRange } from "@/hooks/useUnitBalanceFiltered";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { formatJalaliDate } from "@/lib/jalaliDate";
+import { generateUnitReportPDF } from "@/lib/pdfGenerator";
+import { DateRangeFilter } from "./DateRangeFilter";
 
 interface UnitDetailReportProps {
   selectedUnitId: string | null;
   onSelectUnit: (unitId: string) => void;
+  dateRange: DateRange;
+  onDateRangeChange: (range: DateRange) => void;
 }
 
 function formatNumber(num: number): string {
@@ -38,8 +43,8 @@ const allocationLabels: Record<string, string> = {
   single_unit: "واحد خاص",
 };
 
-export function UnitDetailReport({ selectedUnitId, onSelectUnit }: UnitDetailReportProps) {
-  const { unitBalances, isLoading } = useUnitBalance();
+export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDateRangeChange }: UnitDetailReportProps) {
+  const { unitBalances, isLoading } = useUnitBalanceFiltered(dateRange);
   const { data: categories = [] } = useExpenseCategories();
 
   const selectedBalance = useMemo(() => {
@@ -49,6 +54,20 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit }: UnitDetailRep
   const getCategoryLabel = (categoryName: string) => {
     const cat = categories.find(c => c.name === categoryName);
     return cat ? `${cat.icon} ${cat.label}` : categoryName;
+  };
+
+  const categoryLabels = useMemo(() => {
+    const labels: Record<string, string> = {};
+    categories.forEach(cat => {
+      labels[cat.name] = `${cat.icon} ${cat.label}`;
+    });
+    return labels;
+  }, [categories]);
+
+  const handleExportPDF = () => {
+    if (selectedBalance) {
+      generateUnitReportPDF(selectedBalance, dateRange, categoryLabels);
+    }
   };
 
   if (isLoading) {
@@ -63,27 +82,38 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit }: UnitDetailRep
 
   return (
     <div className="space-y-6">
-      {/* Unit Selector */}
+      {/* Unit Selector and Date Filter */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />
-            انتخاب واحد
+            انتخاب واحد و بازه زمانی
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Select value={selectedUnitId || ""} onValueChange={onSelectUnit}>
-            <SelectTrigger className="max-w-md">
-              <SelectValue placeholder="واحد مورد نظر را انتخاب کنید" />
-            </SelectTrigger>
-            <SelectContent>
-              {unitBalances.map((ub) => (
-                <SelectItem key={ub.unit.id} value={ub.unit.id}>
-                  پلاک {ub.unit.unit_number} - {ub.unit.owner_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <Select value={selectedUnitId || ""} onValueChange={onSelectUnit}>
+              <SelectTrigger className="max-w-md">
+                <SelectValue placeholder="واحد مورد نظر را انتخاب کنید" />
+              </SelectTrigger>
+              <SelectContent>
+                {unitBalances.map((ub) => (
+                  <SelectItem key={ub.unit.id} value={ub.unit.id}>
+                    پلاک {ub.unit.unit_number} - {ub.unit.owner_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {selectedBalance && (
+              <Button onClick={handleExportPDF} variant="outline" className="gap-2">
+                <FileDown className="w-4 h-4" />
+                خروجی PDF
+              </Button>
+            )}
+          </div>
+          
+          <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
         </CardContent>
       </Card>
 

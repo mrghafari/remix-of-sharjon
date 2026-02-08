@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { UnitBalanceReport } from "./UnitBalanceReport";
 import { UnitDetailReport } from "./UnitDetailReport";
+import { DateRangeFilter } from "./DateRangeFilter";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { DateRange } from "@/hooks/useUnitBalanceFiltered";
 
 export function ReportsPage() {
   const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
 
   const handleSelectUnit = (unitId: string) => {
     setSelectedUnitId(unitId);
@@ -28,17 +31,22 @@ export function ReportsPage() {
           <UnitDetailReport 
             selectedUnitId={selectedUnitId} 
             onSelectUnit={setSelectedUnitId}
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
           />
         </>
       ) : (
         <>
-          <div>
-            <h1 className="text-2xl font-bold">گزارش‌ها</h1>
-            <p className="text-muted-foreground mt-1">
-              بیلان واحدها - برای مشاهده جزئیات روی هر سطر کلیک کنید
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">گزارش‌ها</h1>
+              <p className="text-muted-foreground mt-1">
+                بیلان واحدها - برای مشاهده جزئیات روی هر سطر کلیک کنید
+              </p>
+            </div>
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
           </div>
-          <UnitBalanceReport onSelectUnit={handleSelectUnit} />
+          <UnitBalanceReport onSelectUnit={handleSelectUnit} dateRange={dateRange} />
         </>
       )}
     </div>
