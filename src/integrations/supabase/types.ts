@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      building_members: {
+        Row: {
+          building_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          unit_id: string | null
+          user_id: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          unit_id?: string | null
+          user_id: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          unit_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_members_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "building_members_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buildings: {
         Row: {
           address: string | null
@@ -310,6 +352,36 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           area: number | null
@@ -369,12 +441,47 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_building_manager: {
+        Args: { _building_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_building_member: {
+        Args: { _building_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       allocation_type:
@@ -383,6 +490,7 @@ export type Database = {
         | "by_residents"
         | "by_area_residents"
         | "equal"
+      app_role: "super_admin" | "manager" | "resident"
       expense_category:
         | "charge"
         | "repair"
@@ -529,6 +637,7 @@ export const Constants = {
         "by_area_residents",
         "equal",
       ],
+      app_role: ["super_admin", "manager", "resident"],
       expense_category: [
         "charge",
         "repair",
