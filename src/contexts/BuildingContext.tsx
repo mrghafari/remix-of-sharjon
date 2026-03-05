@@ -56,6 +56,7 @@ export function useCreateBuilding() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["buildings"] });
+      queryClient.invalidateQueries({ queryKey: ["building_members"] });
       toast({ title: "موفق", description: "ساختمان با موفقیت اضافه شد" });
     },
     onError: () => {
