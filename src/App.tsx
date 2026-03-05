@@ -7,6 +7,7 @@ import { BuildingProvider } from "@/contexts/BuildingContext";
 import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import Landing from "./pages/Landing";
 import ResetPassword from "./pages/ResetPassword";
 import FundTransactions from "./pages/FundTransactions";
@@ -80,6 +81,14 @@ const App = () => (
                 <BuildingProvider>
                   <FundTransactions />
                 </BuildingProvider>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
               </ProtectedRoute>
             }
           />

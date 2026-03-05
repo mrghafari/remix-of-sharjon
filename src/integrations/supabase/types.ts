@@ -358,7 +358,11 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_blocked: boolean
+          max_buildings: number
+          max_units_per_building: number
           phone: string | null
+          subscription_plan: string
           updated_at: string
           user_id: string
         }
@@ -367,7 +371,11 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_blocked?: boolean
+          max_buildings?: number
+          max_units_per_building?: number
           phone?: string | null
+          subscription_plan?: string
           updated_at?: string
           user_id: string
         }
@@ -376,7 +384,11 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_blocked?: boolean
+          max_buildings?: number
+          max_units_per_building?: number
           phone?: string | null
+          subscription_plan?: string
           updated_at?: string
           user_id?: string
         }
@@ -467,6 +479,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_customers: {
+        Args: never
+        Returns: {
+          buildings_count: number
+          created_at: string
+          email: string
+          full_name: string
+          is_blocked: boolean
+          max_buildings: number
+          max_units_per_building: number
+          phone: string
+          subscription_plan: string
+          total_units: number
+          user_id: string
+        }[]
+      }
+      get_admin_stats: {
+        Args: never
+        Returns: {
+          blocked_users: number
+          enterprise_users: number
+          free_users: number
+          pro_users: number
+          total_buildings: number
+          total_units: number
+          total_users: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
