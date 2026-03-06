@@ -25,7 +25,7 @@ function PlanBadge({ plan }: { plan: string }) {
 
 export default function Admin() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { data: isSuperAdmin, isPending: rolePending } = useIsSuperAdmin();
+  const { data: isSuperAdmin, isPending: rolePending } = useIsSuperAdmin(user?.id);
   const { data: stats, isLoading: statsLoading } = useAdminStats();
   const { data: customers, isLoading: customersLoading } = useAdminCustomers();
   const updateCustomer = useUpdateCustomer();
