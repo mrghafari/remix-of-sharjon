@@ -27,19 +27,18 @@ export interface AdminStats {
   enterprise_users: number;
 }
 
-export function useIsSuperAdmin() {
-  const { user } = useAuth();
+export function useIsSuperAdmin(userId: string | undefined) {
   return useQuery({
-    queryKey: ["is_super_admin", user?.id],
+    queryKey: ["is_super_admin", userId],
     queryFn: async () => {
-      if (!user) return false;
+      if (!userId) return false;
       const { data } = await supabase.rpc("has_role", {
-        _user_id: user.id,
+        _user_id: userId,
         _role: "super_admin",
       });
       return !!data;
     },
-    enabled: !!user,
+    enabled: !!userId,
   });
 }
 
