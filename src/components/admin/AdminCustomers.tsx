@@ -4,11 +4,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Loader2 } from "lucide-react";
-import { useAdminCustomers, useUpdateCustomer } from "@/hooks/useAdmin";
+import { Users, Loader2, Trash2 } from "lucide-react";
+import { useAdminCustomers, useUpdateCustomer, useDeleteCustomer } from "@/hooks/useAdmin";
 import type { AdminCustomer } from "@/hooks/useAdmin";
 
 function PlanBadge({ plan }: { plan: string }) {
@@ -28,7 +28,9 @@ function formatDate(d: string) {
 export function AdminCustomers() {
   const { data: customers, isLoading } = useAdminCustomers();
   const updateCustomer = useUpdateCustomer();
+  const deleteCustomer = useDeleteCustomer();
   const [editCustomer, setEditCustomer] = useState<AdminCustomer | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminCustomer | null>(null);
   const [editPlan, setEditPlan] = useState("free");
   const [editMaxBuildings, setEditMaxBuildings] = useState(1);
   const [editMaxUnits, setEditMaxUnits] = useState(10);
@@ -50,6 +52,11 @@ export function AdminCustomers() {
 
   const handleToggleBlock = (c: AdminCustomer) => {
     updateCustomer.mutate({ userId: c.user_id, updates: { is_blocked: !c.is_blocked } });
+  };
+
+  const handleDelete = () => {
+    if (!deleteTarget) return;
+    deleteCustomer.mutate(deleteTarget.user_id, { onSuccess: () => setDeleteTarget(null) });
   };
 
   return (
@@ -103,6 +110,9 @@ export function AdminCustomers() {
                           <Button size="sm" variant={c.is_blocked ? "default" : "destructive"} onClick={() => handleToggleBlock(c)} disabled={updateCustomer.isPending}>
                             {c.is_blocked ? "فعال‌سازی" : "مسدود"}
                           </Button>
+                          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(c)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -114,6 +124,7 @@ export function AdminCustomers() {
         </CardContent>
       </Card>
 
+      {/* Edit Dialog */}
       <Dialog open={!!editCustomer} onOpenChange={(o) => !o && setEditCustomer(null)}>
         <DialogContent dir="rtl">
           <DialogHeader>
@@ -144,6 +155,25 @@ export function AdminCustomers() {
             <Button variant="outline" onClick={() => setEditCustomer(null)}>انصراف</Button>
             <Button onClick={handleSaveEdit} disabled={updateCustomer.isPending}>
               {updateCustomer.isPending ? "در حال ذخیره..." : "ذخیره"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>حذف مشتری</DialogTitle>
+            <DialogDescription>
+              آیا از حذف کامل <strong>{deleteTarget?.full_name || deleteTarget?.email}</strong> اطمینان دارید؟
+              تمام اطلاعات، ساختمان‌ها و داده‌های این کاربر حذف خواهد شد و قابل بازگشت نیست.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>انصراف</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleteCustomer.isPending}>
+              {deleteCustomer.isPending ? "در حال حذف..." : "حذف کامل"}
             </Button>
           </DialogFooter>
         </DialogContent>

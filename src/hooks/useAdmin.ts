@@ -117,3 +117,25 @@ export function useUpdateCustomer() {
     },
   });
 }
+
+export function useDeleteCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin_customers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin_stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin_buildings"] });
+      toast({ title: "حذف شد", description: "مشتری با موفقیت حذف شد" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "خطا", description: err.message || "خطا در حذف مشتری", variant: "destructive" });
+    },
+  });
+}
