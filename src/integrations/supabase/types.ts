@@ -479,6 +479,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_admin_buildings: {
+        Args: never
+        Returns: {
+          address: string
+          created_at: string
+          id: string
+          manager_email: string
+          manager_name: string
+          name: string
+          total_units: number
+        }[]
+      }
       get_admin_customers: {
         Args: never
         Returns: {

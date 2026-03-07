@@ -17,6 +17,16 @@ export interface AdminCustomer {
   total_units: number;
 }
 
+export interface AdminBuilding {
+  id: string;
+  name: string;
+  address: string | null;
+  total_units: number;
+  manager_name: string | null;
+  manager_email: string | null;
+  created_at: string;
+}
+
 export interface AdminStats {
   total_users: number;
   total_buildings: number;
@@ -49,6 +59,17 @@ export function useAdminCustomers() {
       const { data, error } = await supabase.rpc("get_admin_customers");
       if (error) throw error;
       return (data ?? []) as AdminCustomer[];
+    },
+  });
+}
+
+export function useAdminBuildings() {
+  return useQuery({
+    queryKey: ["admin_buildings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_admin_buildings");
+      if (error) throw error;
+      return (data ?? []) as AdminBuilding[];
     },
   });
 }
