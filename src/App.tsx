@@ -9,6 +9,7 @@ import { useIsSuperAdmin } from "@/hooks/useAdmin";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import AdminBuildingView from "./pages/AdminBuildingView";
 import Landing from "./pages/Landing";
 import ResetPassword from "./pages/ResetPassword";
 import FundTransactions from "./pages/FundTransactions";
@@ -94,6 +95,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/building/:buildingId"
+            element={
+              <ProtectedRoute>
+                <AdminBuildingView />
               </ProtectedRoute>
             }
           />
