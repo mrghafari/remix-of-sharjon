@@ -56,9 +56,11 @@ export function useAdminCustomers() {
   return useQuery({
     queryKey: ["admin_customers"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase.rpc("get_admin_customers");
       if (error) throw error;
-      return (data ?? []) as AdminCustomer[];
+      // Filter out the current super admin from the list
+      return ((data ?? []) as AdminCustomer[]).filter(c => c.user_id !== user?.id);
     },
   });
 }
