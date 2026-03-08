@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, Loader2, LogIn } from "lucide-react";
 import { useAdminBuildings } from "@/hooks/useAdmin";
 
 function formatDate(d: string) {
@@ -9,6 +11,7 @@ function formatDate(d: string) {
 }
 
 export function AdminBuildings() {
+  const navigate = useNavigate();
   const { data: buildings, isLoading } = useAdminBuildings();
 
   return (
@@ -35,6 +38,7 @@ export function AdminBuildings() {
                   <TableHead>مدیر</TableHead>
                   <TableHead>ایمیل مدیر</TableHead>
                   <TableHead>تاریخ ایجاد</TableHead>
+                  <TableHead>عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -48,6 +52,17 @@ export function AdminBuildings() {
                     <TableCell>{b.manager_name || "—"}</TableCell>
                     <TableCell className="text-xs ltr">{b.manager_email || "—"}</TableCell>
                     <TableCell>{formatDate(b.created_at)}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="gap-1"
+                        onClick={() => navigate(`/admin/building/${b.id}`)}
+                      >
+                        <LogIn className="h-4 w-4" />
+                        ورود
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
