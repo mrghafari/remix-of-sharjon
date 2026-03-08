@@ -3,10 +3,9 @@ import { useIsSuperAdmin, useAdminStats } from "@/hooks/useAdmin";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Building2, BarChart3, Loader2, LogOut } from "lucide-react";
+import { Shield, Users, BarChart3, Loader2, LogOut } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
-import { AdminBuildings } from "@/components/admin/AdminBuildings";
 
 export default function Admin() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -41,32 +40,24 @@ export default function Admin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        <Tabs defaultValue="stats" dir="rtl">
+        <Tabs defaultValue="customers" dir="rtl">
           <TabsList className="mb-6">
-            <TabsTrigger value="stats" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              آمار کلی
-            </TabsTrigger>
             <TabsTrigger value="customers" className="gap-2">
               <Users className="h-4 w-4" />
               مشتریان
             </TabsTrigger>
-            <TabsTrigger value="buildings" className="gap-2">
-              <Building2 className="h-4 w-4" />
-              ساختمان‌ها
+            <TabsTrigger value="stats" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              آمار کلی
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="stats">
-            <AdminStatsCards stats={stats} isLoading={statsLoading} />
-          </TabsContent>
 
           <TabsContent value="customers">
             <AdminCustomers />
           </TabsContent>
 
-          <TabsContent value="buildings">
-            <AdminBuildings />
+          <TabsContent value="stats">
+            <AdminStatsCards stats={stats} isLoading={statsLoading} />
           </TabsContent>
         </Tabs>
       </main>

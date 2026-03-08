@@ -90,7 +90,6 @@ export function AdminCustomers() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead></TableHead>
                     <TableHead>نام</TableHead>
                     <TableHead>ایمیل</TableHead>
                     <TableHead>پلن</TableHead>
@@ -109,13 +108,16 @@ export function AdminCustomers() {
                       <>
                         <TableRow key={c.user_id} className={c.is_blocked ? "opacity-50" : ""}>
                           <TableCell>
-                            {c.buildings_count > 0 && (
-                              <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => toggleExpand(c.user_id)}>
-                                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                              </Button>
-                            )}
+                            <button
+                              className="flex items-center gap-1.5 font-medium hover:text-primary transition-colors text-start"
+                              onClick={() => c.buildings_count > 0 && toggleExpand(c.user_id)}
+                            >
+                              {c.buildings_count > 0 && (
+                                isExpanded ? <ChevronUp className="h-3.5 w-3.5 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                              )}
+                              {c.full_name || "—"}
+                            </button>
                           </TableCell>
-                          <TableCell className="font-medium">{c.full_name || "—"}</TableCell>
                           <TableCell className="text-xs ltr">{c.email}</TableCell>
                           <TableCell><PlanBadge plan={c.subscription_plan} /></TableCell>
                           <TableCell>{c.buildings_count.toLocaleString("fa-IR")} / {c.max_buildings.toLocaleString("fa-IR")}</TableCell>
@@ -142,7 +144,7 @@ export function AdminCustomers() {
                         </TableRow>
                         {isExpanded && customerBuildings.length > 0 && (
                           <TableRow key={`${c.user_id}-buildings`} className="bg-muted/30">
-                            <TableCell colSpan={9}>
+                            <TableCell colSpan={8}>
                               <div className="py-2 px-4 space-y-2">
                                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
                                   <Building2 className="h-4 w-4" />
@@ -170,13 +172,6 @@ export function AdminCustomers() {
                                   ))}
                                 </div>
                               </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                        {isExpanded && customerBuildings.length === 0 && c.buildings_count > 0 && (
-                          <TableRow key={`${c.user_id}-empty`} className="bg-muted/30">
-                            <TableCell colSpan={9}>
-                              <p className="text-center text-muted-foreground py-3 text-sm">در حال بارگذاری ساختمان‌ها...</p>
                             </TableCell>
                           </TableRow>
                         )}
