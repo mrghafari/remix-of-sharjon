@@ -23,13 +23,13 @@ export interface DateRange {
   to: Date | undefined;
 }
 
-interface ManagerDiscount {
+export interface ManagerDiscount {
   unitId: string;
   chargeDiscountPercent: number;
   extraChargeDiscountPercent: number;
 }
 
-function calculateAllocatedAmount(
+export function calculateAllocatedAmount(
   expense: Expense,
   unit: Unit,
   allUnits: Unit[],

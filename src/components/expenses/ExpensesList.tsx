@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Filter, Loader2 } from "lucide-react";
+import { Trash2, Filter, Loader2, Eye } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import { useExpenses, useDeleteExpense, type Expense } from "@/hooks/useExpenses
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { useProjects } from "@/hooks/useProjects";
 import { formatJalaliDate } from "@/lib/jalaliDate";
+import { ExpenseDetailsDialog } from "./ExpenseDetailsDialog";
 
 const fundTypeLabels: Record<string, string> = {
   charge: "صندوق شارژ",
@@ -54,6 +55,8 @@ const getCategoryColor = (categoryId: string) => {
 
 export function ExpensesList() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: categories = [] } = useExpenseCategories();
@@ -63,6 +66,11 @@ export function ExpensesList() {
   const filteredExpenses = filterCategory === "all" 
     ? expenses 
     : expenses.filter(exp => exp.category === filterCategory);
+
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDetailsOpen(true);
+  };
 
   const totalAmount = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
 
@@ -130,7 +138,11 @@ export function ExpensesList() {
                   const categoryInfo = categories.find(c => c.name === expense.category) || { label: "سایر", icon: "📋" };
                   const projectInfo = projects.find(p => p.id === expense.project_id);
                   return (
-                    <TableRow key={expense.id} className="hover:bg-muted/50 transition-colors">
+                    <TableRow 
+                      key={expense.id} 
+                      className="hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => handleExpenseClick(expense)}
+                    >
                       <TableCell>
                         <div>
                           <p className="font-medium">{expense.title}</p>
@@ -174,8 +186,22 @@ export function ExpensesList() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
+                            className="h-8 w-8 text-primary hover:text-primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleExpenseClick(expense);
+                            }}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
                             className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => deleteExpense.mutate(expense.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteExpense.mutate(expense.id);
+                            }}
                             disabled={deleteExpense.isPending}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -190,6 +216,12 @@ export function ExpensesList() {
           </div>
         )}
       </CardContent>
+
+      <ExpenseDetailsDialog
+        expense={selectedExpense}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
     </Card>
   );
 }
