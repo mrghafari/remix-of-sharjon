@@ -46,6 +46,7 @@ export function UnitsList({ onEdit }: UnitsListProps) {
   const { data: units = [], isLoading } = useUnits();
   const deleteUnit = useDeleteUnit();
   const [unitToDelete, setUnitToDelete] = useState<Unit | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
 
   const handleDelete = () => {
     if (unitToDelete) {
