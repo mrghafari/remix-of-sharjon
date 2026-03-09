@@ -29,7 +29,7 @@ export interface ManagerDiscount {
   extraChargeDiscountPercent: number;
 }
 
-function calculateAllocatedAmount(
+export function calculateAllocatedAmount(
   expense: Expense,
   unit: Unit,
   allUnits: Unit[],
