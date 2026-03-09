@@ -55,6 +55,7 @@ const getCategoryColor = (categoryId: string) => {
 
 export function ExpensesList() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterProject, setFilterProject] = useState<string>("all");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   
@@ -63,9 +64,15 @@ export function ExpensesList() {
   const { data: projects = [] } = useProjects();
   const deleteExpense = useDeleteExpense();
 
-  const filteredExpenses = filterCategory === "all" 
-    ? expenses 
-    : expenses.filter(exp => exp.category === filterCategory);
+  const filteredExpenses = expenses.filter(exp => {
+    const catMatch = filterCategory === "all" || exp.category === filterCategory;
+    const projMatch = filterProject === "all" 
+      ? true 
+      : filterProject === "none" 
+        ? !exp.project_id 
+        : exp.project_id === filterProject;
+    return catMatch && projMatch;
+  });
 
   const handleExpenseClick = (expense: Expense) => {
     setSelectedExpense(expense);
