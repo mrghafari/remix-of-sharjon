@@ -37,6 +37,7 @@ export interface CreateExpenseData {
   fund_type?: FundType;
   allocation_type?: AllocationType;
   area_ratio?: number;
+  project_id?: string;
 }
 
 export function useExpenses() {
