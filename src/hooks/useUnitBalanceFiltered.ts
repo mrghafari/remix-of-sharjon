@@ -171,6 +171,7 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
       const expenseBreakdown = filteredExpenses.map((expense) => ({
         expense,
         allocatedAmount: calculateAllocatedAmount(expense, unit, units, managerDiscount),
+        project: projects.find(p => p.id === expense.project_id) || null,
       })).filter((e) => e.allocatedAmount > 0);
 
       const totalAllocatedExpenses = expenseBreakdown.reduce(
