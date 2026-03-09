@@ -60,27 +60,48 @@ export function useExpenses() {
   });
 }
 
+// Valid expense category enum values from database
+const VALID_CATEGORIES = ['charge', 'repair', 'cleaning', 'water', 'electricity', 'gas', 'elevator', 'parking', 'security', 'other'];
+
 export function useCreateExpense() {
   const queryClient = useQueryClient();
   const { currentBuildingId } = useBuilding();
   
   return useMutation({
     mutationFn: async (expense: CreateExpenseData) => {
+      if (!currentBuildingId) {
+        throw new Error("ساختمان انتخاب نشده است");
+      }
+      
+      // Validate category - if custom category, use 'other'
+      const validCategory = VALID_CATEGORIES.includes(expense.category as string) 
+        ? expense.category 
+        : 'other';
+      
       const { data, error } = await supabase
         .from("expenses")
-        .insert({ ...expense, building_id: currentBuildingId! })
+        .insert({ 
+          ...expense, 
+          category: validCategory,
+          building_id: currentBuildingId 
+        })
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating expense:", error);
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       toast({ title: "موفق", description: "هزینه با موفقیت ثبت شد" });
     },
-    onError: () => {
-      toast({ title: "خطا", description: "خطا در ثبت هزینه", variant: "destructive" });
+    onError: (error: any) => {
+      console.error("Expense creation failed:", error);
+      const message = error?.message || "خطا در ثبت هزینه";
+      toast({ title: "خطا", description: message, variant: "destructive" });
     },
   });
 }
