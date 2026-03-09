@@ -87,12 +87,12 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">پلاک</TableHead>
-                <TableHead className="text-right">مالک</TableHead>
-                <TableHead className="text-right">دریافتی‌ها</TableHead>
-                <TableHead className="text-right">هزینه‌های تسهیم‌شده</TableHead>
-                <TableHead className="text-right">مانده</TableHead>
                 <TableHead className="text-right">وضعیت</TableHead>
+                <TableHead className="text-right">مانده</TableHead>
+                <TableHead className="text-right">هزینه‌های تسهیم‌شده</TableHead>
+                <TableHead className="text-right">دریافتی‌ها</TableHead>
+                <TableHead className="text-right">مالک</TableHead>
+                <TableHead className="text-right">پلاک</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
