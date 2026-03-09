@@ -101,7 +101,7 @@ export function UnitsList({ onEdit }: UnitsListProps) {
                 </TableHeader>
                 <TableBody>
                   {units.map((unit) => (
-                    <TableRow key={unit.id} className="hover:bg-muted/50 transition-colors">
+                    <TableRow key={unit.id} className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setSelectedUnit(unit)}>
                       <TableCell className="font-bold text-primary">
                         {unit.unit_number}
                       </TableCell>
