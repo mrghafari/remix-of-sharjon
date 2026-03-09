@@ -61,10 +61,12 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
   const [allocationType, setAllocationType] = useState<AllocationType>("equal");
   const [selectedUnitId, setSelectedUnitId] = useState<string>("");
   const [areaRatio, setAreaRatio] = useState<number>(50);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   
   const createExpense = useCreateExpense();
   const { data: units } = useUnits();
   const { data: categoriesWithSettings } = useCategoriesWithSettings();
+  const { data: projects = [] } = useActiveProjects();
 
   // Get current category settings
   const currentCategorySetting = categoriesWithSettings?.find(c => c.name === category);
