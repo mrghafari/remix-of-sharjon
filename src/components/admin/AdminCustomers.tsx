@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Loader2, Trash2, LogIn } from "lucide-react";
+import { Users, Loader2, Trash2, LogIn, Search } from "lucide-react";
 import { useAdminCustomers, useUpdateCustomer, useDeleteCustomer } from "@/hooks/useAdmin";
 import type { AdminCustomer } from "@/hooks/useAdmin";
 
@@ -36,6 +36,17 @@ export function AdminCustomers() {
   const [editPlan, setEditPlan] = useState("free");
   const [editMaxBuildings, setEditMaxBuildings] = useState(1);
   const [editMaxUnits, setEditMaxUnits] = useState(10);
+  const [search, setSearch] = useState("");
+
+  const filteredCustomers = customers?.filter((c) => {
+    if (search.length < 3) return true;
+    const q = search.toLowerCase();
+    return (
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q) ||
+      c.full_name?.toLowerCase().includes(q)
+    );
+  });
 
   const openEdit = (c: AdminCustomer) => {
     setEditCustomer(c);
@@ -71,10 +82,19 @@ export function AdminCustomers() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="جستجو با ایمیل، موبایل یا نام (حداقل ۳ حرف)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pr-10"
+            />
+          </div>
           {isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : !customers?.length ? (
-            <p className="text-center text-muted-foreground py-10">هنوز مشتری‌ای ثبت‌نام نکرده است</p>
+          ) : !filteredCustomers?.length ? (
+            <p className="text-center text-muted-foreground py-10">{search.length >= 3 ? "نتیجه‌ای یافت نشد" : "هنوز مشتری‌ای ثبت‌نام نکرده است"}</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -91,7 +111,7 @@ export function AdminCustomers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers.map((c) => (
+                  {filteredCustomers?.map((c) => (
                         <TableRow key={c.user_id} className={c.is_blocked ? "opacity-50" : ""}>
                           <TableCell className="font-medium">{c.full_name || "—"}</TableCell>
                           <TableCell className="text-xs ltr">{c.email}</TableCell>
