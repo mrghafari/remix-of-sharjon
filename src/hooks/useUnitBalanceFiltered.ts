@@ -3,6 +3,7 @@ import { useUnits, Unit } from "./useUnits";
 import { useExpenses, Expense, AllocationType } from "./useExpenses";
 import { usePayments, PaymentWithUnit } from "./usePayments";
 import { useActiveManager } from "./useManagers";
+import { useProjects } from "./useProjects";
 
 export interface UnitBalance {
   unit: Unit;
