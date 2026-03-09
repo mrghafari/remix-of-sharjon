@@ -216,6 +216,12 @@ export function ExpensesList() {
           </div>
         )}
       </CardContent>
+
+      <ExpenseDetailsDialog
+        expense={selectedExpense}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
     </Card>
   );
 }
