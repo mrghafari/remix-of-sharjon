@@ -479,6 +479,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_building_for_user: {
+        Args: {
+          _address?: string
+          _name: string
+          _total_units?: number
+          _user_id: string
+        }
+        Returns: string
+      }
+      admin_reassign_building: {
+        Args: { _building_id: string; _new_user_id: string }
+        Returns: undefined
+      }
       get_admin_buildings: {
         Args: never
         Returns: {
