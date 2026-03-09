@@ -36,6 +36,17 @@ export function AdminCustomers() {
   const [editPlan, setEditPlan] = useState("free");
   const [editMaxBuildings, setEditMaxBuildings] = useState(1);
   const [editMaxUnits, setEditMaxUnits] = useState(10);
+  const [search, setSearch] = useState("");
+
+  const filteredCustomers = customers?.filter((c) => {
+    if (search.length < 3) return true;
+    const q = search.toLowerCase();
+    return (
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q) ||
+      c.full_name?.toLowerCase().includes(q)
+    );
+  });
 
   const openEdit = (c: AdminCustomer) => {
     setEditCustomer(c);
