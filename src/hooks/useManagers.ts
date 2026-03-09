@@ -5,10 +5,11 @@ import { useBuilding } from "@/contexts/BuildingContext";
 
 export interface Manager {
   id: string;
-  unit_id: string;
-  role_type: "owner" | "resident";
+  unit_id: string | null;
+  role_type: "owner" | "resident" | "external";
   mobile: string | null;
   email: string | null;
+  external_name: string | null;
   start_date: string;
   end_date: string | null;
   charge_discount_percent: number;
@@ -28,10 +29,11 @@ export interface Manager {
 }
 
 export interface ManagerInsert {
-  unit_id: string;
-  role_type: "owner" | "resident";
+  unit_id?: string | null;
+  role_type: "owner" | "resident" | "external";
   mobile?: string;
   email?: string;
+  external_name?: string;
   start_date: string;
   end_date?: string;
   charge_discount_percent: number;

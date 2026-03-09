@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,14 +27,31 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Building2, UserCircle2 } from "lucide-react";
 import { useUnits } from "@/hooks/useUnits";
 import { useCreateManager, useUpdateManager, Manager } from "@/hooks/useManagers";
 import { toJalaliString, fromJalaliString, getTodayJalali } from "@/lib/jalaliDate";
+import { cn } from "@/lib/utils";
 
-const formSchema = z.object({
+const internalSchema = z.object({
+  source: z.literal("internal"),
   unit_id: z.string().min(1, "واحد را انتخاب کنید"),
   role_type: z.enum(["owner", "resident"]),
+  mobile: z.string().optional(),
+  email: z.string().email("ایمیل نامعتبر است").optional().or(z.literal("")),
+  external_name: z.string().optional(),
+  start_date: z.string().min(1, "تاریخ شروع را وارد کنید"),
+  end_date: z.string().optional(),
+  charge_discount_percent: z.number().min(0).max(100),
+  extra_charge_discount_percent: z.number().min(0).max(100),
+  is_active: z.boolean(),
+});
+
+const externalSchema = z.object({
+  source: z.literal("external"),
+  unit_id: z.string().optional(),
+  role_type: z.literal("external"),
+  external_name: z.string().min(1, "نام مدیر را وارد کنید"),
   mobile: z.string().optional(),
   email: z.string().email("ایمیل نامعتبر است").optional().or(z.literal("")),
   start_date: z.string().min(1, "تاریخ شروع را وارد کنید"),
@@ -43,6 +60,8 @@ const formSchema = z.object({
   extra_charge_discount_percent: z.number().min(0).max(100),
   is_active: z.boolean(),
 });
+
+const formSchema = z.discriminatedUnion("source", [internalSchema, externalSchema]);
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -57,56 +76,81 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
   const createManager = useCreateManager();
   const updateManager = useUpdateManager();
 
+  const isExternal = manager ? manager.role_type === "external" : false;
+  const [source, setSource] = useState<"internal" | "external">(isExternal ? "external" : "internal");
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      source: "internal",
       unit_id: "",
       role_type: "owner",
       mobile: "",
       email: "",
+      external_name: "",
       start_date: getTodayJalali(),
       end_date: "",
       charge_discount_percent: 0,
       extra_charge_discount_percent: 0,
       is_active: true,
-    },
+    } as FormValues,
   });
 
   useEffect(() => {
+    if (!open) return;
     if (manager) {
+      const src = manager.role_type === "external" ? "external" : "internal";
+      setSource(src);
       form.reset({
-        unit_id: manager.unit_id,
-        role_type: manager.role_type,
+        source: src,
+        unit_id: manager.unit_id || "",
+        role_type: manager.role_type as any,
         mobile: manager.mobile || "",
         email: manager.email || "",
+        external_name: manager.external_name || "",
         start_date: toJalaliString(new Date(manager.start_date)),
         end_date: manager.end_date ? toJalaliString(new Date(manager.end_date)) : "",
         charge_discount_percent: manager.charge_discount_percent,
         extra_charge_discount_percent: manager.extra_charge_discount_percent,
         is_active: manager.is_active,
-      });
+      } as FormValues);
     } else {
+      setSource("internal");
       form.reset({
+        source: "internal",
         unit_id: "",
         role_type: "owner",
         mobile: "",
         email: "",
+        external_name: "",
         start_date: getTodayJalali(),
         end_date: "",
         charge_discount_percent: 0,
         extra_charge_discount_percent: 0,
         is_active: true,
-      });
+      } as FormValues);
     }
   }, [manager, form, open]);
+
+  const handleSourceChange = (newSource: "internal" | "external") => {
+    setSource(newSource);
+    form.setValue("source", newSource);
+    if (newSource === "external") {
+      form.setValue("role_type", "external" as any);
+      form.setValue("unit_id", "");
+    } else {
+      form.setValue("role_type", "owner" as any);
+    }
+  };
 
   const selectedUnit = units.find((u) => u.id === form.watch("unit_id"));
   const roleType = form.watch("role_type");
 
   const onSubmit = (values: FormValues) => {
     const data = {
-      unit_id: values.unit_id,
+      unit_id: values.source === "internal" ? values.unit_id : null,
       role_type: values.role_type,
+      external_name: values.source === "external" ? values.external_name : undefined,
       mobile: values.mobile || undefined,
       email: values.email || undefined,
       start_date: fromJalaliString(values.start_date),
@@ -117,13 +161,9 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
     };
 
     if (manager) {
-      updateManager.mutate({ id: manager.id, ...data }, {
-        onSuccess: () => onOpenChange(false),
-      });
+      updateManager.mutate({ id: manager.id, ...data }, { onSuccess: () => onOpenChange(false) });
     } else {
-      createManager.mutate(data, {
-        onSuccess: () => onOpenChange(false),
-      });
+      createManager.mutate(data as any, { onSuccess: () => onOpenChange(false) });
     }
   };
 
@@ -136,73 +176,111 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
           <DialogTitle>{manager ? "ویرایش مدیر" : "افزودن مدیر"}</DialogTitle>
         </DialogHeader>
 
+        {/* Source selector */}
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <button
+            type="button"
+            onClick={() => handleSourceChange("internal")}
+            className={cn(
+              "flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-colors",
+              source === "internal"
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <Building2 className="h-4 w-4" />
+            از درون ساختمان
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSourceChange("external")}
+            className={cn(
+              "flex items-center gap-2 p-3 rounded-lg border text-sm font-medium transition-colors",
+              source === "external"
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border text-muted-foreground hover:bg-muted"
+            )}
+          >
+            <UserCircle2 className="h-4 w-4" />
+            از خارج ساختمان
+          </button>
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="unit_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>واحد</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="واحد را انتخاب کنید" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {units.map((unit) => (
-                        <SelectItem key={unit.id} value={unit.id}>
-                          پلاک {unit.unit_number} - {unit.owner_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="role_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>نقش</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="owner">مالک</SelectItem>
-                      <SelectItem value="resident">ساکن</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {selectedUnit && (
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                <div className="font-medium mb-1">اطلاعات از سیستم:</div>
-                <div className="text-muted-foreground">
-                  {roleType === "owner" ? (
-                    <>
-                      نام: {selectedUnit.owner_name}
-                      {selectedUnit.phone && ` | تلفن: ${selectedUnit.phone}`}
-                    </>
-                  ) : (
-                    <>
-                      نام: {selectedUnit.resident_name || selectedUnit.owner_name}
-                      {(selectedUnit.resident_phone || selectedUnit.phone) && 
-                        ` | تلفن: ${selectedUnit.resident_phone || selectedUnit.phone}`}
-                    </>
+            {source === "internal" ? (
+              <>
+                <FormField
+                  control={form.control}
+                  name="unit_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>واحد</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="واحد را انتخاب کنید" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {units.map((unit) => (
+                            <SelectItem key={unit.id} value={unit.id}>
+                              پلاک {unit.unit_number} - {unit.owner_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
-              </div>
+                />
+                <FormField
+                  control={form.control}
+                  name="role_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>نقش</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="owner">مالک</SelectItem>
+                          <SelectItem value="resident">ساکن</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {selectedUnit && (
+                  <div className="p-3 bg-muted rounded-lg text-sm">
+                    <div className="font-medium mb-1">اطلاعات از سیستم:</div>
+                    <div className="text-muted-foreground">
+                      {roleType === "owner" ? (
+                        <>نام: {selectedUnit.owner_name}{selectedUnit.phone && ` | تلفن: ${selectedUnit.phone}`}</>
+                      ) : (
+                        <>نام: {selectedUnit.resident_name || selectedUnit.owner_name}{(selectedUnit.resident_phone || selectedUnit.phone) && ` | تلفن: ${selectedUnit.resident_phone || selectedUnit.phone}`}</>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <FormField
+                control={form.control}
+                name="external_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>نام و نام خانوادگی مدیر</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="نام کامل مدیر خارج از ساختمان" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             )}
 
             <div className="grid grid-cols-2 gap-4">
@@ -219,7 +297,6 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="email"
@@ -249,7 +326,6 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="end_date"
@@ -270,19 +346,10 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
               name="charge_discount_percent"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    تخفیف شارژ: {field.value}%
-                  </FormLabel>
+                  <FormLabel>تخفیف شارژ: {field.value}%</FormLabel>
                   <FormControl>
-                    <Slider
-                      value={[field.value]}
-                      onValueChange={(val) => field.onChange(val[0])}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
+                    <Slider value={[field.value]} onValueChange={(val) => field.onChange(val[0])} min={0} max={100} step={5} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -292,19 +359,10 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
               name="extra_charge_discount_percent"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    تخفیف شارژ اضافی: {field.value}%
-                  </FormLabel>
+                  <FormLabel>تخفیف شارژ اضافی: {field.value}%</FormLabel>
                   <FormControl>
-                    <Slider
-                      value={[field.value]}
-                      onValueChange={(val) => field.onChange(val[0])}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
+                    <Slider value={[field.value]} onValueChange={(val) => field.onChange(val[0])} min={0} max={100} step={5} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
