@@ -34,7 +34,7 @@ interface BuildingFormData {
 }
 
 export function BuildingSettings() {
-  const { data: buildings = [], isLoading } = useBuildings();
+  const { buildings, isLoading } = useBuilding();
   const createBuilding = useCreateBuilding();
   const updateBuilding = useUpdateBuilding();
   const deleteBuilding = useDeleteBuilding();
