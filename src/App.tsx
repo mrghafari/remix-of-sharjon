@@ -99,7 +99,7 @@ const App = () => (
             }
           />
           <Route
-            path="/admin/building/:buildingId"
+            path="/admin/customer/:userId"
             element={
               <ProtectedRoute>
                 <AdminBuildingView />

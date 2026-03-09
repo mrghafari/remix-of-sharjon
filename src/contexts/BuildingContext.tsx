@@ -105,9 +105,13 @@ export function useDeleteBuilding() {
   });
 }
 
-export function BuildingProvider({ children }: { children: ReactNode }) {
-  const { data: buildings = [], isLoading } = useBuildings();
+export function BuildingProvider({ children, filterBuildingIds }: { children: ReactNode; filterBuildingIds?: string[] }) {
+  const { data: allBuildings = [], isLoading } = useBuildings();
   const [currentBuildingId, setCurrentBuildingId] = useState<string | null>(null);
+
+  const buildings = filterBuildingIds
+    ? allBuildings.filter((b) => filterBuildingIds.includes(b.id))
+    : allBuildings;
 
   useEffect(() => {
     if (buildings.length > 0 && !currentBuildingId) {

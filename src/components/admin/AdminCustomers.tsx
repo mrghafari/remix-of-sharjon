@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Loader2, Trash2, ChevronDown, ChevronUp, Building2, LogIn } from "lucide-react";
-import { useAdminCustomers, useUpdateCustomer, useDeleteCustomer, useAdminBuildings } from "@/hooks/useAdmin";
+import { Users, Loader2, Trash2, LogIn } from "lucide-react";
+import { useAdminCustomers, useUpdateCustomer, useDeleteCustomer } from "@/hooks/useAdmin";
 import type { AdminCustomer } from "@/hooks/useAdmin";
 
 function PlanBadge({ plan }: { plan: string }) {
@@ -29,12 +29,10 @@ function formatDate(d: string) {
 export function AdminCustomers() {
   const navigate = useNavigate();
   const { data: customers, isLoading } = useAdminCustomers();
-  const { data: allBuildings } = useAdminBuildings();
   const updateCustomer = useUpdateCustomer();
   const deleteCustomer = useDeleteCustomer();
   const [editCustomer, setEditCustomer] = useState<AdminCustomer | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminCustomer | null>(null);
-  const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
   const [editPlan, setEditPlan] = useState("free");
   const [editMaxBuildings, setEditMaxBuildings] = useState(1);
   const [editMaxUnits, setEditMaxUnits] = useState(10);
@@ -61,14 +59,6 @@ export function AdminCustomers() {
   const handleDelete = () => {
     if (!deleteTarget) return;
     deleteCustomer.mutate(deleteTarget.user_id, { onSuccess: () => setDeleteTarget(null) });
-  };
-
-  const getCustomerBuildings = (userId: string) => {
-    return allBuildings?.filter(b => b.manager_email && customers?.find(c => c.user_id === userId)?.email === b.manager_email) ?? [];
-  };
-
-  const toggleExpand = (userId: string) => {
-    setExpandedCustomer(prev => prev === userId ? null : userId);
   };
 
   return (
@@ -101,23 +91,9 @@ export function AdminCustomers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers.map((c) => {
-                    const customerBuildings = getCustomerBuildings(c.user_id);
-                    const isExpanded = expandedCustomer === c.user_id;
-                    return (
-                      <>
+                  {customers.map((c) => (
                         <TableRow key={c.user_id} className={c.is_blocked ? "opacity-50" : ""}>
-                          <TableCell>
-                            <button
-                              className="flex items-center gap-1.5 font-medium hover:text-primary transition-colors text-start"
-                              onClick={() => c.buildings_count > 0 && toggleExpand(c.user_id)}
-                            >
-                              {c.buildings_count > 0 && (
-                                isExpanded ? <ChevronUp className="h-3.5 w-3.5 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                              )}
-                              {c.full_name || "—"}
-                            </button>
-                          </TableCell>
+                          <TableCell className="font-medium">{c.full_name || "—"}</TableCell>
                           <TableCell className="text-xs ltr">{c.email}</TableCell>
                           <TableCell><PlanBadge plan={c.subscription_plan} /></TableCell>
                           <TableCell>{c.buildings_count.toLocaleString("fa-IR")} / {c.max_buildings.toLocaleString("fa-IR")}</TableCell>
@@ -132,6 +108,12 @@ export function AdminCustomers() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
+                              {c.buildings_count > 0 && (
+                                <Button size="sm" variant="default" className="gap-1" onClick={() => navigate(`/admin/customer/${c.user_id}`)}>
+                                  <LogIn className="h-4 w-4" />
+                                  ورود
+                                </Button>
+                              )}
                               <Button size="sm" variant="outline" onClick={() => openEdit(c)}>ویرایش</Button>
                               <Button size="sm" variant={c.is_blocked ? "default" : "destructive"} onClick={() => handleToggleBlock(c)} disabled={updateCustomer.isPending}>
                                 {c.is_blocked ? "فعال‌سازی" : "مسدود"}
@@ -142,42 +124,7 @@ export function AdminCustomers() {
                             </div>
                           </TableCell>
                         </TableRow>
-                        {isExpanded && customerBuildings.length > 0 && (
-                          <TableRow key={`${c.user_id}-buildings`} className="bg-muted/30">
-                            <TableCell colSpan={8}>
-                              <div className="py-2 px-4 space-y-2">
-                                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-2">
-                                  <Building2 className="h-4 w-4" />
-                                  ساختمان‌های این مشتری
-                                </div>
-                                <div className="grid gap-2">
-                                  {customerBuildings.map(b => (
-                                    <div key={b.id} className="flex items-center justify-between bg-background rounded-lg border px-4 py-2">
-                                      <div className="flex items-center gap-3">
-                                        <Building2 className="h-4 w-4 text-primary" />
-                                        <span className="font-medium">{b.name}</span>
-                                        <span className="text-xs text-muted-foreground">{b.address || ""}</span>
-                                        <Badge variant="secondary">{b.total_units.toLocaleString("fa-IR")} واحد</Badge>
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        variant="default"
-                                        className="gap-1"
-                                        onClick={() => navigate(`/admin/building/${b.id}`)}
-                                      >
-                                        <LogIn className="h-4 w-4" />
-                                        ورود
-                                      </Button>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </>
-                    );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             </div>
