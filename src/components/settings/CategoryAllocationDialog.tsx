@@ -57,22 +57,17 @@ export function CategoryAllocationDialog({ category, onClose }: CategoryAllocati
 
         <div className="space-y-6 py-4">
           <div className="space-y-3">
-            <Label className="text-base font-semibold">انواع تسهیم مجاز</Label>
+            <Label className="text-base font-semibold">نوع تسهیم</Label>
             <p className="text-sm text-muted-foreground">
-              انتخاب کنید کدام روش‌های تسهیم برای این دسته‌بندی در دسترس باشد
+              روش تسهیم هزینه برای این دسته‌بندی را انتخاب کنید
             </p>
-            <div className="grid gap-2">
+            <RadioGroup value={selectedType} onValueChange={(v) => setSelectedType(v as AllocationType)}>
               {allocationTypes.map((type) => (
                 <div 
                   key={type.value} 
                   className="flex items-start gap-3 p-3 rounded-md border bg-background"
                 >
-                  <Checkbox
-                    id={`type-${type.value}`}
-                    checked={allowedTypes.includes(type.value)}
-                    onCheckedChange={(checked) => handleToggleType(type.value, !!checked)}
-                    disabled={allowedTypes.length === 1 && allowedTypes.includes(type.value)}
-                  />
+                  <RadioGroupItem value={type.value} id={`type-${type.value}`} className="mt-0.5" />
                   <div className="flex-1">
                     <Label htmlFor={`type-${type.value}`} className="font-medium cursor-pointer">
                       {type.label}
@@ -81,22 +76,6 @@ export function CategoryAllocationDialog({ category, onClose }: CategoryAllocati
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label className="text-base font-semibold">نوع تسهیم پیش‌فرض</Label>
-            <RadioGroup value={defaultType} onValueChange={(v) => setDefaultType(v as AllocationType)}>
-              {allocationTypes
-                .filter(t => allowedTypes.includes(t.value))
-                .map((type) => (
-                  <div key={type.value} className="flex items-center gap-3 p-2">
-                    <RadioGroupItem value={type.value} id={`default-${type.value}`} />
-                    <Label htmlFor={`default-${type.value}`} className="cursor-pointer">
-                      {type.label}
-                    </Label>
-                  </div>
-                ))}
             </RadioGroup>
           </div>
         </div>
