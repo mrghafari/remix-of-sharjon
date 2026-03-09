@@ -199,31 +199,31 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">تاریخ</TableHead>
-                    <TableHead className="text-right">دوره</TableHead>
-                    <TableHead className="text-right">نوع صندوق</TableHead>
-                    <TableHead className="text-right">مبلغ</TableHead>
                     <TableHead className="text-right">توضیحات</TableHead>
+                    <TableHead className="text-right">مبلغ</TableHead>
+                    <TableHead className="text-right">نوع صندوق</TableHead>
+                    <TableHead className="text-right">دوره</TableHead>
+                    <TableHead className="text-right">تاریخ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {selectedBalance.paymentBreakdown.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell>{formatJalaliDate(payment.payment_date)}</TableCell>
-                      <TableCell>
-                        {payment.month}/{payment.year}
+                      <TableCell className="text-muted-foreground">
+                        {payment.description || "-"}
+                      </TableCell>
+                      <TableCell className="text-green-600 font-medium">
+                        {formatNumber(payment.amount)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-green-600 font-medium">
-                        {formatNumber(payment.amount)}
+                      <TableCell>
+                        {payment.month}/{payment.year}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {payment.description || "-"}
-                      </TableCell>
+                      <TableCell>{formatJalaliDate(payment.payment_date)}</TableCell>
                     </TableRow>
                   ))}
                   {selectedBalance.paymentBreakdown.length === 0 && (
