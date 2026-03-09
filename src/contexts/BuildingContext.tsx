@@ -61,13 +61,11 @@ export function useCreateBuilding() {
         if (error) throw error;
         return { id: data };
       }
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("buildings")
-        .insert(building)
-        .select()
-        .single();
+        .insert(building);
       if (error) throw error;
-      return data;
+      return building;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["buildings"] });
