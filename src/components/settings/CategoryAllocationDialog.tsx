@@ -84,7 +84,7 @@ export function CategoryAllocationDialog({ category, onClose }: CategoryAllocati
           <Button variant="outline" onClick={onClose}>
             انصراف
           </Button>
-          <Button onClick={handleSave} disabled={updateAllocation.isPending || allowedTypes.length === 0}>
+          <Button onClick={handleSave} disabled={updateAllocation.isPending}>
             {updateAllocation.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin ml-2" />
