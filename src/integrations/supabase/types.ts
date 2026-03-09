@@ -182,6 +182,7 @@ export type Database = {
           fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
           is_paid: boolean | null
+          project_id: string | null
           title: string
           unit_id: string | null
           updated_at: string
@@ -198,6 +199,7 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           is_paid?: boolean | null
+          project_id?: string | null
           title: string
           unit_id?: string | null
           updated_at?: string
@@ -214,6 +216,7 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           is_paid?: boolean | null
+          project_id?: string | null
           title?: string
           unit_id?: string | null
           updated_at?: string
@@ -224,6 +227,13 @@ export type Database = {
             columns: ["building_id"]
             isOneToOne: false
             referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
@@ -396,6 +406,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          building_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          name: string
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          building_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          building_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       units: {
         Row: {
