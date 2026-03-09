@@ -12,6 +12,7 @@ export interface UnitBalance {
   expenseBreakdown: {
     expense: Expense;
     allocatedAmount: number;
+    project?: { name: string } | null;
   }[];
   paymentBreakdown: PaymentWithUnit[];
 }
