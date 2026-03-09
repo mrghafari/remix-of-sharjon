@@ -155,6 +155,11 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
     };
   }, [activeManager]);
 
+  // Fetch projects directly here if possible or just rely on a new hook, 
+  // but to keep it simple, we can fetch projects if there are expenses with project_ids
+  // For now, let's assume we can import useProjects
+  // Note: I will add the useProjects hook import to the top of the file in the next step.
+
   // Filter expenses and payments by date range
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => isInDateRange(e.expense_date, dateRange));

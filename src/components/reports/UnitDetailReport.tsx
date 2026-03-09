@@ -260,10 +260,11 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {selectedBalance.expenseBreakdown.map(({ expense, allocatedAmount }) => (
+                  {selectedBalance.expenseBreakdown.map(({ expense, allocatedAmount, project }) => (
                     <TableRow key={expense.id}>
                       <TableCell>{formatJalaliDate(expense.expense_date)}</TableCell>
                       <TableCell>{expense.title}</TableCell>
+                      <TableCell>{project ? project.name : "-"}</TableCell>
                       <TableCell>
                         {getCategoryLabel(expense.category)}
                       </TableCell>
