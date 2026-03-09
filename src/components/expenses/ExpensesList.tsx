@@ -55,6 +55,8 @@ const getCategoryColor = (categoryId: string) => {
 
 export function ExpensesList() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: categories = [] } = useExpenseCategories();
@@ -64,6 +66,11 @@ export function ExpensesList() {
   const filteredExpenses = filterCategory === "all" 
     ? expenses 
     : expenses.filter(exp => exp.category === filterCategory);
+
+  const handleExpenseClick = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setDetailsOpen(true);
+  };
 
   const totalAmount = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
 
