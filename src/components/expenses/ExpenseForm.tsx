@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { useCreateExpense, type CreateExpenseData, type AllocationType } from "@/hooks/useExpenses";
 import { useUnits } from "@/hooks/useUnits";
 import { useCategoriesWithSettings } from "@/hooks/useExpenseCategories";
+import { useActiveProjects } from "@/hooks/useProjects";
 
 interface ExpenseFormProps {
   onClose: () => void;
