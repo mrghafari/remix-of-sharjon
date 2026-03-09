@@ -57,6 +57,7 @@ export function ExpensesList() {
   
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: categories = [] } = useExpenseCategories();
+  const { data: projects = [] } = useProjects();
   const deleteExpense = useDeleteExpense();
 
   const filteredExpenses = filterCategory === "all" 
