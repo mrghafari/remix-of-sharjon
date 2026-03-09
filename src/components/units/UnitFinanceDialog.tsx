@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,6 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -14,11 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, ArrowUpCircle, ArrowDownCircle, Wallet, Receipt, TrendingUp, TrendingDown } from "lucide-react";
-import { useUnitBalanceFiltered } from "@/hooks/useUnitBalanceFiltered";
+import { Loader2, ArrowUpCircle, ArrowDownCircle, Wallet, Receipt, TrendingUp, TrendingDown, FileSpreadsheet, FileDown, CalendarDays } from "lucide-react";
+import { useUnitBalanceFiltered, DateRange } from "@/hooks/useUnitBalanceFiltered";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
-import { formatJalaliDate } from "@/lib/jalaliDate";
+import { formatJalaliDate, toJalaliString } from "@/lib/jalaliDate";
 import type { Unit } from "@/hooks/useUnits";
+import * as XLSX from "xlsx";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface UnitFinanceDialogProps {
   unit: Unit | null;
@@ -31,7 +37,11 @@ function formatNumber(num: number): string {
 }
 
 export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialogProps) {
-  const { unitBalances, isLoading } = useUnitBalanceFiltered({ from: undefined, to: undefined });
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [isExporting, setIsExporting] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const { unitBalances, isLoading } = useUnitBalanceFiltered(dateRange);
   const { data: categories = [] } = useExpenseCategories();
 
   const balance = useMemo(() => {
@@ -44,7 +54,6 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
     return cat ? `${cat.icon} ${cat.label}` : name;
   };
 
-  // Combine all transactions chronologically
   const transactions = useMemo(() => {
     if (!balance) return [];
 
@@ -81,14 +90,109 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
     return all;
   }, [balance, categories]);
 
+  const handleExportExcel = () => {
+    if (!balance || transactions.length === 0 || !unit) return;
+
+    const excelData = transactions.map((t, index) => ({
+      ردیف: index + 1,
+      تاریخ: formatJalaliDate(t.date),
+      "نوع تراکنش": t.type === "payment" ? "دریافت" : "هزینه",
+      شرح: t.title,
+      دریافت: t.type === "payment" ? Math.round(t.amount) : "",
+      هزینه: t.type === "expense" ? Math.round(t.amount) : "",
+      مانده: Math.round(t.runningBalance || 0),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    worksheet["!cols"] = [
+      { width: 8 }, { width: 15 }, { width: 12 }, { width: 35 }, { width: 15 }, { width: 15 }, { width: 15 },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "گردش مالی");
+
+    const fileName = `گردش-مالی-واحد-${unit.unit_number}-${toJalaliString(new Date()).replace(/\//g, "-")}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  const handleExportPDF = async () => {
+    if (!tableRef.current || !unit) return;
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(tableRef.current, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff",
+      });
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgData = canvas.toDataURL("image/png");
+
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`گردش-مالی-واحد-${unit.unit_number}-${toJalaliString(new Date()).replace(/\//g, "-")}.pdf`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {unit && <>گردش مالی واحد {unit.unit_number} - {unit.owner_name}</>}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Date Filter + Export Buttons */}
+        <div className="flex flex-wrap items-end gap-3 border-b pb-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-muted-foreground" />
+            <div className="space-y-1">
+              <Label className="text-xs">از تاریخ</Label>
+              <Input
+                type="date"
+                className="h-8 text-sm w-36"
+                value={dateRange.from ? dateRange.from.toISOString().split("T")[0] : ""}
+                onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value ? new Date(e.target.value) : undefined }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">تا تاریخ</Label>
+              <Input
+                type="date"
+                className="h-8 text-sm w-36"
+                value={dateRange.to ? dateRange.to.toISOString().split("T")[0] : ""}
+                onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value ? new Date(e.target.value) : undefined }))}
+              />
+            </div>
+            {(dateRange.from || dateRange.to) && (
+              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setDateRange({ from: undefined, to: undefined })}>
+                حذف فیلتر
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2 mr-auto">
+            <Button onClick={handleExportExcel} variant="outline" size="sm" className="gap-1.5 h-8" disabled={transactions.length === 0}>
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              اکسل
+            </Button>
+            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 h-8" disabled={transactions.length === 0 || isExporting}>
+              {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+              PDF
+            </Button>
+          </div>
+        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-8">
@@ -124,9 +228,14 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
               </div>
             </div>
 
-            {/* Transactions */}
-            {transactions.length > 0 ? (
-              <div className="overflow-x-auto">
+            {/* Transactions Table */}
+            <div ref={tableRef} className="bg-background p-2">
+              {/* PDF Header (visible only in exported PDF) */}
+              <div className="text-center mb-3 hidden print:block">
+                <h2 className="text-lg font-bold">گردش مالی واحد {unit?.unit_number} - {unit?.owner_name}</h2>
+              </div>
+
+              {transactions.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
@@ -164,12 +273,21 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
                         </TableCell>
                       </TableRow>
                     ))}
+                    {/* Total Row */}
+                    <TableRow className="bg-muted font-bold border-t-2">
+                      <TableCell colSpan={4} className="text-left">جمع کل</TableCell>
+                      <TableCell className="text-green-600">{formatNumber(balance.totalPayments)}</TableCell>
+                      <TableCell className="text-red-600">{formatNumber(balance.totalAllocatedExpenses)}</TableCell>
+                      <TableCell className={balance.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        {formatNumber(Math.abs(balance.balance))}
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-6">هنوز تراکنشی ثبت نشده</p>
-            )}
+              ) : (
+                <p className="text-center text-muted-foreground py-6">هنوز تراکنشی ثبت نشده</p>
+              )}
+            </div>
           </div>
         ) : (
           <p className="text-center text-muted-foreground py-6">اطلاعاتی یافت نشد</p>
