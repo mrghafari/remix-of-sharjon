@@ -82,10 +82,19 @@ export function AdminCustomers() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="جستجو با ایمیل، موبایل یا نام (حداقل ۳ حرف)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pr-10"
+            />
+          </div>
           {isLoading ? (
             <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-          ) : !customers?.length ? (
-            <p className="text-center text-muted-foreground py-10">هنوز مشتری‌ای ثبت‌نام نکرده است</p>
+          ) : !filteredCustomers?.length ? (
+            <p className="text-center text-muted-foreground py-10">{search.length >= 3 ? "نتیجه‌ای یافت نشد" : "هنوز مشتری‌ای ثبت‌نام نکرده است"}</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
