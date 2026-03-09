@@ -111,7 +111,7 @@ export function AdminCustomers() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers.map((c) => (
+                  {filteredCustomers?.map((c) => (
                         <TableRow key={c.user_id} className={c.is_blocked ? "opacity-50" : ""}>
                           <TableCell className="font-medium">{c.full_name || "—"}</TableCell>
                           <TableCell className="text-xs ltr">{c.email}</TableCell>
