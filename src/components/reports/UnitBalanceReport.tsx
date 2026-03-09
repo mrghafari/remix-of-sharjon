@@ -87,12 +87,12 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">پلاک</TableHead>
-                <TableHead className="text-right">مالک</TableHead>
-                <TableHead className="text-right">دریافتی‌ها</TableHead>
-                <TableHead className="text-right">هزینه‌های تسهیم‌شده</TableHead>
-                <TableHead className="text-right">مانده</TableHead>
                 <TableHead className="text-right">وضعیت</TableHead>
+                <TableHead className="text-right">مانده</TableHead>
+                <TableHead className="text-right">هزینه‌های تسهیم‌شده</TableHead>
+                <TableHead className="text-right">دریافتی‌ها</TableHead>
+                <TableHead className="text-right">مالک</TableHead>
+                <TableHead className="text-right">پلاک</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,17 +102,6 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
                   className="cursor-pointer hover:bg-muted/80 transition-colors"
                   onClick={() => onSelectUnit(ub.unit.id)}
                 >
-                  <TableCell className="font-medium">{ub.unit.unit_number}</TableCell>
-                  <TableCell>{ub.unit.owner_name}</TableCell>
-                  <TableCell className="text-green-600">
-                    {formatNumber(ub.totalPayments)}
-                  </TableCell>
-                  <TableCell className="text-red-600">
-                    {formatNumber(ub.totalAllocatedExpenses)}
-                  </TableCell>
-                  <TableCell className={ub.balance >= 0 ? "text-green-600" : "text-red-600"}>
-                    {formatNumber(Math.abs(ub.balance))}
-                  </TableCell>
                   <TableCell>
                     {ub.balance >= 0 ? (
                       <Badge variant="outline" className="text-green-600 border-green-600">
@@ -126,6 +115,17 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
                       </Badge>
                     )}
                   </TableCell>
+                  <TableCell className={ub.balance >= 0 ? "text-green-600" : "text-red-600"}>
+                    {formatNumber(Math.abs(ub.balance))}
+                  </TableCell>
+                  <TableCell className="text-red-600">
+                    {formatNumber(ub.totalAllocatedExpenses)}
+                  </TableCell>
+                  <TableCell className="text-green-600">
+                    {formatNumber(ub.totalPayments)}
+                  </TableCell>
+                  <TableCell>{ub.unit.owner_name}</TableCell>
+                  <TableCell className="font-medium">{ub.unit.unit_number}</TableCell>
                 </TableRow>
               ))}
               {unitBalances.length === 0 && (

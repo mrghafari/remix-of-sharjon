@@ -199,31 +199,31 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">تاریخ</TableHead>
-                    <TableHead className="text-right">دوره</TableHead>
-                    <TableHead className="text-right">نوع صندوق</TableHead>
-                    <TableHead className="text-right">مبلغ</TableHead>
                     <TableHead className="text-right">توضیحات</TableHead>
+                    <TableHead className="text-right">مبلغ</TableHead>
+                    <TableHead className="text-right">نوع صندوق</TableHead>
+                    <TableHead className="text-right">دوره</TableHead>
+                    <TableHead className="text-right">تاریخ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {selectedBalance.paymentBreakdown.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell>{formatJalaliDate(payment.payment_date)}</TableCell>
-                      <TableCell>
-                        {payment.month}/{payment.year}
+                      <TableCell className="text-muted-foreground">
+                        {payment.description || "-"}
+                      </TableCell>
+                      <TableCell className="text-green-600 font-medium">
+                        {formatNumber(payment.amount)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-green-600 font-medium">
-                        {formatNumber(payment.amount)}
+                      <TableCell>
+                        {payment.month}/{payment.year}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {payment.description || "-"}
-                      </TableCell>
+                      <TableCell>{formatJalaliDate(payment.payment_date)}</TableCell>
                     </TableRow>
                   ))}
                   {selectedBalance.paymentBreakdown.length === 0 && (
@@ -250,40 +250,40 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">تاریخ</TableHead>
-                    <TableHead className="text-right">عنوان</TableHead>
-                    <TableHead className="text-right">پروژه</TableHead>
-                    <TableHead className="text-right">دسته‌بندی</TableHead>
-                    <TableHead className="text-right">نحوه تسهیم</TableHead>
-                    <TableHead className="text-right">مبلغ کل</TableHead>
                     <TableHead className="text-right">سهم این واحد</TableHead>
+                    <TableHead className="text-right">مبلغ کل</TableHead>
+                    <TableHead className="text-right">نحوه تسهیم</TableHead>
+                    <TableHead className="text-right">دسته‌بندی</TableHead>
+                    <TableHead className="text-right">پروژه</TableHead>
+                    <TableHead className="text-right">عنوان</TableHead>
+                    <TableHead className="text-right">تاریخ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {selectedBalance.expenseBreakdown.map(({ expense, allocatedAmount, project }) => (
                     <TableRow key={expense.id}>
-                      <TableCell>{formatJalaliDate(expense.expense_date)}</TableCell>
-                      <TableCell>{expense.title}</TableCell>
-                      <TableCell>{project ? project.name : "-"}</TableCell>
-                      <TableCell>
-                        {getCategoryLabel(expense.category)}
+                      <TableCell className="text-red-600 font-medium">
+                        {formatNumber(allocatedAmount)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatNumber(expense.amount)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">
                           {allocationLabels[expense.allocation_type] || expense.allocation_type}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {formatNumber(expense.amount)}
+                      <TableCell>
+                        {getCategoryLabel(expense.category)}
                       </TableCell>
-                      <TableCell className="text-red-600 font-medium">
-                        {formatNumber(allocatedAmount)}
-                      </TableCell>
+                      <TableCell>{project ? project.name : "-"}</TableCell>
+                      <TableCell>{expense.title}</TableCell>
+                      <TableCell>{formatJalaliDate(expense.expense_date)}</TableCell>
                     </TableRow>
                   ))}
                   {selectedBalance.expenseBreakdown.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-6">
                         هنوز هزینه‌ای تسهیم نشده
                       </TableCell>
                     </TableRow>
