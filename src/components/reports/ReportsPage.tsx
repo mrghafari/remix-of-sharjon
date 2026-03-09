@@ -2,10 +2,11 @@ import { useState } from "react";
 import { UnitBalanceReport } from "./UnitBalanceReport";
 import { UnitDetailReport } from "./UnitDetailReport";
 import { ProjectReport } from "./ProjectReport";
+import { ChronologicalReport } from "./ChronologicalReport";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, FileText, FolderKanban } from "lucide-react";
+import { ArrowRight, FileText, FolderKanban, History } from "lucide-react";
 import { DateRange } from "@/hooks/useUnitBalanceFiltered";
 
 export function ReportsPage() {
@@ -30,17 +31,23 @@ export function ReportsPage() {
             <p className="text-muted-foreground mt-1">
               {activeTab === "units"
                 ? "بیلان واحدها - برای مشاهده جزئیات روی هر سطر کلیک کنید"
+                : activeTab === "chronological"
+                ? "دفتر معین - گردش حساب به ترتیب زمانی با مانده"
                 : "گزارش مالی پروژه‌ها - سهم هر واحد از هزینه‌های پروژه"}
             </p>
           </div>
-          <TabsList className="grid w-full sm:w-auto grid-cols-2">
+          <TabsList className="grid w-full sm:w-auto grid-cols-3">
             <TabsTrigger value="units" className="gap-2">
               <FileText className="w-4 h-4" />
               بیلان واحدها
             </TabsTrigger>
+            <TabsTrigger value="chronological" className="gap-2">
+              <History className="w-4 h-4" />
+              دفتر معین
+            </TabsTrigger>
             <TabsTrigger value="projects" className="gap-2">
               <FolderKanban className="w-4 h-4" />
-              گزارش پروژه‌ها
+              پروژه‌ها
             </TabsTrigger>
           </TabsList>
         </div>
@@ -69,6 +76,10 @@ export function ReportsPage() {
               <UnitBalanceReport onSelectUnit={handleSelectUnit} dateRange={dateRange} />
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="chronological" className="mt-6">
+          <ChronologicalReport dateRange={dateRange} onDateRangeChange={setDateRange} />
         </TabsContent>
 
         <TabsContent value="projects" className="mt-6">
