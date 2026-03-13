@@ -26,7 +26,9 @@ import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import {
   calculateAllocatedAmount,
   ManagerDiscount,
+  VacantDiscount,
 } from "@/hooks/useUnitBalanceFiltered";
+import { useBuilding } from "@/contexts/BuildingContext";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { exportToExcel, exportToPDF, formatNumber, UnitAllocation } from "@/lib/exportUtils";
 import { ExpenseDetailsDialog } from "@/components/expenses/ExpenseDetailsDialog";

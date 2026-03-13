@@ -23,7 +23,9 @@ import { formatJalaliDate } from "@/lib/jalaliDate";
 import {
   calculateAllocatedAmount,
   ManagerDiscount,
+  VacantDiscount,
 } from "@/hooks/useUnitBalanceFiltered";
+import { useBuilding } from "@/contexts/BuildingContext";
 import {
   exportToExcel,
   exportToPDF,
