@@ -234,7 +234,7 @@ export function ExpensesList() {
                             className="h-8 w-8 text-destructive hover:text-destructive"
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteExpense.mutate(expense.id);
+                              setDeleteId(expense.id);
                             }}
                             disabled={deleteExpense.isPending}
                           >
