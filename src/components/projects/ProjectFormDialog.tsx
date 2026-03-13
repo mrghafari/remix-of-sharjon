@@ -189,6 +189,53 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
               />
             </div>
 
+            <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+              <p className="text-sm font-semibold">درصد معافیت مدیر ساختمان در این پروژه</p>
+              <p className="text-xs text-muted-foreground">پیش‌فرض: بدون معافیت (۰٪). مبلغ معافیت بین سایر واحدها تسهیم می‌شود.</p>
+              
+              <FormField
+                control={form.control}
+                name="manager_charge_discount_percent"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between text-sm">
+                      <FormLabel>معافیت شارژ: {field.value}%</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={([v]) => field.onChange(v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="manager_extra_charge_discount_percent"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between text-sm">
+                      <FormLabel>معافیت فوق‌شارژ: {field.value}%</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={([v]) => field.onChange(v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="is_active"
