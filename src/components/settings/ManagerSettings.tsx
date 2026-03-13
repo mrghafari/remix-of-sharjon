@@ -147,20 +147,22 @@ export function ManagerSettings() {
                     </div>
                   </div>
 
-                  <div className="flex gap-4 pt-2 border-t text-sm">
-                    <div>
-                      <span className="text-muted-foreground">تخفیف شارژ: </span>
-                      <span className="font-medium text-primary">
-                        {manager.charge_discount_percent}%
-                      </span>
+                  {manager.role_type !== "external" && (
+                    <div className="flex gap-4 pt-2 border-t text-sm">
+                      <div>
+                        <span className="text-muted-foreground">تخفیف شارژ: </span>
+                        <span className="font-medium text-primary">
+                          {manager.charge_discount_percent}%
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">تخفیف شارژ اضافی: </span>
+                        <span className="font-medium text-primary">
+                          {manager.extra_charge_discount_percent}%
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">تخفیف شارژ اضافی: </span>
-                      <span className="font-medium text-primary">
-                        {manager.extra_charge_discount_percent}%
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
