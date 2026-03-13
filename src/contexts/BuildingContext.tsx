@@ -85,7 +85,7 @@ export function useCreateBuilding() {
 export function useUpdateBuilding() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name?: string; address?: string; total_units?: number }) => {
+    mutationFn: async ({ id, ...data }: { id: string; name?: string; address?: string; total_units?: number; vacant_charge_discount_percent?: number; vacant_extra_charge_discount_percent?: number }) => {
       const { data: result, error } = await supabase
         .from("buildings")
         .update(data)
