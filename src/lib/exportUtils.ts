@@ -14,6 +14,8 @@ export interface UnitAllocation {
   area: number | null;
   residentCount: number | null;
   allocatedAmount: number;
+  isManager?: boolean;
+  isVacant?: boolean;
 }
 
 export const exportToExcel = (

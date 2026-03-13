@@ -28,7 +28,7 @@ export function useUnitBalance() {
   const { currentBuilding } = useBuilding();
 
   const managerDiscount = useMemo((): ManagerDiscount | null => {
-    if (!activeManager) return null;
+    if (!activeManager || !activeManager.unit_id) return null;
     return {
       unitId: activeManager.unit_id,
       chargeDiscountPercent: activeManager.charge_discount_percent,

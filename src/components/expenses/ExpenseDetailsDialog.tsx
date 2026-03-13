@@ -66,7 +66,7 @@ export function ExpenseDetailsDialog({
 
   if (!expense) return null;
 
-  const managerDiscount: ManagerDiscount | null = activeManager
+  const managerDiscount: ManagerDiscount | null = activeManager && activeManager.unit_id
     ? {
         unitId: activeManager.unit_id,
         chargeDiscountPercent: activeManager.charge_discount_percent,
@@ -88,6 +88,17 @@ export function ExpenseDetailsDialog({
     ? { chargeDiscountPercent: expenseProject.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: expenseProject.manager_extra_charge_discount_percent ?? 0 }
     : undefined;
 
+  // Find the manager's unit number for highlighting
+  const managerUnitNumber = managerDiscount
+    ? units.find((u) => u.id === managerDiscount.unitId)?.unit_number
+    : null;
+
+  const managerDiscountPercent = managerDiscount
+    ? (expense.fund_type === "charge" 
+        ? (projectMgrDiscount ? projectMgrDiscount.chargeDiscountPercent : managerDiscount.chargeDiscountPercent)
+        : (projectMgrDiscount ? projectMgrDiscount.extraChargeDiscountPercent : managerDiscount.extraChargeDiscountPercent))
+    : 0;
+
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => ({
       unitNumber: unit.unit_number,
@@ -95,6 +106,8 @@ export function ExpenseDetailsDialog({
       residentName: unit.resident_name,
       area: unit.area,
       residentCount: unit.resident_count,
+      isManager: managerDiscount ? unit.id === managerDiscount.unitId : false,
+      isVacant: unit.is_occupied === false,
       allocatedAmount: calculateAllocatedAmount(
         expense,
         unit,
@@ -192,6 +205,22 @@ export function ExpenseDetailsDialog({
             )}
           </div>
 
+          {/* Discount Info */}
+          {(managerDiscount || vacantDiscount) && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {managerDiscount && managerDiscountPercent > 0 && (
+                <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">
+                  🏠 تخفیف مدیر (واحد {managerUnitNumber}): {managerDiscountPercent}%
+                </Badge>
+              )}
+              {vacantDiscount && (
+                <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">
+                  🏚️ تخفیف واحد خالی: {expense.fund_type === "charge" ? vacantDiscount.chargeDiscountPercent : vacantDiscount.extraChargeDiscountPercent}%
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Allocations Table */}
           {unitsLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -211,25 +240,35 @@ export function ExpenseDetailsDialog({
                   <TableHead className="text-right">نام ساکن</TableHead>
                   <TableHead className="text-right">متراژ</TableHead>
                   <TableHead className="text-right">تعداد نفرات</TableHead>
+                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">مبلغ تخصیص یافته</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {unitAllocations.map((ua, index) => (
-                  <TableRow key={ua.unitNumber}>
+                  <TableRow key={ua.unitNumber} className={ua.isManager ? "bg-green-50/50" : ua.isVacant ? "bg-orange-50/50" : ""}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{ua.unitNumber}</TableCell>
                     <TableCell>{ua.ownerName}</TableCell>
                     <TableCell>{ua.residentName || "-"}</TableCell>
                     <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                     <TableCell>{ua.residentCount || "-"}</TableCell>
+                    <TableCell>
+                      {ua.isManager && managerDiscountPercent > 0 ? (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">مدیر ({managerDiscountPercent}% تخفیف)</Badge>
+                      ) : ua.isVacant ? (
+                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">خالی</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">ساکن</span>
+                      )}
+                    </TableCell>
                     <TableCell className="font-bold text-primary">
                       {formatNumber(ua.allocatedAmount)} تومان
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-bold">
-                  <TableCell colSpan={6} className="text-left">
+                  <TableCell colSpan={7} className="text-left">
                     جمع کل
                   </TableCell>
                   <TableCell className="text-primary">
