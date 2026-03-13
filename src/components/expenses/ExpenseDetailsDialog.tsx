@@ -88,6 +88,17 @@ export function ExpenseDetailsDialog({
     ? { chargeDiscountPercent: expenseProject.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: expenseProject.manager_extra_charge_discount_percent ?? 0 }
     : undefined;
 
+  // Find the manager's unit number for highlighting
+  const managerUnitNumber = managerDiscount
+    ? units.find((u) => u.id === managerDiscount.unitId)?.unit_number
+    : null;
+
+  const managerDiscountPercent = managerDiscount
+    ? (expense.fund_type === "charge" 
+        ? (projectMgrDiscount ? projectMgrDiscount.chargeDiscountPercent : managerDiscount.chargeDiscountPercent)
+        : (projectMgrDiscount ? projectMgrDiscount.extraChargeDiscountPercent : managerDiscount.extraChargeDiscountPercent))
+    : 0;
+
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => ({
       unitNumber: unit.unit_number,
@@ -95,6 +106,8 @@ export function ExpenseDetailsDialog({
       residentName: unit.resident_name,
       area: unit.area,
       residentCount: unit.resident_count,
+      isManager: managerDiscount ? unit.id === managerDiscount.unitId : false,
+      isVacant: unit.is_occupied === false,
       allocatedAmount: calculateAllocatedAmount(
         expense,
         unit,
