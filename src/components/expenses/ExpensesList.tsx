@@ -68,6 +68,7 @@ export function ExpensesList() {
   const [filterProject, setFilterProject] = useState<string>("all");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: categories = [] } = useExpenseCategories();
