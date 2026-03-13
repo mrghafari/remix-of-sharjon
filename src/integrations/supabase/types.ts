@@ -422,6 +422,8 @@ export type Database = {
           end_date: string | null
           id: string
           is_active: boolean
+          manager_charge_discount_percent: number
+          manager_extra_charge_discount_percent: number
           name: string
           start_date: string | null
           updated_at: string
@@ -434,6 +436,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          manager_charge_discount_percent?: number
+          manager_extra_charge_discount_percent?: number
           name: string
           start_date?: string | null
           updated_at?: string
@@ -446,6 +450,8 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          manager_charge_discount_percent?: number
+          manager_extra_charge_discount_percent?: number
           name?: string
           start_date?: string | null
           updated_at?: string
