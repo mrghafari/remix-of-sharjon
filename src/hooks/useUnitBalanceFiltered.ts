@@ -219,9 +219,10 @@ export function calculateAllocatedAmount(
   unit: Unit,
   allUnits: Unit[],
   managerDiscount: ManagerDiscount | null,
-  vacantDiscount: VacantDiscount | null = null
+  vacantDiscount: VacantDiscount | null = null,
+  projectManagerDiscount?: { chargeDiscountPercent: number; extraChargeDiscountPercent: number } | null
 ): number {
-  const allocations = calculateAllUnitAllocations(expense, allUnits, managerDiscount, vacantDiscount);
+  const allocations = calculateAllUnitAllocations(expense, allUnits, managerDiscount, vacantDiscount, projectManagerDiscount);
   return allocations.get(unit.id) || 0;
 }
 
