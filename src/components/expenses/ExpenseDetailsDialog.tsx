@@ -62,6 +62,8 @@ export function ExpenseDetailsDialog({
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: activeManager } = useActiveManager();
   const { currentBuilding } = useBuilding();
+  const { data: projects = [] } = useProjects();
+  const { currentBuilding } = useBuilding();
 
   if (!expense) return null;
 
