@@ -129,15 +129,16 @@ export function useCreateManager() {
 
 export function useUpdateManager() {
   const queryClient = useQueryClient();
+  const { currentBuildingId } = useBuilding();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ManagerInsert> & { id: string }) => {
       // If activating this manager, deactivate others first
-      if (updates.is_active === true) {
-        const { currentBuildingId } = useBuilding.getState?.() || {};
+      if (updates.is_active === true && currentBuildingId) {
         await supabase
           .from("managers")
           .update({ is_active: false })
+          .eq("building_id", currentBuildingId)
           .neq("id", id)
           .eq("is_active", true);
       }
