@@ -19,6 +19,7 @@ import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { useUnits } from "@/hooks/useUnits";
 import { useActiveManager } from "@/hooks/useManagers";
 import { Expense } from "@/hooks/useExpenses";
+import { useProjects } from "@/hooks/useProjects";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import {
   calculateAllocatedAmount,
@@ -61,6 +62,7 @@ export function ExpenseDetailsDialog({
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: activeManager } = useActiveManager();
   const { currentBuilding } = useBuilding();
+  const { data: projects = [] } = useProjects();
 
   if (!expense) return null;
 
@@ -80,6 +82,12 @@ export function ExpenseDetailsDialog({
     return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
   })();
 
+  // Project-specific manager discount
+  const expenseProject = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
+  const projectMgrDiscount = expenseProject
+    ? { chargeDiscountPercent: expenseProject.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: expenseProject.manager_extra_charge_discount_percent ?? 0 }
+    : undefined;
+
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => ({
       unitNumber: unit.unit_number,
@@ -92,7 +100,8 @@ export function ExpenseDetailsDialog({
         unit,
         units,
         managerDiscount,
-        vacantDiscount
+        vacantDiscount,
+        projectMgrDiscount
       ),
     }))
     .filter((ua) => ua.allocatedAmount > 0);

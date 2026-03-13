@@ -12,6 +12,8 @@ export interface Project {
   end_date: string | null;
   budget: number | null;
   is_active: boolean;
+  manager_charge_discount_percent: number;
+  manager_extra_charge_discount_percent: number;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +25,8 @@ export interface ProjectInsert {
   end_date?: string;
   budget?: number;
   is_active?: boolean;
+  manager_charge_discount_percent?: number;
+  manager_extra_charge_discount_percent?: number;
 }
 
 export function useProjects() {

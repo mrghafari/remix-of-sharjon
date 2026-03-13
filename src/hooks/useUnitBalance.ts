@@ -3,6 +3,7 @@ import { useUnits, Unit } from "./useUnits";
 import { useExpenses, Expense } from "./useExpenses";
 import { usePayments, PaymentWithUnit } from "./usePayments";
 import { useActiveManager } from "./useManagers";
+import { useProjects } from "./useProjects";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { calculateAllUnitAllocations, ManagerDiscount, VacantDiscount } from "./useUnitBalanceFiltered";
 
@@ -23,6 +24,7 @@ export function useUnitBalance() {
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
   const { data: activeManager, isLoading: managerLoading } = useActiveManager();
+  const { data: projects = [] } = useProjects();
   const { currentBuilding } = useBuilding();
 
   const managerDiscount = useMemo((): ManagerDiscount | null => {
@@ -45,9 +47,13 @@ export function useUnitBalance() {
   const unitBalances = useMemo(() => {
     const expenseAllocations = new Map<string, Map<string, number>>();
     expenses.forEach((expense) => {
+      const project = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
+      const projectMgrDiscount = project
+        ? { chargeDiscountPercent: project.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: project.manager_extra_charge_discount_percent ?? 0 }
+        : undefined;
       expenseAllocations.set(
         expense.id,
-        calculateAllUnitAllocations(expense, units, managerDiscount, vacantDiscount)
+        calculateAllUnitAllocations(expense, units, managerDiscount, vacantDiscount, projectMgrDiscount)
       );
     });
 
@@ -76,7 +82,7 @@ export function useUnitBalance() {
         paymentBreakdown: unitPayments,
       };
     });
-  }, [units, expenses, payments, managerDiscount, vacantDiscount]);
+  }, [units, expenses, payments, managerDiscount, vacantDiscount, projects]);
 
   return {
     unitBalances,

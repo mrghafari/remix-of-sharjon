@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { Slider } from "@/components/ui/slider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -30,6 +31,8 @@ const formSchema = z.object({
   end_date: z.string().optional(),
   budget: z.string().optional(),
   is_active: z.boolean(),
+  manager_charge_discount_percent: z.number().min(0).max(100),
+  manager_extra_charge_discount_percent: z.number().min(0).max(100),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -53,6 +56,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       end_date: "",
       budget: "",
       is_active: true,
+      manager_charge_discount_percent: 0,
+      manager_extra_charge_discount_percent: 0,
     },
   });
 
@@ -66,6 +71,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         end_date: project.end_date || "",
         budget: project.budget ? project.budget.toString() : "",
         is_active: project.is_active,
+        manager_charge_discount_percent: project.manager_charge_discount_percent ?? 0,
+        manager_extra_charge_discount_percent: project.manager_extra_charge_discount_percent ?? 0,
       });
     } else {
       form.reset({
@@ -75,6 +82,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         end_date: "",
         budget: "",
         is_active: true,
+        manager_charge_discount_percent: 0,
+        manager_extra_charge_discount_percent: 0,
       });
     }
   }, [project, form, open]);
@@ -87,6 +96,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       end_date: values.end_date || undefined,
       budget: values.budget ? parseFloat(values.budget) : undefined,
       is_active: values.is_active,
+      manager_charge_discount_percent: values.manager_charge_discount_percent,
+      manager_extra_charge_discount_percent: values.manager_extra_charge_discount_percent,
     };
 
     if (project) {
@@ -173,6 +184,53 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                       <Input {...field} type="date" />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+              <p className="text-sm font-semibold">درصد معافیت مدیر ساختمان در این پروژه</p>
+              <p className="text-xs text-muted-foreground">پیش‌فرض: بدون معافیت (۰٪). مبلغ معافیت بین سایر واحدها تسهیم می‌شود.</p>
+              
+              <FormField
+                control={form.control}
+                name="manager_charge_discount_percent"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between text-sm">
+                      <FormLabel>معافیت شارژ: {field.value}%</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={([v]) => field.onChange(v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="manager_extra_charge_discount_percent"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between text-sm">
+                      <FormLabel>معافیت فوق‌شارژ: {field.value}%</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Slider
+                        value={[field.value]}
+                        onValueChange={([v]) => field.onChange(v)}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
