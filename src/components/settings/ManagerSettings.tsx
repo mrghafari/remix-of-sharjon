@@ -67,7 +67,7 @@ export function ManagerSettings() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <UserCog className="w-5 h-5" />
-            مدیریت ساختمان
+            مدیریت ساختمان {currentBuilding ? `(${currentBuilding.name})` : ""}
           </CardTitle>
           <Button onClick={handleAdd} size="sm" className="gap-2">
             <Plus className="w-4 h-4" />
