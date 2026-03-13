@@ -132,6 +132,16 @@ export function useUpdateManager() {
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<ManagerInsert> & { id: string }) => {
+      // If activating this manager, deactivate others first
+      if (updates.is_active === true) {
+        const { currentBuildingId } = useBuilding.getState?.() || {};
+        await supabase
+          .from("managers")
+          .update({ is_active: false })
+          .neq("id", id)
+          .eq("is_active", true);
+      }
+
       const { data, error } = await supabase
         .from("managers")
         .update(updates)
