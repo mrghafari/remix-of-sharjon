@@ -133,6 +133,25 @@ export function PaymentsList() {
           ))}
         </TableBody>
       </Table>
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف پرداخت</AlertDialogTitle>
+            <AlertDialogDescription>
+              آیا از حذف این پرداخت اطمینان دارید؟ این عملیات غیرقابل بازگشت است و امکان بازیابی اطلاعات وجود ندارد.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
