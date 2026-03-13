@@ -205,6 +205,22 @@ export function ExpenseDetailsDialog({
             )}
           </div>
 
+          {/* Discount Info */}
+          {(managerDiscount || vacantDiscount) && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {managerDiscount && managerDiscountPercent > 0 && (
+                <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">
+                  🏠 تخفیف مدیر (واحد {managerUnitNumber}): {managerDiscountPercent}%
+                </Badge>
+              )}
+              {vacantDiscount && (
+                <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">
+                  🏚️ تخفیف واحد خالی: {expense.fund_type === "charge" ? vacantDiscount.chargeDiscountPercent : vacantDiscount.extraChargeDiscountPercent}%
+                </Badge>
+              )}
+            </div>
+          )}
+
           {/* Allocations Table */}
           {unitsLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -224,6 +240,7 @@ export function ExpenseDetailsDialog({
                   <TableHead className="text-right">نام ساکن</TableHead>
                   <TableHead className="text-right">متراژ</TableHead>
                   <TableHead className="text-right">تعداد نفرات</TableHead>
+                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">مبلغ تخصیص یافته</TableHead>
                 </TableRow>
               </TableHeader>
