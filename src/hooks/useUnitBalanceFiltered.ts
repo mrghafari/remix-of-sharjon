@@ -4,6 +4,7 @@ import { useExpenses, Expense, AllocationType } from "./useExpenses";
 import { usePayments, PaymentWithUnit } from "./usePayments";
 import { useActiveManager } from "./useManagers";
 import { useProjects } from "./useProjects";
+import { useBuilding } from "@/contexts/BuildingContext";
 
 export interface UnitBalance {
   unit: Unit;
@@ -29,114 +30,172 @@ export interface ManagerDiscount {
   extraChargeDiscountPercent: number;
 }
 
+export interface VacantDiscount {
+  chargeDiscountPercent: number;
+  extraChargeDiscountPercent: number;
+}
+
+/**
+ * Calculate base allocation for a single unit (before manager/vacant discounts)
+ */
+function calculateBaseAmount(
+  expense: Expense,
+  unit: Unit,
+  validUnits: Unit[]
+): number {
+  const { allocation_type, amount, unit_id, area_ratio } = expense;
+
+  switch (allocation_type) {
+    case "single_unit":
+      return unit_id === unit.id ? amount : 0;
+
+    case "equal":
+      return validUnits.length > 0 ? amount / validUnits.length : 0;
+
+    case "by_area": {
+      const totalArea = validUnits.reduce((sum, u) => sum + (u.area || 0), 0);
+      if (totalArea === 0 || unit.area === null) return 0;
+      return (amount * unit.area) / totalArea;
+    }
+
+    case "by_residents": {
+      const totalResidents = validUnits.reduce((sum, u) => sum + (u.resident_count || 0), 0);
+      if (totalResidents === 0 || unit.resident_count === null) return 0;
+      return (amount * unit.resident_count) / totalResidents;
+    }
+
+    case "by_area_residents": {
+      const areaWeight = (area_ratio || 50) / 100;
+      const residentWeight = 1 - areaWeight;
+      const totArea = validUnits.reduce((sum, u) => sum + (u.area || 0), 0);
+      const totResidents = validUnits.reduce((sum, u) => sum + (u.resident_count || 0), 0);
+      if (totArea === 0 || totResidents === 0) return 0;
+      if (unit.area === null || unit.resident_count === null) return 0;
+      const areaShare = (unit.area / totArea) * areaWeight;
+      const residentShare = (unit.resident_count / totResidents) * residentWeight;
+      return amount * (areaShare + residentShare);
+    }
+
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Calculate allocated amounts for ALL units for a given expense,
+ * applying vacant unit discounts and redistributing to occupied units,
+ * then applying manager discounts.
+ */
+export function calculateAllUnitAllocations(
+  expense: Expense,
+  allUnits: Unit[],
+  managerDiscount: ManagerDiscount | null,
+  vacantDiscount: VacantDiscount | null
+): Map<string, number> {
+  const result = new Map<string, number>();
+  const { allocation_type, fund_type } = expense;
+
+  // For single_unit allocation, no redistribution needed
+  if (allocation_type === "single_unit") {
+    allUnits.forEach((unit) => {
+      let amount = expense.unit_id === unit.id ? expense.amount : 0;
+      // Apply manager discount
+      if (managerDiscount && unit.id === managerDiscount.unitId && amount > 0) {
+        const dp = fund_type === "charge" ? managerDiscount.chargeDiscountPercent : managerDiscount.extraChargeDiscountPercent;
+        amount = amount * (1 - dp / 100);
+      }
+      result.set(unit.id, amount);
+    });
+    return result;
+  }
+
+  // Filter valid units for the allocation method
+  const validUnits = allUnits.filter((u) => {
+    switch (allocation_type) {
+      case "by_area": return u.area !== null && u.area > 0;
+      case "by_residents": return u.resident_count !== null && u.resident_count > 0;
+      case "by_area_residents": return u.area !== null && u.area > 0 && u.resident_count !== null && u.resident_count > 0;
+      default: return true;
+    }
+  });
+
+  // Step 1: Calculate base amounts for all units
+  const baseAmounts = new Map<string, number>();
+  validUnits.forEach((unit) => {
+    baseAmounts.set(unit.id, calculateBaseAmount(expense, unit, validUnits));
+  });
+
+  // Step 2: Apply vacant discount and calculate total discount to redistribute
+  const vacantDiscountPercent = vacantDiscount
+    ? (fund_type === "charge" ? vacantDiscount.chargeDiscountPercent : vacantDiscount.extraChargeDiscountPercent)
+    : 0;
+
+  let totalVacantDiscount = 0;
+  const vacantUnitIds = new Set<string>();
+  const occupiedUnitIds = new Set<string>();
+
+  validUnits.forEach((unit) => {
+    if (unit.is_occupied === false && vacantDiscountPercent > 0) {
+      vacantUnitIds.add(unit.id);
+      const base = baseAmounts.get(unit.id) || 0;
+      const discount = base * (vacantDiscountPercent / 100);
+      totalVacantDiscount += discount;
+      baseAmounts.set(unit.id, base - discount);
+    } else {
+      occupiedUnitIds.add(unit.id);
+    }
+  });
+
+  // Step 3: Redistribute vacant discount to occupied units proportionally
+  if (totalVacantDiscount > 0 && occupiedUnitIds.size > 0) {
+    let totalOccupiedBase = 0;
+    occupiedUnitIds.forEach((id) => {
+      totalOccupiedBase += baseAmounts.get(id) || 0;
+    });
+
+    if (totalOccupiedBase > 0) {
+      occupiedUnitIds.forEach((id) => {
+        const base = baseAmounts.get(id) || 0;
+        const share = (base / totalOccupiedBase) * totalVacantDiscount;
+        baseAmounts.set(id, base + share);
+      });
+    }
+  }
+
+  // Step 4: Apply manager discount
+  allUnits.forEach((unit) => {
+    let amount = baseAmounts.get(unit.id) || 0;
+    if (managerDiscount && unit.id === managerDiscount.unitId && amount > 0) {
+      const dp = fund_type === "charge" ? managerDiscount.chargeDiscountPercent : managerDiscount.extraChargeDiscountPercent;
+      amount = amount * (1 - dp / 100);
+    }
+    result.set(unit.id, amount);
+  });
+
+  return result;
+}
+
+/** Legacy single-unit calculation wrapper */
 export function calculateAllocatedAmount(
   expense: Expense,
   unit: Unit,
   allUnits: Unit[],
-  managerDiscount: ManagerDiscount | null
+  managerDiscount: ManagerDiscount | null,
+  vacantDiscount: VacantDiscount | null = null
 ): number {
-  const { allocation_type, amount, unit_id, area_ratio, fund_type } = expense;
-
-  const validUnits = allUnits.filter((u) => {
-    switch (allocation_type) {
-      case "by_area":
-        return u.area !== null && u.area > 0;
-      case "by_residents":
-        return u.resident_count !== null && u.resident_count > 0;
-      case "by_area_residents":
-        return (
-          u.area !== null &&
-          u.area > 0 &&
-          u.resident_count !== null &&
-          u.resident_count > 0
-        );
-      default:
-        return true;
-    }
-  });
-
-  let baseAmount = 0;
-
-  switch (allocation_type) {
-    case "single_unit":
-      baseAmount = unit_id === unit.id ? amount : 0;
-      break;
-
-    case "equal":
-      baseAmount = validUnits.length > 0 ? amount / validUnits.length : 0;
-      break;
-
-    case "by_area":
-      const totalArea = validUnits.reduce((sum, u) => sum + (u.area || 0), 0);
-      if (totalArea === 0 || unit.area === null) {
-        baseAmount = 0;
-      } else {
-        baseAmount = (amount * unit.area) / totalArea;
-      }
-      break;
-
-    case "by_residents":
-      const totalResidents = validUnits.reduce(
-        (sum, u) => sum + (u.resident_count || 0),
-        0
-      );
-      if (totalResidents === 0 || unit.resident_count === null) {
-        baseAmount = 0;
-      } else {
-        baseAmount = (amount * unit.resident_count) / totalResidents;
-      }
-      break;
-
-    case "by_area_residents":
-      const areaWeight = (area_ratio || 50) / 100;
-      const residentWeight = 1 - areaWeight;
-
-      const totArea = validUnits.reduce((sum, u) => sum + (u.area || 0), 0);
-      const totResidents = validUnits.reduce(
-        (sum, u) => sum + (u.resident_count || 0),
-        0
-      );
-
-      if (totArea === 0 || totResidents === 0) {
-        baseAmount = 0;
-      } else if (unit.area === null || unit.resident_count === null) {
-        baseAmount = 0;
-      } else {
-        const areaShare = (unit.area / totArea) * areaWeight;
-        const residentShare = (unit.resident_count / totResidents) * residentWeight;
-        baseAmount = amount * (areaShare + residentShare);
-      }
-      break;
-
-    default:
-      baseAmount = 0;
-  }
-
-  // Apply manager discount if this unit belongs to the active manager
-  if (managerDiscount && unit.id === managerDiscount.unitId && baseAmount > 0) {
-    const discountPercent =
-      fund_type === "charge"
-        ? managerDiscount.chargeDiscountPercent
-        : managerDiscount.extraChargeDiscountPercent;
-    
-    baseAmount = baseAmount * (1 - discountPercent / 100);
-  }
-
-  return baseAmount;
+  const allocations = calculateAllUnitAllocations(expense, allUnits, managerDiscount, vacantDiscount);
+  return allocations.get(unit.id) || 0;
 }
 
 function isInDateRange(dateStr: string, range: DateRange): boolean {
   if (!range.from && !range.to) return true;
-  
   const date = new Date(dateStr);
-  
   if (range.from && date < range.from) return false;
   if (range.to) {
     const endOfDay = new Date(range.to);
     endOfDay.setHours(23, 59, 59, 999);
     if (date > endOfDay) return false;
   }
-  
   return true;
 }
 
@@ -146,8 +205,8 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
   const { data: activeManager, isLoading: managerLoading } = useActiveManager();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
+  const { currentBuilding } = useBuilding();
 
-  // Get manager discount info
   const managerDiscount = useMemo((): ManagerDiscount | null => {
     if (!activeManager) return null;
     return {
@@ -157,7 +216,14 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
     };
   }, [activeManager]);
 
-  // Filter expenses and payments by date range
+  const vacantDiscount = useMemo((): VacantDiscount | null => {
+    if (!currentBuilding) return null;
+    const c = currentBuilding.vacant_charge_discount_percent || 0;
+    const e = currentBuilding.vacant_extra_charge_discount_percent || 0;
+    if (c === 0 && e === 0) return null;
+    return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
+  }, [currentBuilding]);
+
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => isInDateRange(e.expense_date, dateRange));
   }, [expenses, dateRange]);
@@ -167,21 +233,30 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
   }, [payments, dateRange]);
 
   const unitBalances = useMemo(() => {
+    // Pre-calculate all allocations per expense for efficiency
+    const expenseAllocations = new Map<string, Map<string, number>>();
+    filteredExpenses.forEach((expense) => {
+      expenseAllocations.set(
+        expense.id,
+        calculateAllUnitAllocations(expense, units, managerDiscount, vacantDiscount)
+      );
+    });
+
     return units.map((unit): UnitBalance => {
-      const expenseBreakdown = filteredExpenses.map((expense) => ({
-        expense,
-        allocatedAmount: calculateAllocatedAmount(expense, unit, units, managerDiscount),
-        project: projects.find(p => p.id === expense.project_id) || null,
-      })).filter((e) => e.allocatedAmount > 0);
+      const expenseBreakdown = filteredExpenses
+        .map((expense) => ({
+          expense,
+          allocatedAmount: expenseAllocations.get(expense.id)?.get(unit.id) || 0,
+          project: projects.find((p) => p.id === expense.project_id) || null,
+        }))
+        .filter((e) => e.allocatedAmount > 0);
 
       const totalAllocatedExpenses = expenseBreakdown.reduce(
-        (sum, e) => sum + e.allocatedAmount,
-        0
+        (sum, e) => sum + e.allocatedAmount, 0
       );
 
       const unitPayments = filteredPayments.filter((p) => p.unit_id === unit.id);
       const totalPayments = unitPayments.reduce((sum, p) => sum + p.amount, 0);
-
       const balance = totalPayments - totalAllocatedExpenses;
 
       return {
@@ -193,7 +268,7 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
         paymentBreakdown: unitPayments,
       };
     });
-  }, [units, filteredExpenses, filteredPayments, managerDiscount]);
+  }, [units, filteredExpenses, filteredPayments, managerDiscount, vacantDiscount, projects]);
 
   return {
     unitBalances,

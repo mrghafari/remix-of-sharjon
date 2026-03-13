@@ -23,7 +23,9 @@ import { formatJalaliDate } from "@/lib/jalaliDate";
 import {
   calculateAllocatedAmount,
   ManagerDiscount,
+  VacantDiscount,
 } from "@/hooks/useUnitBalanceFiltered";
+import { useBuilding } from "@/contexts/BuildingContext";
 import {
   exportToExcel,
   exportToPDF,
@@ -58,6 +60,7 @@ export function ExpenseDetailsDialog({
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: activeManager } = useActiveManager();
+  const { currentBuilding } = useBuilding();
 
   if (!expense) return null;
 
@@ -68,6 +71,14 @@ export function ExpenseDetailsDialog({
         extraChargeDiscountPercent: activeManager.extra_charge_discount_percent,
       }
     : null;
+
+  const vacantDiscount: VacantDiscount | null = (() => {
+    if (!currentBuilding) return null;
+    const c = currentBuilding.vacant_charge_discount_percent || 0;
+    const e = currentBuilding.vacant_extra_charge_discount_percent || 0;
+    if (c === 0 && e === 0) return null;
+    return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
+  })();
 
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => ({
@@ -80,7 +91,8 @@ export function ExpenseDetailsDialog({
         expense,
         unit,
         units,
-        managerDiscount
+        managerDiscount,
+        vacantDiscount
       ),
     }))
     .filter((ua) => ua.allocatedAmount > 0);

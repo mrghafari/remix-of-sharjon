@@ -26,7 +26,9 @@ import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import {
   calculateAllocatedAmount,
   ManagerDiscount,
+  VacantDiscount,
 } from "@/hooks/useUnitBalanceFiltered";
+import { useBuilding } from "@/contexts/BuildingContext";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { exportToExcel, exportToPDF, formatNumber, UnitAllocation } from "@/lib/exportUtils";
 import { ExpenseDetailsDialog } from "@/components/expenses/ExpenseDetailsDialog";
@@ -42,6 +44,7 @@ export function ProjectReport() {
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: activeManager } = useActiveManager();
   const { data: categories = [] } = useExpenseCategories();
+  const { currentBuilding } = useBuilding();
 
   const isLoading = projectsLoading || expensesLoading || unitsLoading;
 
@@ -53,6 +56,14 @@ export function ProjectReport() {
       extraChargeDiscountPercent: activeManager.extra_charge_discount_percent,
     };
   }, [activeManager]);
+
+  const vacantDiscount: VacantDiscount | null = useMemo(() => {
+    if (!currentBuilding) return null;
+    const c = currentBuilding.vacant_charge_discount_percent || 0;
+    const e = currentBuilding.vacant_extra_charge_discount_percent || 0;
+    if (c === 0 && e === 0) return null;
+    return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
+  }, [currentBuilding]);
 
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
 
@@ -82,7 +93,7 @@ export function ProjectReport() {
 
     return units.map((unit) => {
       const totalAllocated = projectExpenses.reduce((sum, expense) => {
-        return sum + calculateAllocatedAmount(expense, unit, units, managerDiscount);
+        return sum + calculateAllocatedAmount(expense, unit, units, managerDiscount, vacantDiscount);
       }, 0);
 
       return {

@@ -64,6 +64,8 @@ export type Database = {
           name: string
           total_units: number | null
           updated_at: string
+          vacant_charge_discount_percent: number
+          vacant_extra_charge_discount_percent: number
         }
         Insert: {
           address?: string | null
@@ -72,6 +74,8 @@ export type Database = {
           name: string
           total_units?: number | null
           updated_at?: string
+          vacant_charge_discount_percent?: number
+          vacant_extra_charge_discount_percent?: number
         }
         Update: {
           address?: string | null
@@ -80,6 +84,8 @@ export type Database = {
           name?: string
           total_units?: number | null
           updated_at?: string
+          vacant_charge_discount_percent?: number
+          vacant_extra_charge_discount_percent?: number
         }
         Relationships: []
       }
