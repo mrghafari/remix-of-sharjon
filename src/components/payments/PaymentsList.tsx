@@ -46,10 +46,12 @@ const fundTypeLabels: Record<string, string> = {
 export function PaymentsList() {
   const { data: payments, isLoading } = usePayments();
   const deletePayment = useDeletePayment();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = (id: string) => {
-    if (confirm("آیا از حذف این پرداخت اطمینان دارید؟")) {
-      deletePayment.mutate(id);
+  const handleDeleteConfirm = () => {
+    if (deleteId) {
+      deletePayment.mutate(deleteId);
+      setDeleteId(null);
     }
   };
 
