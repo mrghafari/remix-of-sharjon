@@ -333,7 +333,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>تاریخ پایان (اختیاری)</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="1404/01/01" dir="ltr" />
+                      <Input {...field} dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
