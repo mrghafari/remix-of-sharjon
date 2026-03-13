@@ -99,6 +99,32 @@ export function useCreateManager() {
 
   return useMutation({
     mutationFn: async (manager: ManagerInsert) => {
+      // Check for duplicate: same person already registered as active manager
+      if (manager.unit_id) {
+        const { data: existing } = await supabase
+          .from("managers")
+          .select("id")
+          .eq("building_id", currentBuildingId!)
+          .eq("unit_id", manager.unit_id)
+          .eq("is_active", true)
+          .limit(1);
+        if (existing && existing.length > 0) {
+          throw new Error("این شخص در حال حاضر به عنوان مدیر فعال ثبت شده است");
+        }
+      }
+      if (manager.role_type === "external" && manager.external_name) {
+        const { data: existing } = await supabase
+          .from("managers")
+          .select("id")
+          .eq("building_id", currentBuildingId!)
+          .eq("external_name", manager.external_name)
+          .eq("is_active", true)
+          .limit(1);
+        if (existing && existing.length > 0) {
+          throw new Error("این شخص در حال حاضر به عنوان مدیر فعال ثبت شده است");
+        }
+      }
+
       // Deactivate current active manager if new one is active
       if (manager.is_active !== false) {
         await supabase
