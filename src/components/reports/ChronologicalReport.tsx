@@ -327,7 +327,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                   <TableBody>
                     {transactions.map((t, index) => (
                       <TableRow key={t.id} className={t.type === "payment" ? "bg-green-50/50" : "bg-red-50/50"}>
-                        <TableCell className="text-muted-foreground">{index + 1}</TableCell>
+                        <TableCell className="text-muted-foreground">{transactions.length - index}</TableCell>
                         <TableCell>{formatJalaliDate(t.date)}</TableCell>
                         <TableCell>
                           {t.type === "payment" ? (

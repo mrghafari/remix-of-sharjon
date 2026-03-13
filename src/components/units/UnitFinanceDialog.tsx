@@ -251,7 +251,7 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
                   <TableBody>
                     {transactions.map((t, i) => (
                       <TableRow key={t.id}>
-                        <TableCell className="text-muted-foreground text-xs">{i + 1}</TableCell>
+                        <TableCell className="text-muted-foreground text-xs">{transactions.length - i}</TableCell>
                         <TableCell className="text-sm">{formatJalaliDate(t.date)}</TableCell>
                         <TableCell>
                           {t.type === "payment" ? (
