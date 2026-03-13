@@ -291,7 +291,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>موبایل</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="09123456789" dir="ltr" />
+                      <Input {...field} dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
