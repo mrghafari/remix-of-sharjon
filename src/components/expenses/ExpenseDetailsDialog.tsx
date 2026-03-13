@@ -63,7 +63,6 @@ export function ExpenseDetailsDialog({
   const { data: activeManager } = useActiveManager();
   const { currentBuilding } = useBuilding();
   const { data: projects = [] } = useProjects();
-  const { currentBuilding } = useBuilding();
 
   if (!expense) return null;
 
