@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, X, Loader2, Edit } from "lucide-react";
 import { useCreateUnit, useUpdateUnit, type Unit, type CreateUnitData } from "@/hooks/useUnits";
+import { NumericInput } from "@/components/ui/numeric-input";
 
 interface UnitFormProps {
   onClose: () => void;
@@ -90,7 +91,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Label htmlFor="unitNumber">شماره پلاک *</Label>
                 <Input
                   id="unitNumber"
-                  placeholder="مثال: 101"
                   value={unitNumber}
                   onChange={(e) => setUnitNumber(e.target.value)}
                   maxLength={20}
@@ -99,37 +99,28 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="area">متراژ (متر)</Label>
-                <Input
+                <NumericInput
                   id="area"
-                  type="number"
-                  placeholder="مثال: 120"
                   value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  min="0"
+                  onChange={setArea}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="floor">طبقه</Label>
-                <Input
+                <NumericInput
                   id="floor"
-                  type="number"
-                  placeholder="مثال: 2"
                   value={floor}
-                  onChange={(e) => setFloor(e.target.value)}
-                  min="0"
+                  onChange={setFloor}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="residentCount">تعداد افراد ساکن</Label>
-                <Input
+                <NumericInput
                   id="residentCount"
-                  type="number"
-                  placeholder="مثال: 4"
                   value={residentCount}
-                  onChange={(e) => setResidentCount(e.target.value)}
-                  min="1"
+                  onChange={setResidentCount}
                 />
               </div>
             </div>
@@ -143,7 +134,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Label htmlFor="ownerName">نام مالک *</Label>
                 <Input
                   id="ownerName"
-                  placeholder="مثال: علی احمدی"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   maxLength={100}
@@ -155,7 +145,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Input
                   id="ownerPhone"
                   type="tel"
-                  placeholder="مثال: 09123456789"
                   value={ownerPhone}
                   onChange={(e) => setOwnerPhone(e.target.value)}
                   maxLength={15}
@@ -173,7 +162,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Label htmlFor="residentName">نام ساکن</Label>
                 <Input
                   id="residentName"
-                  placeholder="مثال: محمد محمدی"
                   value={residentName}
                   onChange={(e) => setResidentName(e.target.value)}
                   maxLength={100}
@@ -185,7 +173,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Input
                   id="residentPhone"
                   type="tel"
-                  placeholder="مثال: 09123456789"
                   value={residentPhone}
                   onChange={(e) => setResidentPhone(e.target.value)}
                   maxLength={15}
@@ -198,7 +185,6 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Input
                   id="landlinePhone"
                   type="tel"
-                  placeholder="مثال: 02112345678"
                   value={landlinePhone}
                   onChange={(e) => setLandlinePhone(e.target.value)}
                   maxLength={15}

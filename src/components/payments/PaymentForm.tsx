@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,6 +19,7 @@ import {
 import { Plus, CreditCard } from "lucide-react";
 import { useCreatePayment } from "@/hooks/usePayments";
 import { useUnits } from "@/hooks/useUnits";
+import { NumericInput } from "@/components/ui/numeric-input";
 
 const persianMonths = [
   { value: 1, label: "فروردین" },
@@ -129,13 +129,11 @@ export function PaymentForm() {
           {/* Amount */}
           <div className="space-y-2">
             <Label htmlFor="amount">مبلغ (تومان)</Label>
-            <Input
+            <NumericInput
               id="amount"
-              type="number"
-              placeholder="مثال: 500000"
               value={formData.amount}
-              onChange={(e) =>
-                setFormData({ ...formData, amount: e.target.value })
+              onChange={(value) =>
+                setFormData({ ...formData, amount: value })
               }
               required
             />
@@ -212,7 +210,6 @@ export function PaymentForm() {
             <Label htmlFor="description">توضیحات (اختیاری)</Label>
             <Textarea
               id="description"
-              placeholder="توضیحات اضافی..."
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })

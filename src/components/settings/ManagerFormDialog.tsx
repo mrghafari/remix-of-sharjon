@@ -275,7 +275,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>نام و نام خانوادگی مدیر</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="نام کامل مدیر خارج از ساختمان" />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -291,7 +291,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>موبایل</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="09123456789" dir="ltr" />
+                      <Input {...field} dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -304,7 +304,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>ایمیل</FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" placeholder="email@example.com" dir="ltr" />
+                      <Input {...field} type="email" dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -320,7 +320,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>تاریخ شروع</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="1403/01/01" dir="ltr" />
+                      <Input {...field} dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -333,7 +333,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>تاریخ پایان (اختیاری)</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="1404/01/01" dir="ltr" />
+                      <Input {...field} dir="ltr" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

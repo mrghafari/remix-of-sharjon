@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { useCreateProject, useUpdateProject, Project } from "@/hooks/useProjects";
+import { NumericInput } from "@/components/ui/numeric-input";
 
 const formSchema = z.object({
   name: z.string().min(1, "نام پروژه را وارد کنید"),
@@ -125,7 +126,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                 <FormItem>
                   <FormLabel>نام پروژه *</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="مثال: تعمیرات نمای ساختمان" />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -139,7 +140,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                 <FormItem>
                   <FormLabel>توضیحات</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="توضیحات پروژه..." rows={3} />
+                    <Textarea {...field} rows={3} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,7 +154,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                 <FormItem>
                   <FormLabel>بودجه (تومان)</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" placeholder="مثال: 50000000" dir="ltr" />
+                    <NumericInput value={field.value || ""} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

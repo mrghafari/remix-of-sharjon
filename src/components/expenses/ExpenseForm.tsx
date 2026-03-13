@@ -19,6 +19,7 @@ import { useCreateExpense, type CreateExpenseData, type AllocationType } from "@
 import { useUnits } from "@/hooks/useUnits";
 import { useCategoriesWithSettings } from "@/hooks/useExpenseCategories";
 import { useActiveProjects } from "@/hooks/useProjects";
+import { NumericInput } from "@/components/ui/numeric-input";
 
 interface ExpenseFormProps {
   onClose: () => void;
@@ -138,7 +139,6 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
               <Label htmlFor="title">عنوان هزینه *</Label>
               <Input
                 id="title"
-                placeholder="مثال: تعمیر آسانسور"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
@@ -147,13 +147,10 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="amount">مبلغ (تومان) *</Label>
-              <Input
+              <NumericInput
                 id="amount"
-                type="number"
-                placeholder="مثال: 5000000"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                min="0"
+                onChange={setAmount}
               />
             </div>
           </div>
@@ -232,7 +229,6 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
             <Label htmlFor="description">توضیحات</Label>
             <Textarea
               id="description"
-              placeholder="توضیحات اضافی..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
