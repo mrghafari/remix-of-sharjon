@@ -246,20 +246,29 @@ export function ExpenseDetailsDialog({
               </TableHeader>
               <TableBody>
                 {unitAllocations.map((ua, index) => (
-                  <TableRow key={ua.unitNumber}>
+                  <TableRow key={ua.unitNumber} className={ua.isManager ? "bg-green-50/50" : ua.isVacant ? "bg-orange-50/50" : ""}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{ua.unitNumber}</TableCell>
                     <TableCell>{ua.ownerName}</TableCell>
                     <TableCell>{ua.residentName || "-"}</TableCell>
                     <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                     <TableCell>{ua.residentCount || "-"}</TableCell>
+                    <TableCell>
+                      {ua.isManager && managerDiscountPercent > 0 ? (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">مدیر ({managerDiscountPercent}% تخفیف)</Badge>
+                      ) : ua.isVacant ? (
+                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">خالی</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">ساکن</span>
+                      )}
+                    </TableCell>
                     <TableCell className="font-bold text-primary">
                       {formatNumber(ua.allocatedAmount)} تومان
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-bold">
-                  <TableCell colSpan={6} className="text-left">
+                  <TableCell colSpan={7} className="text-left">
                     جمع کل
                   </TableCell>
                   <TableCell className="text-primary">
