@@ -275,10 +275,13 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
     // Pre-calculate all allocations per expense for efficiency
     const expenseAllocations = new Map<string, Map<string, number>>();
     filteredExpenses.forEach((expense) => {
-      // For project expenses, use project-specific manager discount (default 0 = no exemption)
+      // For project expenses: if apply_manager_discount is true, use global manager discount (undefined);
+      // if false, use 0% (no discount for this project)
       const project = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
       const projectMgrDiscount = project
-        ? { chargeDiscountPercent: project.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: project.manager_extra_charge_discount_percent ?? 0 }
+        ? (project.apply_manager_discount
+            ? undefined  // use global manager discount
+            : { chargeDiscountPercent: 0, extraChargeDiscountPercent: 0 })
         : undefined;
       expenseAllocations.set(
         expense.id,

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Slider } from "@/components/ui/slider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -16,6 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,8 +32,7 @@ const formSchema = z.object({
   end_date: z.string().optional(),
   budget: z.string().optional(),
   is_active: z.boolean(),
-  manager_charge_discount_percent: z.number().min(0).max(100),
-  manager_extra_charge_discount_percent: z.number().min(0).max(100),
+  apply_manager_discount: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -57,8 +56,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       end_date: "",
       budget: "",
       is_active: true,
-      manager_charge_discount_percent: 0,
-      manager_extra_charge_discount_percent: 0,
+      apply_manager_discount: false,
     },
   });
 
@@ -72,8 +70,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         end_date: project.end_date || "",
         budget: project.budget ? project.budget.toString() : "",
         is_active: project.is_active,
-        manager_charge_discount_percent: project.manager_charge_discount_percent ?? 0,
-        manager_extra_charge_discount_percent: project.manager_extra_charge_discount_percent ?? 0,
+        apply_manager_discount: project.apply_manager_discount ?? false,
       });
     } else {
       form.reset({
@@ -83,8 +80,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         end_date: "",
         budget: "",
         is_active: true,
-        manager_charge_discount_percent: 0,
-        manager_extra_charge_discount_percent: 0,
+        apply_manager_discount: false,
       });
     }
   }, [project, form, open]);
@@ -97,8 +93,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       end_date: values.end_date || undefined,
       budget: values.budget ? parseFloat(values.budget) : undefined,
       is_active: values.is_active,
-      manager_charge_discount_percent: values.manager_charge_discount_percent,
-      manager_extra_charge_discount_percent: values.manager_extra_charge_discount_percent,
+      apply_manager_discount: values.apply_manager_discount,
     };
 
     if (project) {
@@ -190,52 +185,23 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
               />
             </div>
 
-            <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-              <p className="text-sm font-semibold">درصد معافیت مدیر ساختمان در این پروژه</p>
-              <p className="text-xs text-muted-foreground">پیش‌فرض: بدون معافیت (۰٪). مبلغ معافیت بین سایر واحدها تسهیم می‌شود.</p>
-              
-              <FormField
-                control={form.control}
-                name="manager_charge_discount_percent"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex justify-between text-sm">
-                      <FormLabel>معافیت شارژ: {field.value}%</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Slider
-                        value={[field.value]}
-                        onValueChange={([v]) => field.onChange(v)}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="manager_extra_charge_discount_percent"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex justify-between text-sm">
-                      <FormLabel>معافیت فوق‌شارژ: {field.value}%</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Slider
-                        value={[field.value]}
-                        onValueChange={([v]) => field.onChange(v)}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="apply_manager_discount"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
+                  <div className="space-y-0.5">
+                    <FormLabel>اعمال تخفیف مدیر در این پروژه</FormLabel>
+                    <FormDescription>
+                      در صورت فعال بودن، تخفیف مدیر ساختمان روی هزینه‌های این پروژه نیز اعمال می‌شود
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

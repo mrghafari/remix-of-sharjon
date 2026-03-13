@@ -128,9 +128,16 @@ export function ProjectSettings() {
                       {project.end_date ? formatJalaliDate(project.end_date) : "-"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={project.is_active ? "default" : "secondary"}>
-                        {project.is_active ? "فعال" : "غیرفعال"}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={project.is_active ? "default" : "secondary"}>
+                          {project.is_active ? "فعال" : "غیرفعال"}
+                        </Badge>
+                        {project.apply_manager_discount && (
+                          <Badge variant="outline" className="text-xs">
+                            تخفیف مدیر ✓
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

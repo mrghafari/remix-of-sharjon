@@ -1,0 +1,1 @@
+ALTER TABLE public.projects ADD COLUMN apply_manager_discount boolean NOT NULL DEFAULT false;

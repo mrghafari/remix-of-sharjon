@@ -415,6 +415,7 @@ export type Database = {
       }
       projects: {
         Row: {
+          apply_manager_discount: boolean
           budget: number | null
           building_id: string
           created_at: string
@@ -429,6 +430,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          apply_manager_discount?: boolean
           budget?: number | null
           building_id: string
           created_at?: string
@@ -443,6 +445,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          apply_manager_discount?: boolean
           budget?: number | null
           building_id?: string
           created_at?: string

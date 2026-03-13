@@ -85,7 +85,9 @@ export function ExpenseDetailsDialog({
   // Project-specific manager discount
   const expenseProject = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
   const projectMgrDiscount = expenseProject
-    ? { chargeDiscountPercent: expenseProject.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: expenseProject.manager_extra_charge_discount_percent ?? 0 }
+    ? (expenseProject.apply_manager_discount
+        ? undefined  // use global manager discount
+        : { chargeDiscountPercent: 0, extraChargeDiscountPercent: 0 })
     : undefined;
 
   // Find the manager's unit number for highlighting
@@ -93,11 +95,14 @@ export function ExpenseDetailsDialog({
     ? units.find((u) => u.id === managerDiscount.unitId)?.unit_number
     : null;
 
-  const managerDiscountPercent = managerDiscount
-    ? (expense.fund_type === "charge" 
-        ? (projectMgrDiscount ? projectMgrDiscount.chargeDiscountPercent : managerDiscount.chargeDiscountPercent)
-        : (projectMgrDiscount ? projectMgrDiscount.extraChargeDiscountPercent : managerDiscount.extraChargeDiscountPercent))
+  // Calculate effective discount percent for display
+  const effectiveChargeDiscount = managerDiscount
+    ? (projectMgrDiscount ? projectMgrDiscount.chargeDiscountPercent : managerDiscount.chargeDiscountPercent)
     : 0;
+  const effectiveExtraChargeDiscount = managerDiscount
+    ? (projectMgrDiscount ? projectMgrDiscount.extraChargeDiscountPercent : managerDiscount.extraChargeDiscountPercent)
+    : 0;
+  const managerDiscountPercent = expense.fund_type === "charge" ? effectiveChargeDiscount : effectiveExtraChargeDiscount;
 
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => ({

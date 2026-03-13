@@ -49,7 +49,9 @@ export function useUnitBalance() {
     expenses.forEach((expense) => {
       const project = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
       const projectMgrDiscount = project
-        ? { chargeDiscountPercent: project.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: project.manager_extra_charge_discount_percent ?? 0 }
+        ? (project.apply_manager_discount
+            ? undefined
+            : { chargeDiscountPercent: 0, extraChargeDiscountPercent: 0 })
         : undefined;
       expenseAllocations.set(
         expense.id,
