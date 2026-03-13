@@ -91,9 +91,13 @@ export function ProjectReport() {
   const unitAllocations = useMemo(() => {
     if (!selectedProjectId || units.length === 0) return [];
 
+    const projectMgrDiscount = selectedProject
+      ? { chargeDiscountPercent: selectedProject.manager_charge_discount_percent ?? 0, extraChargeDiscountPercent: selectedProject.manager_extra_charge_discount_percent ?? 0 }
+      : undefined;
+
     return units.map((unit) => {
       const totalAllocated = projectExpenses.reduce((sum, expense) => {
-        return sum + calculateAllocatedAmount(expense, unit, units, managerDiscount, vacantDiscount);
+        return sum + calculateAllocatedAmount(expense, unit, units, managerDiscount, vacantDiscount, projectMgrDiscount);
       }, 0);
 
       return {
@@ -105,7 +109,7 @@ export function ProjectReport() {
         allocatedAmount: totalAllocated,
       };
     }).filter((ua) => ua.allocatedAmount > 0);
-  }, [projectExpenses, units, managerDiscount, selectedProjectId]);
+  }, [projectExpenses, units, managerDiscount, selectedProjectId, selectedProject]);
 
   const totalUnitAllocated = unitAllocations.reduce(
     (sum, ua) => sum + ua.allocatedAmount,
