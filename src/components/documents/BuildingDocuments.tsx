@@ -42,6 +42,7 @@ export function BuildingDocuments() {
   const queryClient = useQueryClient();
 
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
+  const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [newFolderDialog, setNewFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -65,7 +66,7 @@ export function BuildingDocuments() {
 
   // Get unique folders
   const folders = Array.from(
-    new Set([...DEFAULT_FOLDERS, ...documents.map((d) => d.folder)])
+    new Set([...DEFAULT_FOLDERS, ...customFolders, ...documents.map((d) => d.folder)])
   );
 
   const folderDocs = activeFolder
@@ -181,6 +182,7 @@ export function BuildingDocuments() {
       toast({ title: "این پوشه قبلاً وجود دارد", variant: "destructive" });
       return;
     }
+    setCustomFolders((prev) => [...prev, name]);
     setActiveFolder(name);
     setNewFolderDialog(false);
     setNewFolderName("");
