@@ -102,7 +102,9 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
     if (!currentBuildingId || attachments.length === 0) return;
     
     const uploadPromises = attachments.map(async (file, index) => {
-      const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${index}_${file.name}`;
+      const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
+      const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "bin";
+      const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${index}_${crypto.randomUUID()}.${safeExtension}`;
       const { error: uploadError } = await supabase.storage
         .from("expense-attachments")
         .upload(filePath, file);
