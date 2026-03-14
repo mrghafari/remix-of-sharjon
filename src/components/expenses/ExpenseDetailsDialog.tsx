@@ -62,12 +62,12 @@ export function ExpenseDetailsDialog({
     queryFn: async () => {
       if (!expense) return [];
       const { data, error } = await supabase
-        .from("expense_attachments" as any)
+        .from("expense_attachments")
         .select("*")
         .eq("expense_id", expense.id)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data || []) as any[];
+      return data || [];
     },
     enabled: !!expense,
   });
