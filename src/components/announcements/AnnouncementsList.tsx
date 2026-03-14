@@ -82,7 +82,7 @@ export function AnnouncementsList() {
       if (!trimmedTitle || !trimmedContent || !currentBuildingId) return;
 
       if (editItem) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("building_announcements")
           .update({ title: trimmedTitle, content: trimmedContent, is_pinned: isPinned })
           .eq("id", editItem.id);
