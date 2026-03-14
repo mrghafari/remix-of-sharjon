@@ -43,6 +43,7 @@ function exportBalanceExcel(data: UnitBalance[], debtorsOnly: boolean) {
 
   const totalPayments = filtered.reduce((s, u) => s + u.totalPayments, 0);
   const totalExpenses = filtered.reduce((s, u) => s + u.totalAllocatedExpenses, 0);
+  const totalCharges = filtered.reduce((s, u) => s + u.totalCharges, 0);
   const totalBalance = filtered.reduce((s, u) => s + u.balance, 0);
 
   rows.push({
@@ -50,6 +51,7 @@ function exportBalanceExcel(data: UnitBalance[], debtorsOnly: boolean) {
     پلاک: "",
     مالک: "جمع کل",
     "دریافتی‌ها (تومان)": Math.round(totalPayments),
+    "بدهی شارژ (تومان)": Math.round(totalCharges),
     "هزینه تسهیم‌شده (تومان)": Math.round(totalExpenses),
     "مانده (تومان)": Math.round(totalBalance),
     وضعیت: "",
