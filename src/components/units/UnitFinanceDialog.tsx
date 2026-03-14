@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, ArrowUpCircle, ArrowDownCircle, Wallet, Receipt, TrendingUp, TrendingDown, FileSpreadsheet, FileDown, CalendarDays } from "lucide-react";
+import { Loader2, ArrowUpCircle, ArrowDownCircle, Wallet, Receipt, TrendingUp, TrendingDown, FileSpreadsheet, FileDown, CalendarDays, X } from "lucide-react";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { useUnitBalanceFiltered, DateRange } from "@/hooks/useUnitBalanceFiltered";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
@@ -158,41 +158,34 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
           </DialogTitle>
         </DialogHeader>
 
-        {/* Date Filter + Export Buttons */}
-        <div className="flex flex-wrap items-end gap-3 border-b pb-4">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <div className="space-y-1">
-              <Label className="text-xs">از تاریخ</Label>
-              <JalaliDatePicker
-                value={dateRange.from}
-                onChange={(d) => setDateRange(prev => ({ ...prev, from: d }))}
-                placeholder="از تاریخ"
-                buttonClassName="h-8 text-sm w-36"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">تا تاریخ</Label>
-              <JalaliDatePicker
-                value={dateRange.to}
-                onChange={(d) => setDateRange(prev => ({ ...prev, to: d }))}
-                placeholder="تا تاریخ"
-                buttonClassName="h-8 text-sm w-36"
-              />
-            </div>
-            {(dateRange.from || dateRange.to) && (
-              <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setDateRange({ from: undefined, to: undefined })}>
-                حذف فیلتر
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2 mr-auto">
-            <Button onClick={handleExportExcel} variant="outline" size="sm" className="gap-1.5 h-8" disabled={transactions.length === 0}>
-              <FileSpreadsheet className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-2 border-b pb-3">
+          <CalendarDays className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground whitespace-nowrap">از</span>
+          <JalaliDatePicker
+            value={dateRange.from}
+            onChange={(d) => setDateRange(prev => ({ ...prev, from: d }))}
+            placeholder="از تاریخ"
+            buttonClassName="h-7 text-xs px-2 min-w-[100px]"
+          />
+          <span className="text-xs text-muted-foreground whitespace-nowrap">تا</span>
+          <JalaliDatePicker
+            value={dateRange.to}
+            onChange={(d) => setDateRange(prev => ({ ...prev, to: d }))}
+            placeholder="تا تاریخ"
+            buttonClassName="h-7 text-xs px-2 min-w-[100px]"
+          />
+          {(dateRange.from || dateRange.to) && (
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setDateRange({ from: undefined, to: undefined })}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+          <div className="flex gap-1.5 mr-auto">
+            <Button onClick={handleExportExcel} variant="outline" size="sm" className="gap-1 h-7 text-xs" disabled={transactions.length === 0}>
+              <FileSpreadsheet className="w-3 h-3" />
               اکسل
             </Button>
-            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 h-8" disabled={transactions.length === 0 || isExporting}>
-              {isExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1 h-7 text-xs" disabled={transactions.length === 0 || isExporting}>
+              {isExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
               PDF
             </Button>
           </div>
