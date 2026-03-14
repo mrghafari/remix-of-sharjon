@@ -129,10 +129,10 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
     <div className="space-y-6">
       {/* Controls */}
       <Card>
-        <CardContent className="flex flex-wrap items-center gap-4 py-4">
-          <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
-              <SelectTrigger className="w-56">
+              <SelectTrigger className="w-48 h-8 text-xs">
                 <SelectValue placeholder="انتخاب واحد" />
               </SelectTrigger>
               <SelectContent>
@@ -144,17 +144,17 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
-          <div className="flex items-center gap-2 mr-auto">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleExportExcel}>
-              <FileSpreadsheet className="w-4 h-4" />
-              اکسل
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleExportPDF} disabled={exporting}>
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-              PDF
-            </Button>
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
+            <div className="flex gap-1.5 mr-auto">
+              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={handleExportExcel}>
+                <FileSpreadsheet className="w-3 h-3" />
+                اکسل
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={handleExportPDF} disabled={exporting}>
+                {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
+                PDF
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
