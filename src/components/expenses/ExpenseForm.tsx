@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, X, Loader2, Paperclip, FileIcon, Trash2 } from "lucide-react";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { toast } from "@/hooks/use-toast";
 import { useCreateExpense, type CreateExpenseData, type AllocationType } from "@/hooks/useExpenses";
@@ -21,6 +21,8 @@ import { useUnits } from "@/hooks/useUnits";
 import { useCategoriesWithSettings } from "@/hooks/useExpenseCategories";
 import { useActiveProjects } from "@/hooks/useProjects";
 import { NumericInput } from "@/components/ui/numeric-input";
+import { supabase } from "@/integrations/supabase/client";
+import { useBuilding } from "@/contexts/BuildingContext";
 
 interface ExpenseFormProps {
   onClose: () => void;
@@ -64,7 +66,11 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
   const [selectedUnitId, setSelectedUnitId] = useState<string>("");
   const [areaRatio, setAreaRatio] = useState<number>(50);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
+  const { currentBuildingId } = useBuilding();
   const createExpense = useCreateExpense();
   const { data: units } = useUnits();
   const { data: categoriesWithSettings } = useCategoriesWithSettings();
@@ -81,6 +87,39 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       setAllocationType(currentCategorySetting.allocation_settings.default_allocation_type as AllocationType);
     }
   }, [currentCategorySetting]);
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadAttachments = async (expenseId: string) => {
+    if (!currentBuildingId || attachments.length === 0) return;
+    for (const file of attachments) {
+      const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("expense-attachments")
+        .upload(filePath, file);
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        continue;
+      }
+      await supabase.from("expense_attachments" as any).insert({
+        expense_id: expenseId,
+        building_id: currentBuildingId,
+        file_name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        file_type: file.type,
+      } as any);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -115,9 +154,20 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       project_id: selectedProjectId || undefined,
     };
 
+    setIsUploading(true);
     createExpense.mutate(expense, {
-      onSuccess: () => {
-        onClose();
+      onSuccess: async (data: any) => {
+        try {
+          if (attachments.length > 0 && data?.id) {
+            await uploadAttachments(data.id);
+          }
+        } finally {
+          setIsUploading(false);
+          onClose();
+        }
+      },
+      onError: () => {
+        setIsUploading(false);
       },
     });
   };
@@ -303,12 +353,51 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
             </div>
           )}
 
+          {/* File Attachments */}
+          <div className="space-y-2">
+            <Label>مستندات (اختیاری)</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleFilesSelected}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2 w-full border-dashed"
+            >
+              <Paperclip className="w-4 h-4" />
+              افزودن فایل (تصویر، PDF، ...)
+            </Button>
+            {attachments.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {attachments.map((file, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-sm">
+                    <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span className="flex-1 truncate">{file.name}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {(file.size / 1024).toFixed(0)} KB
+                    </span>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAttachment(i)}>
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">{attachments.length} فایل انتخاب شده</p>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1" disabled={createExpense.isPending}>
-              {createExpense.isPending ? (
+            <Button type="submit" className="flex-1" disabled={createExpense.isPending || isUploading}>
+              {(createExpense.isPending || isUploading) ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                  در حال ثبت...
+                  {isUploading ? "در حال آپلود مستندات..." : "در حال ثبت..."}
                 </>
               ) : (
                 "ثبت هزینه"

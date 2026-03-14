@@ -349,6 +349,54 @@ export type Database = {
           },
         ]
       }
+      expense_attachments: {
+        Row: {
+          building_id: string
+          created_at: string
+          expense_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          expense_id: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type: string
+          id?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          expense_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_attachments_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_attachments_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_categories: {
         Row: {
           building_id: string

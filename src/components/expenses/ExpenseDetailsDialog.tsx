@@ -15,10 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { FileSpreadsheet, FileText, Loader2, Paperclip, Download, ExternalLink } from "lucide-react";
 import { useUnits } from "@/hooks/useUnits";
 import { Expense } from "@/hooks/useExpenses";
 import { useExpenseShares } from "@/hooks/useExpenseShares";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import {
   exportToExcel,
@@ -54,6 +56,26 @@ export function ExpenseDetailsDialog({
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
+  
+  const { data: attachments = [] } = useQuery({
+    queryKey: ["expense_attachments", expense?.id],
+    queryFn: async () => {
+      if (!expense) return [];
+      const { data, error } = await supabase
+        .from("expense_attachments" as any)
+        .select("*")
+        .eq("expense_id", expense.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+    enabled: !!expense,
+  });
+
+  const getFileUrl = (filePath: string) => {
+    const { data } = supabase.storage.from("expense-attachments").getPublicUrl(filePath);
+    return data.publicUrl;
+  };
 
   if (!expense) return null;
 
@@ -208,6 +230,34 @@ export function ExpenseDetailsDialog({
                 </TableRow>
               </TableBody>
             </Table>
+          )}
+
+          {/* Attachments */}
+          {attachments.length > 0 && (
+            <div className="mt-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Paperclip className="w-4 h-4" />
+                مستندات پیوست ({attachments.length})
+              </h3>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {attachments.map((att: any) => (
+                  <div key={att.id} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
+                    <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span className="flex-1 text-sm truncate">{att.file_name}</span>
+                    <a
+                      href={getFileUrl(att.file_path)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0"
+                    >
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </Button>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </DialogContent>
