@@ -105,7 +105,7 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       title: title.trim(),
       amount: parseFloat(amount),
       category: category as any,
-      expense_date: date,
+      expense_date: date.toISOString().split("T")[0],
       description: description.trim() || undefined,
       fund_type: fundType as "charge" | "extra_charge",
       allocation_type: allocationType,
