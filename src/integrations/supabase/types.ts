@@ -272,6 +272,8 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string
+          default_charge_amount: number
+          default_extra_charge_amount: number
           id: string
           name: string
           total_units: number | null
@@ -282,6 +284,8 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          default_charge_amount?: number
+          default_extra_charge_amount?: number
           id?: string
           name: string
           total_units?: number | null
@@ -292,6 +296,8 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          default_charge_amount?: number
+          default_extra_charge_amount?: number
           id?: string
           name?: string
           total_units?: number | null
@@ -774,6 +780,57 @@ export type Database = {
             columns: ["building_id"]
             isOneToOne: false
             referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_charges: {
+        Row: {
+          amount: number
+          building_id: string
+          created_at: string
+          description: string | null
+          fund_type: Database["public"]["Enums"]["fund_type"]
+          id: string
+          month: number
+          unit_id: string
+          year: number
+        }
+        Insert: {
+          amount?: number
+          building_id: string
+          created_at?: string
+          description?: string | null
+          fund_type?: Database["public"]["Enums"]["fund_type"]
+          id?: string
+          month: number
+          unit_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          building_id?: string
+          created_at?: string
+          description?: string | null
+          fund_type?: Database["public"]["Enums"]["fund_type"]
+          id?: string
+          month?: number
+          unit_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_charges_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_charges_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
