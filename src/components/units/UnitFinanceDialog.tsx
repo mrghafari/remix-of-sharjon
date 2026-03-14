@@ -58,7 +58,7 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
   const transactions = useMemo(() => {
     if (!balance) return [];
 
-    const all: { id: string; date: string; type: "payment" | "expense" | "charge"; title: string; amount: number; ownerName?: string | null; residentName?: string | null; runningBalance?: number }[] = [];
+    const all: { id: string; date: string; type: "payment" | "expense"; title: string; amount: number; ownerName?: string | null; residentName?: string | null; runningBalance?: number }[] = [];
 
     balance.paymentBreakdown.forEach((p) => {
       all.push({
