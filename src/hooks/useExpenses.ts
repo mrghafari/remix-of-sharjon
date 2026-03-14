@@ -55,7 +55,8 @@ export function useExpenses() {
         .from("expenses")
         .select("*")
         .eq("building_id", currentBuildingId)
-        .order("expense_date", { ascending: false });
+        .order("expense_date", { ascending: false })
+        .order("created_at", { ascending: false });
       
       if (error) throw error;
       return data as Expense[];
