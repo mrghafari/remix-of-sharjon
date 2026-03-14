@@ -58,6 +58,8 @@ export function PaymentForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const selectedUnit = units?.find((u) => u.id === formData.unit_id);
+    
     createPayment.mutate(
       {
         unit_id: formData.unit_id,
@@ -67,7 +69,9 @@ export function PaymentForm() {
         fund_type: formData.fund_type as "charge" | "extra_charge",
         payment_date: new Date().toISOString().split("T")[0],
         description: formData.description || null,
-      },
+        owner_name: selectedUnit?.owner_name || null,
+        resident_name: selectedUnit?.resident_name || null,
+      } as any,
       {
         onSuccess: () => {
           setOpen(false);
