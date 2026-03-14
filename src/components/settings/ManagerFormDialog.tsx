@@ -321,7 +321,11 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>تاریخ شروع</FormLabel>
                     <FormControl>
-                      <Input {...field} dir="ltr" />
+                      <JalaliDatePicker
+                        value={field.value ? new Date(fromJalaliString(field.value)) : undefined}
+                        onChange={(d) => field.onChange(d ? toJalaliString(d) : "")}
+                        placeholder="انتخاب تاریخ"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -334,7 +338,11 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   <FormItem>
                     <FormLabel>تاریخ پایان (اختیاری)</FormLabel>
                     <FormControl>
-                      <Input {...field} dir="ltr" />
+                      <JalaliDatePicker
+                        value={field.value ? new Date(fromJalaliString(field.value)) : undefined}
+                        onChange={(d) => field.onChange(d ? toJalaliString(d) : "")}
+                        placeholder="انتخاب تاریخ"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
