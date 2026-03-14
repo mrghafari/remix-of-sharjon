@@ -163,7 +163,6 @@ export function ExpensesList() {
                   <TableHead className="text-right">مبلغ</TableHead>
                   <TableHead className="text-right">صندوق</TableHead>
                   <TableHead className="text-right">تاریخ</TableHead>
-                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -210,11 +209,6 @@ export function ExpensesList() {
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(expense.expense_date)}</TableCell>
-                      <TableCell>
-                        <Badge variant={expense.is_paid ? "default" : "secondary"}>
-                          {expense.is_paid ? "پرداخت شده" : "در انتظار"}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button 
