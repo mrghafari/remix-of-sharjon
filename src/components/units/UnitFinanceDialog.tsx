@@ -82,20 +82,6 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
       });
     });
 
-    // Include charge debts
-    if (balance.chargeBreakdown) {
-      balance.chargeBreakdown.forEach((c) => {
-        all.push({
-          id: c.id,
-          date: c.created_at,
-          type: "charge",
-          title: c.description || `شارژ ${c.month}/${c.year}`,
-          amount: c.amount,
-          ownerName: c.owner_name,
-          residentName: c.resident_name,
-        });
-      });
-    }
 
     all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
