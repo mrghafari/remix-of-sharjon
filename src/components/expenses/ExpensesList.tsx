@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Filter, Loader2, Eye } from "lucide-react";
+import { Trash2, Filter, Loader2, Eye, Paperclip } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +33,7 @@ import { useExpenses, useDeleteExpense, type Expense } from "@/hooks/useExpenses
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { useProjects } from "@/hooks/useProjects";
 import { formatJalaliDate } from "@/lib/jalaliDate";
+import { supabase } from "@/integrations/supabase/client";
 import { ExpenseDetailsDialog } from "./ExpenseDetailsDialog";
 
 const fundTypeLabels: Record<string, string> = {
@@ -74,6 +76,27 @@ export function ExpensesList() {
   const { data: categories = [] } = useExpenseCategories();
   const { data: projects = [] } = useProjects();
   const deleteExpense = useDeleteExpense();
+
+  const { data: attachmentCounts = {} } = useQuery({
+    queryKey: ["expense-attachments-summary", expenses.map((exp) => exp.id).join(",")],
+    queryFn: async () => {
+      if (expenses.length === 0) return {} as Record<string, number>;
+
+      const { data, error } = await supabase
+        .from("expense_attachments")
+        .select("expense_id")
+        .in("expense_id", expenses.map((exp) => exp.id));
+
+      if (error) throw error;
+
+      return (data || []).reduce((acc, row) => {
+        const expenseId = row.expense_id;
+        acc[expenseId] = (acc[expenseId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    },
+    enabled: expenses.length > 0,
+  });
 
   const filteredExpenses = expenses.filter(exp => {
     const catMatch = filterCategory === "all" || exp.category === filterCategory;
@@ -170,6 +193,8 @@ export function ExpensesList() {
                 {filteredExpenses.map((expense) => {
                   const categoryInfo = categories.find(c => c.name === expense.category) || { label: "سایر", icon: "📋" };
                   const projectInfo = projects.find(p => p.id === expense.project_id);
+                  const attachmentCount = attachmentCounts[expense.id] || 0;
+                  const hasAttachments = attachmentCount > 0;
                   return (
                     <TableRow 
                       key={expense.id} 
@@ -178,7 +203,15 @@ export function ExpensesList() {
                     >
                       <TableCell>
                         <div>
-                          <p className="font-medium">{expense.title}</p>
+                          <p className="font-medium flex items-center gap-1.5">
+                            <span>{expense.title}</span>
+                            {hasAttachments && (
+                              <span className="inline-flex items-center gap-1 text-primary text-xs">
+                                <Paperclip className="w-3.5 h-3.5" />
+                                {attachmentCount}
+                              </span>
+                            )}
+                          </p>
                           {expense.description && (
                             <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                               {expense.description}
@@ -211,6 +244,19 @@ export function ExpensesList() {
                       <TableCell>{formatDate(expense.expense_date)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          {hasAttachments && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-primary hover:text-primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleExpenseClick(expense);
+                              }}
+                            >
+                              <Paperclip className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 

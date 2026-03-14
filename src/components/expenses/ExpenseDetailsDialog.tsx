@@ -35,6 +35,12 @@ interface ExpenseDetailsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface ExpenseAttachment {
+  id: string;
+  file_name: string;
+  file_path: string;
+}
+
 const allocationLabels: Record<string, string> = {
   single_unit: "واحد خاص",
   by_area: "بر اساس متراژ",
@@ -54,27 +60,59 @@ export function ExpenseDetailsDialog({
   onOpenChange,
 }: ExpenseDetailsDialogProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [activeAttachmentId, setActiveAttachmentId] = useState<string | null>(null);
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
-  
-  const { data: attachments = [] } = useQuery({
+
+  const { data: attachments = [], isLoading: attachmentsLoading } = useQuery({
     queryKey: ["expense_attachments", expense?.id],
     queryFn: async () => {
       if (!expense) return [];
       const { data, error } = await supabase
         .from("expense_attachments")
-        .select("*")
+        .select("id, file_name, file_path")
         .eq("expense_id", expense.id)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data || [];
+      return (data || []) as ExpenseAttachment[];
     },
     enabled: !!expense,
   });
 
-  const getFileUrl = (filePath: string) => {
+  const getAttachmentUrl = async (filePath: string) => {
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from("expense-attachments")
+      .createSignedUrl(filePath, 60 * 60);
+
+    if (!signedError && signedData?.signedUrl) {
+      return signedData.signedUrl;
+    }
+
     const { data } = supabase.storage.from("expense-attachments").getPublicUrl(filePath);
     return data.publicUrl;
+  };
+
+  const handleAttachmentAction = async (att: ExpenseAttachment, mode: "view" | "download") => {
+    try {
+      setActiveAttachmentId(att.id);
+      const url = await getAttachmentUrl(att.file_path);
+
+      if (mode === "download") {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = att.file_name;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      window.open(url, "_blank", "noopener,noreferrer");
+    } finally {
+      setActiveAttachmentId(null);
+    }
   };
 
   if (!expense) return null;
@@ -233,32 +271,54 @@ export function ExpenseDetailsDialog({
           )}
 
           {/* Attachments */}
-          {attachments.length > 0 && (
-            <div className="mt-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Paperclip className="w-4 h-4" />
-                مستندات پیوست ({attachments.length})
-              </h3>
+          <div className="mt-6">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Paperclip className="w-4 h-4" />
+              مستندات پیوست {attachments.length > 0 ? `(${attachments.length})` : ""}
+            </h3>
+
+            {attachmentsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                در حال دریافت مستندات...
+              </div>
+            ) : attachments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">مستندی برای این هزینه ثبت نشده است.</p>
+            ) : (
               <div className="grid gap-2 sm:grid-cols-2">
-                {attachments.map((att: any) => (
+                {attachments.map((att) => (
                   <div key={att.id} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
                     <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
                     <span className="flex-1 text-sm truncate">{att.file_name}</span>
-                    <a
-                      href={getFileUrl(att.file_path)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0"
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleAttachmentAction(att, "view")}
+                      disabled={activeAttachmentId === att.id}
                     >
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </Button>
-                    </a>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => handleAttachmentAction(att, "download")}
+                      disabled={activeAttachmentId === att.id}
+                    >
+                      {activeAttachmentId === att.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
