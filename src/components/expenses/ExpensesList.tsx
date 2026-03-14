@@ -193,6 +193,8 @@ export function ExpensesList() {
                 {filteredExpenses.map((expense) => {
                   const categoryInfo = categories.find(c => c.name === expense.category) || { label: "سایر", icon: "📋" };
                   const projectInfo = projects.find(p => p.id === expense.project_id);
+                  const attachmentCount = attachmentCounts[expense.id] || 0;
+                  const hasAttachments = attachmentCount > 0;
                   return (
                     <TableRow 
                       key={expense.id} 
