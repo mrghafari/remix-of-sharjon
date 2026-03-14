@@ -163,7 +163,6 @@ export function ExpensesList() {
                   <TableHead className="text-right">مبلغ</TableHead>
                   <TableHead className="text-right">صندوق</TableHead>
                   <TableHead className="text-right">تاریخ</TableHead>
-                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
