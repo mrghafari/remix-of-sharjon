@@ -162,7 +162,7 @@ export function PollsList() {
 
   const closePollMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("building_polls")
         .update({ is_active: false })
         .eq("id", id);
