@@ -58,7 +58,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="mr-64 transition-all duration-300">
-        <Header />
+        <Header onTabChange={setActiveTab} />
         <div className="p-6">
           {renderContent()}
         </div>

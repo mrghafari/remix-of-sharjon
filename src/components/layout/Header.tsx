@@ -36,13 +36,17 @@ export function Header({ onTabChange }: HeaderProps) {
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="flex items-center justify-between h-16 px-6">
         {/* Search */}
-        <div className="relative w-80">
+        <div className="relative w-80 cursor-pointer" onClick={() => setSearchOpen(true)}>
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="جستجو..."
-            className="pr-10 bg-secondary/50 border-0 focus-visible:ring-1"
+            placeholder="جستجو... (Ctrl+K)"
+            className="pr-10 bg-secondary/50 border-0 focus-visible:ring-1 cursor-pointer"
+            readOnly
           />
         </div>
+        {onTabChange && (
+          <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} onTabChange={onTabChange} />
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-4">
