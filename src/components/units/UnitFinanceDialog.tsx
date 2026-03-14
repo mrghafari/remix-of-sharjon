@@ -58,7 +58,7 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
   const transactions = useMemo(() => {
     if (!balance) return [];
 
-    const all: { id: string; date: string; type: "payment" | "expense"; title: string; amount: number; runningBalance?: number }[] = [];
+    const all: { id: string; date: string; type: "payment" | "expense" | "charge"; title: string; amount: number; ownerName?: string | null; residentName?: string | null; runningBalance?: number }[] = [];
 
     balance.paymentBreakdown.forEach((p) => {
       all.push({
@@ -67,6 +67,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "payment",
         title: `پرداخت ${p.month}/${p.year}${p.description ? ` - ${p.description}` : ""}`,
         amount: p.amount,
+        ownerName: (p as any).owner_name,
+        residentName: (p as any).resident_name,
       });
     });
 
@@ -79,6 +81,21 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         amount: allocatedAmount,
       });
     });
+
+    // Include charge debts
+    if (balance.chargeBreakdown) {
+      balance.chargeBreakdown.forEach((c) => {
+        all.push({
+          id: c.id,
+          date: c.created_at,
+          type: "charge",
+          title: c.description || `شارژ ${c.month}/${c.year}`,
+          amount: c.amount,
+          ownerName: c.owner_name,
+          residentName: c.resident_name,
+        });
+      });
+    }
 
     all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
