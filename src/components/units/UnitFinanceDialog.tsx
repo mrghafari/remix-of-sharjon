@@ -261,8 +261,6 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
                         <TableCell>
                           {t.type === "payment" ? (
                             <ArrowUpCircle className="w-4 h-4 text-green-600" />
-                          ) : t.type === "charge" ? (
-                            <ArrowDownCircle className="w-4 h-4 text-orange-500" />
                           ) : (
                             <ArrowDownCircle className="w-4 h-4 text-red-600" />
                           )}
