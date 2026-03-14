@@ -201,32 +201,34 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="title">عنوان هزینه *</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center gap-3">
+              <Label htmlFor="title" className="shrink-0 w-24 text-sm">عنوان هزینه *</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
+                className="flex-1"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="amount">مبلغ (تومان) *</Label>
+            <div className="flex items-center gap-3">
+              <Label htmlFor="amount" className="shrink-0 w-24 text-sm">مبلغ (تومان) *</Label>
               <NumericInput
                 id="amount"
                 value={amount}
                 onChange={setAmount}
+                className="flex-1"
               />
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="category">دسته‌بندی *</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center gap-3">
+              <Label htmlFor="category" className="shrink-0 w-24 text-sm">دسته‌بندی *</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="flex-1">
                   <SelectValue placeholder="انتخاب کنید" />
                 </SelectTrigger>
                 <SelectContent>
@@ -242,59 +244,64 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>تاریخ</Label>
-              <JalaliDatePicker
-                value={date}
-                onChange={(d) => d && setDate(d)}
-              />
+            <div className="flex items-center gap-3">
+              <Label className="shrink-0 w-24 text-sm">تاریخ</Label>
+              <div className="flex-1">
+                <JalaliDatePicker
+                  value={date}
+                  onChange={(d) => d && setDate(d)}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>صندوق پرداخت *</Label>
-            <Select value={fundType} onValueChange={setFundType}>
-              <SelectTrigger>
-                <SelectValue placeholder="انتخاب صندوق" />
-              </SelectTrigger>
-              <SelectContent>
-                {fundTypes.map((fund) => (
-                  <SelectItem key={fund.value} value={fund.value}>
-                    {fund.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center gap-3">
+              <Label className="shrink-0 w-24 text-sm">صندوق پرداخت *</Label>
+              <Select value={fundType} onValueChange={setFundType}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="انتخاب صندوق" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fundTypes.map((fund) => (
+                    <SelectItem key={fund.value} value={fund.value}>
+                      {fund.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Label className="shrink-0 w-24 text-sm">پروژه</Label>
+              <Select 
+                value={selectedProjectId || "none"} 
+                onValueChange={(val) => setSelectedProjectId(val === "none" ? "" : val)}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="بدون پروژه" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">بدون پروژه</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>پروژه (اختیاری)</Label>
-            <Select 
-              value={selectedProjectId || "none"} 
-              onValueChange={(val) => setSelectedProjectId(val === "none" ? "" : val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="انتخاب پروژه (اگر هزینه مربوط به پروژه است)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">بدون پروژه</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">توضیحات</Label>
+          <div className="flex items-start gap-3">
+            <Label htmlFor="description" className="shrink-0 w-24 text-sm pt-2">توضیحات</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
+              rows={2}
               maxLength={500}
+              className="flex-1"
             />
           </div>
 
