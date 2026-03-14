@@ -5,6 +5,7 @@ import { Dashboard } from "@/components/dashboard/Dashboard";
 import { ExpensesPage } from "@/components/expenses/ExpensesPage";
 import { UnitsPage } from "@/components/units/UnitsPage";
 import { PaymentsPage } from "@/components/payments/PaymentsPage";
+import { ChargesPage } from "@/components/charges/ChargesPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ReportsPage } from "@/components/reports/ReportsPage";
 import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
@@ -25,6 +26,8 @@ const Index = () => {
         return <ExpensesPage />;
       case "payments":
         return <PaymentsPage />;
+      case "charges":
+        return <ChargesPage />;
       case "settings":
         return <SettingsPage />;
       case "reports":
