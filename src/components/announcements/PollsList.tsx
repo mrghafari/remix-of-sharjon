@@ -98,12 +98,12 @@ export function PollsList() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("building_polls").insert({
+      const { error } = await (supabase as any).from("building_polls").insert({
         building_id: currentBuildingId,
         question: trimmedQ,
         options: trimmedOpts,
         created_by: user.id,
-      } as any);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
