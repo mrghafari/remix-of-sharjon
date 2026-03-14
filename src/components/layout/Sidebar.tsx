@@ -1,4 +1,4 @@
-import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen } from "lucide-react";
+import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
