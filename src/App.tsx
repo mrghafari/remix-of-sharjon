@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResidentAuth from "./pages/ResidentAuth";
+import ResidentDashboard from "./pages/ResidentDashboard";
 import Admin from "./pages/Admin";
 import AdminBuildingView from "./pages/AdminBuildingView";
 import Landing from "./pages/Landing";
@@ -60,6 +62,28 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ResidentAuthRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // If user is logged in and has resident_matches, redirect to resident dashboard
+  if (user) {
+    const matches = localStorage.getItem("resident_matches");
+    if (matches) {
+      return <Navigate to="/resident" replace />;
+    }
+  }
+
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -69,6 +93,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
+          <Route path="/resident-auth" element={<ResidentAuthRoute><ResidentAuth /></ResidentAuthRoute>} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/dashboard"
@@ -77,6 +102,14 @@ const App = () => (
                 <BuildingProvider>
                   <Index />
                 </BuildingProvider>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resident"
+            element={
+              <ProtectedRoute>
+                <ResidentDashboard />
               </ProtectedRoute>
             }
           />
