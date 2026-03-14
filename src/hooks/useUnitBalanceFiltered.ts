@@ -4,11 +4,13 @@ import { useExpenses, Expense, AllocationType } from "./useExpenses";
 import { usePayments, PaymentWithUnit } from "./usePayments";
 import { useProjects } from "./useProjects";
 import { useExpenseShares } from "./useExpenseShares";
+import { useUnitCharges, UnitCharge } from "./useUnitCharges";
 
 export interface UnitBalance {
   unit: Unit;
   totalPayments: number;
   totalAllocatedExpenses: number;
+  totalCharges: number;
   balance: number;
   expenseBreakdown: {
     expense: Expense;
@@ -16,6 +18,7 @@ export interface UnitBalance {
     project?: { name: string } | null;
   }[];
   paymentBreakdown: PaymentWithUnit[];
+  chargeBreakdown: UnitCharge[];
 }
 
 export interface DateRange {
@@ -241,6 +244,7 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
+  const { data: unitCharges = [], isLoading: chargesLoading } = useUnitCharges();
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((e) => isInDateRange(e.expense_date, dateRange));
@@ -249,6 +253,10 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => isInDateRange(p.payment_date, dateRange));
   }, [payments, dateRange]);
+
+  const filteredCharges = useMemo(() => {
+    return unitCharges.filter((c) => isInDateRange(c.created_at, dateRange));
+  }, [unitCharges, dateRange]);
 
   // Build share map from stored snapshots
   const shareMap = useMemo(() => {
@@ -276,31 +284,38 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
         (sum, e) => sum + e.allocatedAmount, 0
       );
 
+      const chargeBreakdown = filteredCharges.filter((c) => c.unit_id === unit.id);
+      const totalCharges = chargeBreakdown.reduce((sum, c) => sum + c.amount, 0);
+
       const unitPayments = filteredPayments.filter((p) => p.unit_id === unit.id);
       const totalPayments = unitPayments.reduce((sum, p) => sum + p.amount, 0);
-      const balance = totalPayments - totalAllocatedExpenses;
+      const balance = totalPayments - totalAllocatedExpenses - totalCharges;
 
       return {
         unit,
         totalPayments,
         totalAllocatedExpenses,
+        totalCharges,
         balance,
         expenseBreakdown,
         paymentBreakdown: unitPayments,
+        chargeBreakdown,
       };
     });
-  }, [units, filteredExpenses, filteredPayments, shareMap, projects]);
+  }, [units, filteredExpenses, filteredPayments, filteredCharges, shareMap, projects]);
 
   return {
     unitBalances,
-    isLoading: unitsLoading || expensesLoading || paymentsLoading || projectsLoading || sharesLoading,
+    isLoading: unitsLoading || expensesLoading || paymentsLoading || projectsLoading || sharesLoading || chargesLoading,
     totals: useMemo(() => {
       const totalPayments = unitBalances.reduce((sum, ub) => sum + ub.totalPayments, 0);
       const totalExpenses = unitBalances.reduce((sum, ub) => sum + ub.totalAllocatedExpenses, 0);
+      const totalCharges = unitBalances.reduce((sum, ub) => sum + ub.totalCharges, 0);
       return {
         totalPayments,
         totalExpenses,
-        totalBalance: totalPayments - totalExpenses,
+        totalCharges,
+        totalBalance: totalPayments - totalExpenses - totalCharges,
       };
     }, [unitBalances]),
   };

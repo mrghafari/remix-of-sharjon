@@ -1,6 +1,7 @@
 import { CategorySettings } from "./CategorySettings";
 import { ManagerSettings } from "./ManagerSettings";
 import { BuildingSettings } from "./BuildingSettings";
+import { ChargeSettings } from "./ChargeSettings";
 import { ProjectSettings } from "@/components/projects/ProjectSettings";
 
 export function SettingsPage() {
@@ -12,6 +13,7 @@ export function SettingsPage() {
       </div>
       
       <BuildingSettings />
+      <ChargeSettings />
       <ManagerSettings />
       <ProjectSettings />
       <CategorySettings />
