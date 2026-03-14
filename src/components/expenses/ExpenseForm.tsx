@@ -87,6 +87,39 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       setAllocationType(currentCategorySetting.allocation_settings.default_allocation_type as AllocationType);
     }
   }, [currentCategorySetting]);
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setAttachments(prev => [...prev, ...Array.from(e.target.files!)]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadAttachments = async (expenseId: string) => {
+    if (!currentBuildingId || attachments.length === 0) return;
+    for (const file of attachments) {
+      const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("expense-attachments")
+        .upload(filePath, file);
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        continue;
+      }
+      await supabase.from("expense_attachments" as any).insert({
+        expense_id: expenseId,
+        building_id: currentBuildingId,
+        file_name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        file_type: file.type,
+      } as any);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -121,9 +154,20 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
       project_id: selectedProjectId || undefined,
     };
 
+    setIsUploading(true);
     createExpense.mutate(expense, {
-      onSuccess: () => {
-        onClose();
+      onSuccess: async (data: any) => {
+        try {
+          if (attachments.length > 0 && data?.id) {
+            await uploadAttachments(data.id);
+          }
+        } finally {
+          setIsUploading(false);
+          onClose();
+        }
+      },
+      onError: () => {
+        setIsUploading(false);
       },
     });
   };
