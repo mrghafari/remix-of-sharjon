@@ -244,6 +244,19 @@ export function ExpensesList() {
                       <TableCell>{formatDate(expense.expense_date)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          {hasAttachments && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-primary hover:text-primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleExpenseClick(expense);
+                              }}
+                            >
+                              <Paperclip className="w-4 h-4" />
+                            </Button>
+                          )}
                           <Button 
                             variant="ghost" 
                             size="icon" 
