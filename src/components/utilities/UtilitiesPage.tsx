@@ -218,46 +218,87 @@ export function UtilitiesPage() {
         </Card>
       )}
 
-      {/* Trend Chart */}
-      {chartData.length > 1 && (
-        <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary" />
-              روند مصرف
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                    formatter={(value: number, name: string) => {
+      {/* Trend Charts */}
+      {chartData.length >= 1 && (
+        <>
+          {/* Quantity Trend */}
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                روند مقدار مصرف
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                      formatter={(value: number, name: string) => {
+                        const labels: Record<string, string> = {
+                          water_qty: "آب", electricity_qty: "برق", gas_qty: "گاز",
+                        };
+                        return [formatAmount(value), labels[name] || name];
+                      }}
+                    />
+                    <Legend formatter={(value: string) => {
                       const labels: Record<string, string> = {
-                        water_qty: "آب (مقدار)", electricity_qty: "برق (مقدار)", gas_qty: "گاز (مقدار)",
-                        water_amt: "آب (مبلغ)", electricity_amt: "برق (مبلغ)", gas_amt: "گاز (مبلغ)",
+                        water_qty: "💧 آب", electricity_qty: "💡 برق", gas_qty: "🔥 گاز",
                       };
-                      return [formatAmount(value), labels[name] || name];
-                    }}
-                  />
-                  <Legend formatter={(value: string) => {
-                    const labels: Record<string, string> = {
-                      water_qty: "💧 آب", electricity_qty: "💡 برق", gas_qty: "🔥 گاز",
-                    };
-                    return labels[value] || value;
-                  }} />
-                  <Line type="monotone" dataKey="water_qty" stroke="hsl(200, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="water_qty" />
-                  <Line type="monotone" dataKey="electricity_qty" stroke="hsl(45, 90%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="electricity_qty" />
-                  <Line type="monotone" dataKey="gas_qty" stroke="hsl(15, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="gas_qty" />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+                      return labels[value] || value;
+                    }} />
+                    <Line type="monotone" dataKey="water_qty" stroke="hsl(200, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="water_qty" connectNulls />
+                    <Line type="monotone" dataKey="electricity_qty" stroke="hsl(45, 90%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="electricity_qty" connectNulls />
+                    <Line type="monotone" dataKey="gas_qty" stroke="hsl(15, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="gas_qty" connectNulls />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Amount Trend */}
+          <Card className="animate-fade-in">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                روند مبلغ قبوض (تومان)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatAmount(v)} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                      formatter={(value: number, name: string) => {
+                        const labels: Record<string, string> = {
+                          water_amt: "آب", electricity_amt: "برق", gas_amt: "گاز",
+                        };
+                        return [`${formatAmount(value)} تومان`, labels[name] || name];
+                      }}
+                    />
+                    <Legend formatter={(value: string) => {
+                      const labels: Record<string, string> = {
+                        water_amt: "💧 آب", electricity_amt: "💡 برق", gas_amt: "🔥 گاز",
+                      };
+                      return labels[value] || value;
+                    }} />
+                    <Line type="monotone" dataKey="water_amt" stroke="hsl(200, 80%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="water_amt" connectNulls />
+                    <Line type="monotone" dataKey="electricity_amt" stroke="hsl(45, 90%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="electricity_amt" connectNulls />
+                    <Line type="monotone" dataKey="gas_amt" stroke="hsl(15, 80%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="gas_amt" connectNulls />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Readings Table */}
