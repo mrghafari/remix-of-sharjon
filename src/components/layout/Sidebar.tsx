@@ -17,6 +17,7 @@ const menuItems = [
   { id: "announcements", label: "اعلانات", icon: Bell },
   { id: "documents", label: "اسناد ساختمان", icon: FolderOpen },
   { id: "utilities", label: "مصارف", icon: Gauge },
+  { id: "phonebook", label: "دفترچه تلفن", icon: BookUser },
   { id: "settings", label: "تنظیمات", icon: Settings },
 ];
 
