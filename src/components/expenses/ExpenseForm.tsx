@@ -109,14 +109,14 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
         console.error("Upload error:", uploadError);
         continue;
       }
-      await supabase.from("expense_attachments" as any).insert({
+      await supabase.from("expense_attachments").insert({
         expense_id: expenseId,
         building_id: currentBuildingId,
         file_name: file.name,
         file_path: filePath,
         file_size: file.size,
         file_type: file.type,
-      } as any);
+      });
     }
   };
 
