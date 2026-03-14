@@ -10,6 +10,8 @@ export interface Building {
   total_units: number | null;
   vacant_charge_discount_percent: number;
   vacant_extra_charge_discount_percent: number;
+  default_charge_amount: number;
+  default_extra_charge_amount: number;
   created_at: string;
   updated_at: string;
 }
