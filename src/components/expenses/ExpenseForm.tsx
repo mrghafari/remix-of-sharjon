@@ -353,12 +353,51 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
             </div>
           )}
 
+          {/* File Attachments */}
+          <div className="space-y-2">
+            <Label>مستندات (اختیاری)</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+              onChange={handleFilesSelected}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2 w-full border-dashed"
+            >
+              <Paperclip className="w-4 h-4" />
+              افزودن فایل (تصویر، PDF، ...)
+            </Button>
+            {attachments.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {attachments.map((file, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2 rounded-md border bg-muted/30 text-sm">
+                    <FileIcon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <span className="flex-1 truncate">{file.name}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      {(file.size / 1024).toFixed(0)} KB
+                    </span>
+                    <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeAttachment(i)}>
+                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">{attachments.length} فایل انتخاب شده</p>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1" disabled={createExpense.isPending}>
-              {createExpense.isPending ? (
+            <Button type="submit" className="flex-1" disabled={createExpense.isPending || isUploading}>
+              {(createExpense.isPending || isUploading) ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                  در حال ثبت...
+                  {isUploading ? "در حال آپلود مستندات..." : "در حال ثبت..."}
                 </>
               ) : (
                 "ثبت هزینه"
