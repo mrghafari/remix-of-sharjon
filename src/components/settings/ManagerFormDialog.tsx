@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Building2, UserCircle2 } from "lucide-react";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { useUnits } from "@/hooks/useUnits";
 import { useCreateManager, useUpdateManager, Manager } from "@/hooks/useManagers";
 import { toJalaliString, fromJalaliString, getTodayJalali } from "@/lib/jalaliDate";
