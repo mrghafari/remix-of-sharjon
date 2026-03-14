@@ -700,6 +700,7 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_voter_hash: { Args: { _poll_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

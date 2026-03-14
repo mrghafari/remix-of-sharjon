@@ -8,6 +8,7 @@ import { PaymentsPage } from "@/components/payments/PaymentsPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ReportsPage } from "@/components/reports/ReportsPage";
 import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
+import { AnnouncementsPage } from "@/components/announcements/AnnouncementsPage";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -36,21 +37,10 @@ const Index = () => {
             <BuildingDocuments />
           </div>
         );
+      case "announcements":
+        return <AnnouncementsPage />;
       default:
-        return (
-          <div className="flex items-center justify-center h-[60vh]">
-            <div className="text-center animate-fade-in">
-              <h2 className="text-2xl font-bold text-muted-foreground mb-2">
-                بخش {activeTab === "residents" ? "ساکنین" :
-                      activeTab === "payments" ? "پرداخت‌ها" :
-                      activeTab === "reports" ? "گزارش‌ها" :
-                      activeTab === "announcements" ? "اعلانات" :
-                      "تنظیمات"}
-              </h2>
-              <p className="text-muted-foreground">این بخش به زودی فعال می‌شود...</p>
-            </div>
-          </div>
-        );
+        return <Dashboard onTabChange={setActiveTab} />;
     }
   };
 
