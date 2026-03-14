@@ -66,12 +66,12 @@ export function PollsList() {
     queryKey: ["building-poll-votes", currentBuildingId],
     queryFn: async () => {
       if (!currentBuildingId) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("building_poll_votes")
         .select("*")
         .eq("building_id", currentBuildingId);
       if (error) throw error;
-      return data as PollVote[];
+      return (data as PollVote[]) || [];
     },
     enabled: !!currentBuildingId,
   });
