@@ -76,6 +76,24 @@ export function useCreatePayment() {
   });
 }
 
+export function useUpdatePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; unit_id?: string; amount?: number; month?: number; year?: number; fund_type?: FundType; description?: string | null; payment_date?: string }) => {
+      const { error } = await supabase.from("payments").update(data).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      toast({ title: "موفق", description: "پرداخت ویرایش شد" });
+    },
+    onError: () => {
+      toast({ title: "خطا", description: "خطا در ویرایش پرداخت", variant: "destructive" });
+    },
+  });
+}
+
 export function useDeletePayment() {
   const queryClient = useQueryClient();
   
