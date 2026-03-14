@@ -204,11 +204,11 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
             دفتر معین - گردش حساب به ترتیب زمانی
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
-              <SelectTrigger className="max-w-md">
-                <SelectValue placeholder="واحد مورد نظر را انتخاب کنید" />
+              <SelectTrigger className="w-48 h-8 text-xs">
+                <SelectValue placeholder="انتخاب واحد" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">انتخاب واحد...</SelectItem>
@@ -219,37 +219,20 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                 ))}
               </SelectContent>
             </Select>
-
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
             {selectedBalance && transactions.length > 0 && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleExportExcel}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <FileSpreadsheet className="w-4 h-4" />
+              <div className="flex gap-1.5 mr-auto">
+                <Button onClick={handleExportExcel} variant="outline" size="sm" className="gap-1 h-7 text-xs">
+                  <FileSpreadsheet className="w-3 h-3" />
                   اکسل
                 </Button>
-                <Button
-                  onClick={handleExportPDF}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  disabled={isExporting}
-                >
-                  {isExporting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <FileDown className="w-4 h-4" />
-                  )}
+                <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1 h-7 text-xs" disabled={isExporting}>
+                  {isExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
                   PDF
                 </Button>
               </div>
             )}
           </div>
-
-          <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
         </CardContent>
       </Card>
 

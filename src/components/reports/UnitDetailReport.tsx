@@ -97,11 +97,11 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
             انتخاب واحد و بازه زمانی
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <CardContent>
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={selectedUnitId || ""} onValueChange={onSelectUnit}>
-              <SelectTrigger className="max-w-md">
-                <SelectValue placeholder="واحد مورد نظر را انتخاب کنید" />
+              <SelectTrigger className="w-48 h-8 text-xs">
+                <SelectValue placeholder="انتخاب واحد" />
               </SelectTrigger>
               <SelectContent>
                 {unitBalances.map((ub) => (
@@ -111,25 +111,14 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
                 ))}
               </SelectContent>
             </Select>
-            
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
             {selectedBalance && (
-              <Button 
-                onClick={handleExportPDF} 
-                variant="outline" 
-                className="gap-2"
-                disabled={isGeneratingPDF}
-              >
-                {isGeneratingPDF ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <FileDown className="w-4 h-4" />
-                )}
-                {isGeneratingPDF ? "در حال تولید..." : "خروجی PDF"}
+              <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1 h-7 text-xs mr-auto" disabled={isGeneratingPDF}>
+                {isGeneratingPDF ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
+                {isGeneratingPDF ? "در حال تولید..." : "PDF"}
               </Button>
             )}
           </div>
-          
-          <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
         </CardContent>
       </Card>
 
