@@ -766,6 +766,50 @@ export type Database = {
         }
         Relationships: []
       }
+      utility_readings: {
+        Row: {
+          amount: number
+          building_id: string
+          created_at: string
+          description: string | null
+          id: string
+          quantity: number
+          reading_date: string
+          updated_at: string
+          utility_type: string
+        }
+        Insert: {
+          amount?: number
+          building_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          quantity?: number
+          reading_date?: string
+          updated_at?: string
+          utility_type: string
+        }
+        Update: {
+          amount?: number
+          building_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          quantity?: number
+          reading_date?: string
+          updated_at?: string
+          utility_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "utility_readings_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
