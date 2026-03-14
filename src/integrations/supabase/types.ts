@@ -448,6 +448,8 @@ export type Database = {
           created_at: string
           expense_id: string
           id: string
+          owner_name: string | null
+          resident_name: string | null
           unit_id: string
         }
         Insert: {
@@ -456,6 +458,8 @@ export type Database = {
           created_at?: string
           expense_id: string
           id?: string
+          owner_name?: string | null
+          resident_name?: string | null
           unit_id: string
         }
         Update: {
@@ -464,6 +468,8 @@ export type Database = {
           created_at?: string
           expense_id?: string
           id?: string
+          owner_name?: string | null
+          resident_name?: string | null
           unit_id?: string
         }
         Relationships: [
@@ -641,7 +647,9 @@ export type Database = {
           fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
           month: number
+          owner_name: string | null
           payment_date: string
+          resident_name: string | null
           unit_id: string
           year: number
         }
@@ -653,7 +661,9 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month: number
+          owner_name?: string | null
           payment_date?: string
+          resident_name?: string | null
           unit_id: string
           year: number
         }
@@ -665,7 +675,9 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month?: number
+          owner_name?: string | null
           payment_date?: string
+          resident_name?: string | null
           unit_id?: string
           year?: number
         }
@@ -793,6 +805,8 @@ export type Database = {
           fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
           month: number
+          owner_name: string | null
+          resident_name: string | null
           unit_id: string
           year: number
         }
@@ -804,6 +818,8 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month: number
+          owner_name?: string | null
+          resident_name?: string | null
           unit_id: string
           year: number
         }
@@ -815,6 +831,8 @@ export type Database = {
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
           month?: number
+          owner_name?: string | null
+          resident_name?: string | null
           unit_id?: string
           year?: number
         }
