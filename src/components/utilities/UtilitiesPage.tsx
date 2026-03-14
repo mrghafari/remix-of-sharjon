@@ -20,11 +20,7 @@ const utilityTypes = [
 ];
 
 const formatAmount = (n: number) => new Intl.NumberFormat("fa-IR").format(n);
-const formatDate = (d: string) => {
-  const date = new Date(d);
-  const j = toJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-  return `${j.jy}/${String(j.jm).padStart(2, "0")}/${String(j.jd).padStart(2, "0")}`;
-};
+const formatDate = (d: string) => formatJalaliDate(d);
 
 export function UtilitiesPage() {
   const { currentBuildingId } = useBuilding();
