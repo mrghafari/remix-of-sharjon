@@ -55,6 +55,50 @@ export type Database = {
           },
         ]
       }
+      building_contacts: {
+        Row: {
+          building_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          phone: string
+          rating: number
+          specialty: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          phone: string
+          rating?: number
+          specialty?: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          rating?: number
+          specialty?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_contacts_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_documents: {
         Row: {
           building_id: string
