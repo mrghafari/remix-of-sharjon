@@ -21,6 +21,9 @@ export function Dashboard({ onTabChange }: DashboardProps) {
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  
+  // Auto-backfill expense shares for existing expenses
+  useBackfillExpenseShares();
 
   const isLoading = unitsLoading || expensesLoading || paymentsLoading;
   
