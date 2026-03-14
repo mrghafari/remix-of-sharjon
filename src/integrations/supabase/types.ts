@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      building_documents: {
+        Row: {
+          building_id: string
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          folder: string
+          id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          building_id: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          file_type: string
+          folder?: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          building_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          folder?: string
+          id?: string
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_documents_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_members: {
         Row: {
           building_id: string

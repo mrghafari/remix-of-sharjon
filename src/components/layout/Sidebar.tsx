@@ -1,4 +1,4 @@
-import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt } from "lucide-react";
+import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -15,6 +15,7 @@ const menuItems = [
   { id: "payments", label: "پرداخت‌ها", icon: CreditCard },
   { id: "reports", label: "گزارش‌ها", icon: FileText },
   { id: "announcements", label: "اعلانات", icon: Bell },
+  { id: "documents", label: "اسناد ساختمان", icon: FolderOpen },
   { id: "settings", label: "تنظیمات", icon: Settings },
 ];
 

@@ -7,6 +7,7 @@ import { UnitsPage } from "@/components/units/UnitsPage";
 import { PaymentsPage } from "@/components/payments/PaymentsPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ReportsPage } from "@/components/reports/ReportsPage";
+import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -25,6 +26,16 @@ const Index = () => {
         return <SettingsPage />;
       case "reports":
         return <ReportsPage />;
+      case "documents":
+        return (
+          <div className="max-w-5xl mx-auto animate-fade-in">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold">اسناد ساختمان</h1>
+              <p className="text-muted-foreground mt-1">مدیریت فایل‌ها و اسناد ساختمان</p>
+            </div>
+            <BuildingDocuments />
+          </div>
+        );
       default:
         return (
           <div className="flex items-center justify-center h-[60vh]">
