@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      building_announcements: {
+        Row: {
+          building_id: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_pinned: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_pinned?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_announcements_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_documents: {
         Row: {
           building_id: string
@@ -96,6 +137,89 @@ export type Database = {
             columns: ["unit_id"]
             isOneToOne: false
             referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      building_poll_votes: {
+        Row: {
+          building_id: string
+          created_at: string
+          id: string
+          poll_id: string
+          selected_option: number
+          voter_hash: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          id?: string
+          poll_id: string
+          selected_option: number
+          voter_hash: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          id?: string
+          poll_id?: string
+          selected_option?: number
+          voter_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_poll_votes_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "building_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "building_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      building_polls: {
+        Row: {
+          building_id: string
+          created_at: string
+          created_by: string
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          options: Json
+          question: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          created_by: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          created_by?: string
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_polls_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
             referencedColumns: ["id"]
           },
         ]
