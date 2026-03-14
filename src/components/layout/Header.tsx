@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Bell, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BuildingSelector } from "./BuildingSelector";
+import { SearchCommand } from "./SearchCommand";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -11,7 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function Header() {
+interface HeaderProps {
+  onTabChange?: (tab: string) => void;
+}
+
+export function Header({ onTabChange }: HeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
 
