@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, Loader2, Edit } from "lucide-react";
+import { Plus, X, Loader2, Edit, Lock } from "lucide-react";
 import { useCreateUnit, useUpdateUnit, type Unit, type CreateUnitData } from "@/hooks/useUnits";
 import { NumericInput } from "@/components/ui/numeric-input";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UnitFormProps {
   onClose: () => void;
