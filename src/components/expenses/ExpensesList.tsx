@@ -203,7 +203,15 @@ export function ExpensesList() {
                     >
                       <TableCell>
                         <div>
-                          <p className="font-medium">{expense.title}</p>
+                          <p className="font-medium flex items-center gap-1.5">
+                            <span>{expense.title}</span>
+                            {hasAttachments && (
+                              <span className="inline-flex items-center gap-1 text-primary text-xs">
+                                <Paperclip className="w-3.5 h-3.5" />
+                                {attachmentCount}
+                              </span>
+                            )}
+                          </p>
                           {expense.description && (
                             <p className="text-xs text-muted-foreground truncate max-w-[200px]">
                               {expense.description}
