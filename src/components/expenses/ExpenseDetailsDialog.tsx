@@ -17,16 +17,9 @@ import {
 } from "@/components/ui/table";
 import { FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { useUnits } from "@/hooks/useUnits";
-import { useActiveManager } from "@/hooks/useManagers";
 import { Expense } from "@/hooks/useExpenses";
-import { useProjects } from "@/hooks/useProjects";
+import { useExpenseShares } from "@/hooks/useExpenseShares";
 import { formatJalaliDate } from "@/lib/jalaliDate";
-import {
-  calculateAllocatedAmount,
-  ManagerDiscount,
-  VacantDiscount,
-} from "@/hooks/useUnitBalanceFiltered";
-import { useBuilding } from "@/contexts/BuildingContext";
 import {
   exportToExcel,
   exportToPDF,
@@ -60,68 +53,27 @@ export function ExpenseDetailsDialog({
 }: ExpenseDetailsDialogProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const { data: units = [], isLoading: unitsLoading } = useUnits();
-  const { data: activeManager } = useActiveManager();
-  const { currentBuilding } = useBuilding();
-  const { data: projects = [] } = useProjects();
+  const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
 
   if (!expense) return null;
 
-  const managerDiscount: ManagerDiscount | null = activeManager && activeManager.unit_id
-    ? {
-        unitId: activeManager.unit_id,
-        chargeDiscountPercent: activeManager.charge_discount_percent,
-        extraChargeDiscountPercent: activeManager.extra_charge_discount_percent,
-      }
-    : null;
-
-  const vacantDiscount: VacantDiscount | null = (() => {
-    if (!currentBuilding) return null;
-    const c = currentBuilding.vacant_charge_discount_percent || 0;
-    const e = currentBuilding.vacant_extra_charge_discount_percent || 0;
-    if (c === 0 && e === 0) return null;
-    return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
-  })();
-
-  // Project-specific manager discount
-  const expenseProject = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
-  const projectMgrDiscount = expenseProject
-    ? (expenseProject.apply_manager_discount
-        ? undefined  // use global manager discount
-        : { chargeDiscountPercent: 0, extraChargeDiscountPercent: 0 })
-    : undefined;
-
-  // Find the manager's unit number for highlighting
-  const managerUnitNumber = managerDiscount
-    ? units.find((u) => u.id === managerDiscount.unitId)?.unit_number
-    : null;
-
-  // Calculate effective discount percent for display
-  const effectiveChargeDiscount = managerDiscount
-    ? (projectMgrDiscount ? projectMgrDiscount.chargeDiscountPercent : managerDiscount.chargeDiscountPercent)
-    : 0;
-  const effectiveExtraChargeDiscount = managerDiscount
-    ? (projectMgrDiscount ? projectMgrDiscount.extraChargeDiscountPercent : managerDiscount.extraChargeDiscountPercent)
-    : 0;
-  const managerDiscountPercent = expense.fund_type === "charge" ? effectiveChargeDiscount : effectiveExtraChargeDiscount;
+  // Get stored shares for this expense
+  const expenseShares = shares.filter((s) => s.expense_id === expense.id);
 
   const unitAllocations: UnitAllocation[] = units
-    .map((unit) => ({
-      unitNumber: unit.unit_number,
-      ownerName: unit.owner_name,
-      residentName: unit.resident_name,
-      area: unit.area,
-      residentCount: unit.resident_count,
-      isManager: managerDiscount ? unit.id === managerDiscount.unitId : false,
-      isVacant: unit.is_occupied === false,
-      allocatedAmount: calculateAllocatedAmount(
-        expense,
-        unit,
-        units,
-        managerDiscount,
-        vacantDiscount,
-        projectMgrDiscount
-      ),
-    }))
+    .map((unit) => {
+      const share = expenseShares.find((s) => s.unit_id === unit.id);
+      return {
+        unitNumber: unit.unit_number,
+        ownerName: unit.owner_name,
+        residentName: unit.resident_name,
+        area: unit.area,
+        residentCount: unit.resident_count,
+        isManager: false,
+        isVacant: unit.is_occupied === false,
+        allocatedAmount: share ? Number(share.allocated_amount) : 0,
+      };
+    })
     .filter((ua) => ua.allocatedAmount > 0);
 
   const totalAllocated = unitAllocations.reduce(
@@ -210,24 +162,8 @@ export function ExpenseDetailsDialog({
             )}
           </div>
 
-          {/* Discount Info */}
-          {(managerDiscount || vacantDiscount) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {managerDiscount && managerDiscountPercent > 0 && (
-                <Badge variant="outline" className="text-sm bg-green-50 text-green-700 border-green-200">
-                  🏠 تخفیف مدیر (واحد {managerUnitNumber}): {managerDiscountPercent}%
-                </Badge>
-              )}
-              {vacantDiscount && (
-                <Badge variant="outline" className="text-sm bg-orange-50 text-orange-700 border-orange-200">
-                  🏚️ تخفیف واحد خالی: {expense.fund_type === "charge" ? vacantDiscount.chargeDiscountPercent : vacantDiscount.extraChargeDiscountPercent}%
-                </Badge>
-              )}
-            </div>
-          )}
-
           {/* Allocations Table */}
-          {unitsLoading ? (
+          {unitsLoading || sharesLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
@@ -245,35 +181,25 @@ export function ExpenseDetailsDialog({
                   <TableHead className="text-right">نام ساکن</TableHead>
                   <TableHead className="text-right">متراژ</TableHead>
                   <TableHead className="text-right">تعداد نفرات</TableHead>
-                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">مبلغ تخصیص یافته</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {unitAllocations.map((ua, index) => (
-                  <TableRow key={ua.unitNumber} className={ua.isManager ? "bg-green-50/50" : ua.isVacant ? "bg-orange-50/50" : ""}>
+                  <TableRow key={ua.unitNumber}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{ua.unitNumber}</TableCell>
                     <TableCell>{ua.ownerName}</TableCell>
                     <TableCell>{ua.residentName || "-"}</TableCell>
                     <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                     <TableCell>{ua.residentCount || "-"}</TableCell>
-                    <TableCell>
-                      {ua.isManager && managerDiscountPercent > 0 ? (
-                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">مدیر ({managerDiscountPercent}% تخفیف)</Badge>
-                      ) : ua.isVacant ? (
-                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">خالی</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">ساکن</span>
-                      )}
-                    </TableCell>
                     <TableCell className="font-bold text-primary">
                       {formatNumber(ua.allocatedAmount)} تومان
                     </TableCell>
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-bold">
-                  <TableCell colSpan={7} className="text-left">
+                  <TableCell colSpan={6} className="text-left">
                     جمع کل
                   </TableCell>
                   <TableCell className="text-primary">

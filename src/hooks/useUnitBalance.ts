@@ -2,10 +2,7 @@ import { useMemo } from "react";
 import { useUnits, Unit } from "./useUnits";
 import { useExpenses, Expense } from "./useExpenses";
 import { usePayments, PaymentWithUnit } from "./usePayments";
-import { useActiveManager } from "./useManagers";
-import { useProjects } from "./useProjects";
-import { useBuilding } from "@/contexts/BuildingContext";
-import { calculateAllUnitAllocations, ManagerDiscount, VacantDiscount } from "./useUnitBalanceFiltered";
+import { useExpenseShares } from "./useExpenseShares";
 
 export interface UnitBalance {
   unit: Unit;
@@ -23,47 +20,23 @@ export function useUnitBalance() {
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
-  const { data: activeManager, isLoading: managerLoading } = useActiveManager();
-  const { data: projects = [] } = useProjects();
-  const { currentBuilding } = useBuilding();
-
-  const managerDiscount = useMemo((): ManagerDiscount | null => {
-    if (!activeManager || !activeManager.unit_id) return null;
-    return {
-      unitId: activeManager.unit_id,
-      chargeDiscountPercent: activeManager.charge_discount_percent,
-      extraChargeDiscountPercent: activeManager.extra_charge_discount_percent,
-    };
-  }, [activeManager]);
-
-  const vacantDiscount = useMemo((): VacantDiscount | null => {
-    if (!currentBuilding) return null;
-    const c = currentBuilding.vacant_charge_discount_percent || 0;
-    const e = currentBuilding.vacant_extra_charge_discount_percent || 0;
-    if (c === 0 && e === 0) return null;
-    return { chargeDiscountPercent: c, extraChargeDiscountPercent: e };
-  }, [currentBuilding]);
+  const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
 
   const unitBalances = useMemo(() => {
-    const expenseAllocations = new Map<string, Map<string, number>>();
-    expenses.forEach((expense) => {
-      const project = expense.project_id ? projects.find((p) => p.id === expense.project_id) : null;
-      const projectMgrDiscount = project
-        ? (project.apply_manager_discount
-            ? undefined
-            : { chargeDiscountPercent: 0, extraChargeDiscountPercent: 0 })
-        : undefined;
-      expenseAllocations.set(
-        expense.id,
-        calculateAllUnitAllocations(expense, units, managerDiscount, vacantDiscount, projectMgrDiscount)
-      );
+    // Build a map: expense_id -> unit_id -> allocated_amount from stored shares
+    const shareMap = new Map<string, Map<string, number>>();
+    shares.forEach((s) => {
+      if (!shareMap.has(s.expense_id)) {
+        shareMap.set(s.expense_id, new Map());
+      }
+      shareMap.get(s.expense_id)!.set(s.unit_id, s.allocated_amount);
     });
 
     return units.map((unit): UnitBalance => {
       const expenseBreakdown = expenses
         .map((expense) => ({
           expense,
-          allocatedAmount: expenseAllocations.get(expense.id)?.get(unit.id) || 0,
+          allocatedAmount: shareMap.get(expense.id)?.get(unit.id) || 0,
         }))
         .filter((e) => e.allocatedAmount > 0);
 
@@ -84,11 +57,11 @@ export function useUnitBalance() {
         paymentBreakdown: unitPayments,
       };
     });
-  }, [units, expenses, payments, managerDiscount, vacantDiscount, projects]);
+  }, [units, expenses, payments, shares]);
 
   return {
     unitBalances,
-    isLoading: unitsLoading || expensesLoading || paymentsLoading || managerLoading,
+    isLoading: unitsLoading || expensesLoading || paymentsLoading || sharesLoading,
     totals: useMemo(() => {
       const totalPayments = unitBalances.reduce((sum, ub) => sum + ub.totalPayments, 0);
       const totalExpenses = unitBalances.reduce((sum, ub) => sum + ub.totalAllocatedExpenses, 0);

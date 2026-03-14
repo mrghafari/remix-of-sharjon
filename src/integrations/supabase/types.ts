@@ -219,6 +219,55 @@ export type Database = {
           },
         ]
       }
+      expense_unit_shares: {
+        Row: {
+          allocated_amount: number
+          building_id: string
+          created_at: string
+          expense_id: string
+          id: string
+          unit_id: string
+        }
+        Insert: {
+          allocated_amount?: number
+          building_id: string
+          created_at?: string
+          expense_id: string
+          id?: string
+          unit_id: string
+        }
+        Update: {
+          allocated_amount?: number
+          building_id?: string
+          created_at?: string
+          expense_id?: string
+          id?: string
+          unit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_unit_shares_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_unit_shares_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_unit_shares_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expenses: {
         Row: {
           allocation_type: Database["public"]["Enums"]["allocation_type"]

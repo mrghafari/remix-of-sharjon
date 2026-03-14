@@ -7,6 +7,7 @@ import { FundBalance } from "./FundBalance";
 import { useUnits } from "@/hooks/useUnits";
 import { useExpenses } from "@/hooks/useExpenses";
 import { usePayments } from "@/hooks/usePayments";
+import { useBackfillExpenseShares } from "@/hooks/useBackfillExpenseShares";
 
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat("fa-IR").format(amount);
@@ -20,6 +21,9 @@ export function Dashboard({ onTabChange }: DashboardProps) {
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  
+  // Auto-backfill expense shares for existing expenses
+  useBackfillExpenseShares();
 
   const isLoading = unitsLoading || expensesLoading || paymentsLoading;
   
