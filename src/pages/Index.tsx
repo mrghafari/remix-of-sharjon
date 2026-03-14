@@ -40,6 +40,8 @@ const Index = () => {
         );
       case "announcements":
         return <AnnouncementsPage />;
+      case "utilities":
+        return <UtilitiesPage />;
       default:
         return <Dashboard onTabChange={setActiveTab} />;
     }
