@@ -141,7 +141,7 @@ export function BuildingDocuments() {
     [currentBuildingId, activeFolder, queryClient, toast]
   );
 
-  // Delete mutation
+  // Delete file mutation
   const deleteMutation = useMutation({
     mutationFn: async (doc: DocRow) => {
       await supabase.storage.from("building-documents").remove([doc.file_path]);
@@ -155,6 +155,34 @@ export function BuildingDocuments() {
     },
     onError: (err: any) => {
       toast({ title: "خطا در حذف", description: err.message, variant: "destructive" });
+    },
+  });
+
+  // Delete folder mutation
+  const deleteFolderMutation = useMutation({
+    mutationFn: async (folderName: string) => {
+      const folderFiles = documents.filter((d) => d.folder === folderName);
+      if (folderFiles.length > 0) {
+        const paths = folderFiles.map((d) => d.file_path);
+        await supabase.storage.from("building-documents").remove(paths);
+        for (const doc of folderFiles) {
+          const { error } = await supabase.from("building_documents").delete().eq("id", doc.id) as any;
+          if (error) throw error;
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["building-documents", currentBuildingId] });
+      if (deleteFolderTarget) {
+        setCustomFolders((prev) => prev.filter((f) => f !== deleteFolderTarget));
+      }
+      if (activeFolder === deleteFolderTarget) setActiveFolder(null);
+      toast({ title: "پوشه حذف شد" });
+      setDeleteFolderTarget(null);
+    },
+    onError: (err: any) => {
+      toast({ title: "خطا در حذف پوشه", description: err.message, variant: "destructive" });
+      setDeleteFolderTarget(null);
     },
   });
 
