@@ -42,7 +42,7 @@ const fundTypeLabels: Record<string, string> = {
 };
 
 const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat("fa-IR").format(amount);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 };
 
 const formatDate = (dateString: string) => {

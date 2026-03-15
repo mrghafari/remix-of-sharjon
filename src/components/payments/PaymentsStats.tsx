@@ -17,7 +17,7 @@ export function PaymentsStats() {
   const uniqueUnits = new Set(payments?.map((p) => p.unit_id)).size;
 
   const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("fa-IR").format(amount);
+    return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
   };
 
   const stats = [

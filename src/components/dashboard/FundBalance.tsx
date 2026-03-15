@@ -5,7 +5,7 @@ import { usePayments, FundType } from "@/hooks/usePayments";
 import { useExpenses } from "@/hooks/useExpenses";
 
 const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat("fa-IR").format(amount);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 };
 
 export function FundBalance() {

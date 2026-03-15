@@ -115,7 +115,7 @@ export function calculateAllUnitAllocations(
 
   if (allocation_type === "single_unit") {
     allUnits.forEach((unit) => {
-      let amount = expense.unit_id === unit.id ? expense.amount : 0;
+      let amount = expense.unit_id === unit.id ? Math.round(expense.amount) : 0;
       if (effectiveManagerDiscount && unit.id === effectiveManagerDiscount.unitId && amount > 0) {
         const dp = fund_type === "charge" ? effectiveManagerDiscount.chargeDiscountPercent : effectiveManagerDiscount.extraChargeDiscountPercent;
         amount = amount * (1 - dp / 100);

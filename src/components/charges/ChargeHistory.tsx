@@ -17,7 +17,7 @@ const JALALI_MONTHS = [
 ];
 
 function formatNumber(n: number) {
-  return n.toLocaleString("fa-IR");
+  return Math.round(n).toLocaleString("fa-IR");
 }
 
 export function ChargeHistory() {

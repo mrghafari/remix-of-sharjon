@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Minus, Loader2 } from "lucide-react";
 import { useExpenses } from "@/hooks/useExpenses";
 
 const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat("fa-IR").format(amount);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 };
 
 export function ExpenseStats() {

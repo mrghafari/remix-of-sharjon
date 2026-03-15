@@ -13,7 +13,7 @@ interface Props {
 }
 
 function formatNumber(n: number) {
-  return Math.abs(n).toLocaleString("fa-IR");
+  return Math.abs(Math.round(n)).toLocaleString("fa-IR");
 }
 
 export function ResidentFinance({ buildingId, unitId }: Props) {

@@ -5,7 +5,7 @@ import { usePayments } from "@/hooks/usePayments";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 
 const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat("fa-IR").format(amount);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 };
 
 const formatDate = (dateString: string) => {

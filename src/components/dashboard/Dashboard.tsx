@@ -10,7 +10,7 @@ import { usePayments } from "@/hooks/usePayments";
 import { useBackfillExpenseShares } from "@/hooks/useBackfillExpenseShares";
 
 const formatAmount = (amount: number) => {
-  return new Intl.NumberFormat("fa-IR").format(amount);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 };
 
 interface DashboardProps {

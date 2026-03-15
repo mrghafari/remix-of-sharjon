@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const formatNumber = (num: number) => {
-  return new Intl.NumberFormat("fa-IR").format(num);
+  return new Intl.NumberFormat("fa-IR").format(Math.round(num));
 };
 
 export function ProjectSettings() {

@@ -13,7 +13,7 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { usePayments } from "@/hooks/usePayments";
 
 const formatAmount = (amount: number) =>
-  new Intl.NumberFormat("fa-IR").format(amount);
+  new Intl.NumberFormat("fa-IR").format(Math.round(amount));
 
 interface SearchCommandProps {
   open: boolean;
