@@ -425,6 +425,32 @@ export function BuildingDocuments() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete folder confirmation */}
+      <AlertDialog open={!!deleteFolderTarget} onOpenChange={() => setDeleteFolderTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف پوشه</AlertDialogTitle>
+            <AlertDialogDescription>
+              {(() => {
+                const count = documents.filter((d) => d.folder === deleteFolderTarget).length;
+                return count > 0
+                  ? `آیا از حذف پوشه «${deleteFolderTarget}» و ${count} فایل داخل آن اطمینان دارید؟`
+                  : `آیا از حذف پوشه «${deleteFolderTarget}» اطمینان دارید؟`;
+              })()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteFolderTarget && deleteFolderMutation.mutate(deleteFolderTarget)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              حذف پوشه
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
