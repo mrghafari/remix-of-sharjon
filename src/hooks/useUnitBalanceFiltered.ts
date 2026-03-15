@@ -203,7 +203,7 @@ export function calculateAllUnitAllocations(
   }
 
   allUnits.forEach((unit) => {
-    result.set(unit.id, baseAmounts.get(unit.id) || 0);
+    result.set(unit.id, Math.round(baseAmounts.get(unit.id) || 0));
   });
 
   return result;
