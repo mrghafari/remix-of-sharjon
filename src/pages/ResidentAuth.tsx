@@ -86,8 +86,9 @@ const ResidentAuth = () => {
       if (data.is_manager) {
         setStep("role-select");
       } else {
-        // Store resident info and navigate
-        localStorage.setItem("resident_matches", JSON.stringify(data.matches));
+      // Store only the selected match and navigate
+        const selected = [data.matches[selectedMatchIndex] || data.matches[0]];
+        localStorage.setItem("resident_matches", JSON.stringify(selected));
         navigate("/resident", { replace: true });
       }
     } catch (err: any) {
