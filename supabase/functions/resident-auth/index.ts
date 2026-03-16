@@ -141,13 +141,23 @@ serve(async (req) => {
         // Create or find resident user
         userEmail = `${normalizedPhone}@resident.local`;
 
-        // Check if user exists
-        const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-        const existingUser = existingUsers?.users?.find((u: any) => u.email === userEmail);
+        // Check if user exists by email - use getUserByEmail for reliability
+        let existingUser: any = null;
+        try {
+          const { data: userData } = await adminClient.auth.admin.listUsers({ filter: userEmail, page: 1, perPage: 1 });
+          existingUser = userData?.users?.find((u: any) => u.email === userEmail) || null;
+        } catch (_) { /* ignore */ }
 
         if (existingUser) {
           userId = existingUser.id;
         } else {
+          // Determine name: prefer the name from the matching role
+          const firstUnit = units[0];
+          const isOwnerPhone = firstUnit.phone === normalizedPhone;
+          const displayName = isOwnerPhone
+            ? (firstUnit.owner_name || firstUnit.resident_name || normalizedPhone)
+            : (firstUnit.resident_name || firstUnit.owner_name || normalizedPhone);
+
           // Create new user
           const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
             email: userEmail,
@@ -155,7 +165,7 @@ serve(async (req) => {
             user_metadata: {
               is_resident: true,
               phone: normalizedPhone,
-              full_name: units[0].resident_name || units[0].owner_name || normalizedPhone,
+              full_name: displayName,
             },
           });
           if (createErr) throw createErr;
@@ -164,7 +174,7 @@ serve(async (req) => {
           // Create profile
           await adminClient.from("profiles").insert({
             user_id: userId,
-            full_name: units[0].resident_name || units[0].owner_name || normalizedPhone,
+            full_name: displayName,
             phone: normalizedPhone,
           });
         }
