@@ -181,12 +181,26 @@ const ResidentAuth = () => {
               </div>
 
               {matches.length > 0 && (
-                <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-                  <p className="text-xs text-muted-foreground">واحدهای مرتبط:</p>
-                  {matches.map((m) => (
-                    <div key={m.unit_id} className="text-sm">
-                      🏢 {m.building_name} - واحد {m.unit_number} ({m.role === "owner" ? "مالک" : "ساکن"})
-                    </div>
+                <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                  <p className="text-xs text-muted-foreground">واحد مورد نظر را انتخاب کنید:</p>
+                  {matches.map((m, idx) => (
+                    <label
+                      key={m.unit_id}
+                      className={`flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors ${
+                        selectedMatchIndex === idx ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-muted"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="selected-unit"
+                        checked={selectedMatchIndex === idx}
+                        onChange={() => setSelectedMatchIndex(idx)}
+                        className="accent-[hsl(var(--primary))]"
+                      />
+                      <span className="text-sm">
+                        🏢 {m.building_name} - واحد {m.unit_number} ({m.role === "owner" ? "مالک" : "ساکن"})
+                      </span>
+                    </label>
                   ))}
                 </div>
               )}
