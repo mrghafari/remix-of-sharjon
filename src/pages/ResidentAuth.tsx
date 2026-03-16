@@ -99,7 +99,8 @@ const ResidentAuth = () => {
   };
 
   const handleRoleSelect = (role: "manager" | "resident") => {
-    localStorage.setItem("resident_matches", JSON.stringify(matches));
+    const selected = [matches[selectedMatchIndex] || matches[0]];
+    localStorage.setItem("resident_matches", JSON.stringify(selected));
     if (role === "manager") {
       navigate("/dashboard", { replace: true });
     } else {
