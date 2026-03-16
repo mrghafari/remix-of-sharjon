@@ -27,6 +27,7 @@ const ResidentAuth = () => {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [matches, setMatches] = useState<UnitMatch[]>([]);
+  const [selectedMatchIndex, setSelectedMatchIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isManager, setIsManager] = useState(false);
   const navigate = useNavigate();
