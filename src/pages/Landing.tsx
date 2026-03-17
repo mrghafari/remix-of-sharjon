@@ -224,7 +224,7 @@ export default function Landing() {
                   <Button
                     className={`w-full ${plan.highlighted ? "bg-gradient-primary hover:opacity-90 shadow-glow" : ""}`}
                     variant={plan.highlighted ? "default" : "outline"}
-                    onClick={() => navigate("/auth")}
+                    onClick={() => navigate("/resident-auth")}
                   >
                     {plan.price === "تماس" ? "تماس با ما" : "شروع کنید"}
                   </Button>
