@@ -116,8 +116,8 @@ const ResidentAuth = () => {
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg">
             <Building2 className="w-9 h-9 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">پنل ساکنین</h1>
-          <p className="text-muted-foreground text-sm">مشاهده وضعیت مالی و اطلاعات ساختمان</p>
+          <h1 className="text-2xl font-bold text-foreground">مدیریت ساختمان</h1>
+          <p className="text-muted-foreground text-sm">ورود مدیران و ساکنین با شماره موبایل</p>
         </div>
 
         {step === "phone" && (
