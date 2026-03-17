@@ -16,6 +16,63 @@ function normalizePhone(phone: string): string {
   return p;
 }
 
+async function findAuthUserByEmail(adminClient: any, email: string) {
+  const normalizedEmail = email.toLowerCase();
+
+  const { data: filteredData, error: filteredError } = await adminClient.auth.admin.listUsers({
+    page: 1,
+    perPage: 200,
+    filter: normalizedEmail,
+  });
+
+  if (filteredError) throw filteredError;
+
+  const exactFilteredMatch = filteredData?.users?.find(
+    (user: any) => user.email?.toLowerCase() === normalizedEmail,
+  );
+
+  if (exactFilteredMatch) return exactFilteredMatch;
+
+  for (let page = 1; page <= 20; page += 1) {
+    const { data, error } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage: 200,
+    });
+
+    if (error) throw error;
+
+    const users = data?.users ?? [];
+    const exactMatch = users.find(
+      (user: any) => user.email?.toLowerCase() === normalizedEmail,
+    );
+
+    if (exactMatch) return exactMatch;
+    if (users.length < 200) break;
+  }
+
+  return null;
+}
+
+async function ensureProfile(adminClient: any, userId: string, fullName: string, phone: string) {
+  const { data: existingProfile, error: profileLookupError } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (profileLookupError) throw profileLookupError;
+
+  if (!existingProfile) {
+    const { error: insertProfileError } = await adminClient.from("profiles").insert({
+      user_id: userId,
+      full_name: fullName,
+      phone,
+    });
+
+    if (insertProfileError) throw insertProfileError;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -76,7 +133,7 @@ serve(async (req) => {
           owner_name: u.owner_name,
           resident_name: u.resident_name,
           role: isOwner ? "owner" : "resident",
-          isManager: managerBuildingIds.has(u.building_id),
+          isManager: isResident ? managerBuildingIds.has(u.building_id) : managerBuildingIds.has(u.building_id),
         };
       });
 
@@ -138,27 +195,23 @@ serve(async (req) => {
           throw new Error("اطلاعات مدیر یافت نشد");
         }
       } else {
-        // Create or find resident user
+        // Create or find resident/owner user
         userEmail = `${normalizedPhone}@resident.local`;
 
-        // Check if user exists by email - use getUserByEmail for reliability
-        let existingUser: any = null;
-        try {
-          const { data: userData } = await adminClient.auth.admin.listUsers({ filter: userEmail, page: 1, perPage: 1 });
-          existingUser = userData?.users?.find((u: any) => u.email === userEmail) || null;
-        } catch (_) { /* ignore */ }
+        const firstMatchingUnit = units.find(
+          (unit: any) => unit.phone === normalizedPhone || unit.resident_phone === normalizedPhone,
+        ) || units[0];
+
+        const isOwnerPhone = firstMatchingUnit.phone === normalizedPhone;
+        const displayName = isOwnerPhone
+          ? (firstMatchingUnit.owner_name || firstMatchingUnit.resident_name || normalizedPhone)
+          : (firstMatchingUnit.resident_name || firstMatchingUnit.owner_name || normalizedPhone);
+
+        let existingUser = await findAuthUserByEmail(adminClient, userEmail);
 
         if (existingUser) {
           userId = existingUser.id;
         } else {
-          // Determine name: prefer the name from the matching role
-          const firstUnit = units[0];
-          const isOwnerPhone = firstUnit.phone === normalizedPhone;
-          const displayName = isOwnerPhone
-            ? (firstUnit.owner_name || firstUnit.resident_name || normalizedPhone)
-            : (firstUnit.resident_name || firstUnit.owner_name || normalizedPhone);
-
-          // Create new user
           const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
             email: userEmail,
             email_confirm: true,
@@ -168,16 +221,24 @@ serve(async (req) => {
               full_name: displayName,
             },
           });
-          if (createErr) throw createErr;
-          userId = newUser.user.id;
 
-          // Create profile
-          await adminClient.from("profiles").insert({
-            user_id: userId,
-            full_name: displayName,
-            phone: normalizedPhone,
-          });
+          if (createErr) {
+            const isEmailExistsError =
+              createErr.message?.includes("already been registered") ||
+              createErr.message?.includes("email address") ||
+              (createErr as any)?.status === 422;
+
+            if (!isEmailExistsError) throw createErr;
+
+            existingUser = await findAuthUserByEmail(adminClient, userEmail);
+            if (!existingUser) throw createErr;
+            userId = existingUser.id;
+          } else {
+            userId = newUser.user.id;
+          }
         }
+
+        await ensureProfile(adminClient, userId, displayName, normalizedPhone);
 
         // Ensure building_members entries exist for resident role
         for (const unit of units) {
