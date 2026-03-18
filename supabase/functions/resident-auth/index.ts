@@ -88,57 +88,90 @@ serve(async (req) => {
 
     const normalizedPhone = normalizePhone(phone);
 
-    if (action === "request") {
-      // Look up phone in units table (phone or resident_phone)
-      const { data: units, error: unitsErr } = await adminClient
+    // Helper: lookup units by phone
+    async function lookupUnits() {
+      const { data: units, error } = await adminClient
         .from("units")
         .select("id, unit_number, building_id, owner_name, resident_name, phone, resident_phone")
         .or(`phone.eq.${normalizedPhone},resident_phone.eq.${normalizedPhone}`);
+      if (error) throw error;
+      return units || [];
+    }
 
-      if (unitsErr) throw unitsErr;
-      if (!units || units.length === 0) {
-        return new Response(
-          JSON.stringify({ found: false, message: "شماره موبایل در هیچ واحدی ثبت نشده است" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+    // Helper: lookup active managers by phone
+    async function lookupManagers() {
+      const { data: managers, error } = await adminClient
+        .from("managers")
+        .select("id, building_id, unit_id, mobile, external_name, role_type")
+        .eq("mobile", normalizedPhone)
+        .eq("is_active", true);
+      if (error) throw error;
+      return managers || [];
+    }
 
-      // Get building names
-      const buildingIds = [...new Set(units.map((u: any) => u.building_id))];
+    // Helper: get building names
+    async function getBuildingMap(buildingIds: string[]) {
+      if (buildingIds.length === 0) return {};
       const { data: buildings } = await adminClient
         .from("buildings")
         .select("id, name")
         .in("id", buildingIds);
+      const map: Record<string, string> = {};
+      (buildings || []).forEach((b: any) => { map[b.id] = b.name; });
+      return map;
+    }
 
-      const buildingMap: Record<string, string> = {};
-      (buildings || []).forEach((b: any) => { buildingMap[b.id] = b.name; });
+    if (action === "request") {
+      const [units, managers] = await Promise.all([lookupUnits(), lookupManagers()]);
 
-      // Check if this phone belongs to a manager
-      const { data: managers } = await adminClient
-        .from("managers")
-        .select("id, building_id, unit_id, mobile")
-        .eq("mobile", normalizedPhone)
-        .eq("is_active", true);
+      const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
 
-      const managerBuildingIds = new Set((managers || []).map((m: any) => m.building_id));
+      // If no units AND no managers found
+      if (units.length === 0 && managers.length === 0) {
+        return new Response(
+          JSON.stringify({ found: false, message: "شماره موبایل در هیچ ساختمانی ثبت نشده است" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
 
-      const matches = units.map((u: any) => {
-        const isOwner = u.phone === normalizedPhone;
-        const isResident = u.resident_phone === normalizedPhone;
-        return {
-          unit_id: u.id,
-          unit_number: u.unit_number,
-          building_id: u.building_id,
-          building_name: buildingMap[u.building_id] || "",
-          owner_name: u.owner_name,
-          resident_name: u.resident_name,
-          role: isOwner ? "owner" : "resident",
-          isManager: isResident ? managerBuildingIds.has(u.building_id) : managerBuildingIds.has(u.building_id),
-        };
-      });
+      // Collect all building IDs
+      const allBuildingIds = [...new Set([
+        ...units.map((u: any) => u.building_id),
+        ...managers.map((m: any) => m.building_id),
+      ])];
+      const buildingMap = await getBuildingMap(allBuildingIds);
+
+      // Build matches from units
+      const matches = units.map((u: any) => ({
+        unit_id: u.id,
+        unit_number: u.unit_number,
+        building_id: u.building_id,
+        building_name: buildingMap[u.building_id] || "",
+        owner_name: u.owner_name,
+        resident_name: u.resident_name,
+        role: u.phone === normalizedPhone ? "owner" : "resident",
+        isManager: managerBuildingIds.has(u.building_id),
+      }));
+
+      // Add manager-only buildings (where manager has no unit match)
+      const unitBuildingIds = new Set(units.map((u: any) => u.building_id));
+      for (const mgr of managers) {
+        if (!unitBuildingIds.has(mgr.building_id)) {
+          matches.push({
+            unit_id: null,
+            unit_number: null,
+            building_id: mgr.building_id,
+            building_name: buildingMap[mgr.building_id] || "",
+            owner_name: mgr.external_name || "",
+            resident_name: null,
+            role: "manager",
+            isManager: true,
+          });
+        }
+      }
 
       return new Response(
-        JSON.stringify({ found: true, matches }),
+        JSON.stringify({ found: true, matches, is_manager_only: units.length === 0 && managers.length > 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -151,24 +184,13 @@ serve(async (req) => {
         );
       }
 
-      // Re-lookup units for this phone
-      const { data: units } = await adminClient
-        .from("units")
-        .select("id, unit_number, building_id, owner_name, resident_name, phone, resident_phone")
-        .or(`phone.eq.${normalizedPhone},resident_phone.eq.${normalizedPhone}`);
+      const [units, managers] = await Promise.all([lookupUnits(), lookupManagers()]);
 
-      if (!units || units.length === 0) {
-        throw new Error("واحدی یافت نشد");
+      if (units.length === 0 && managers.length === 0) {
+        throw new Error("اطلاعاتی یافت نشد");
       }
 
-      // Check if manager
-      const { data: managers } = await adminClient
-        .from("managers")
-        .select("id, building_id, unit_id, mobile")
-        .eq("mobile", normalizedPhone)
-        .eq("is_active", true);
-
-      const managerBuildingIds = new Set((managers || []).map((m: any) => m.building_id));
+      const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
       const isManager = managerBuildingIds.size > 0;
 
       let userId: string;
@@ -187,7 +209,6 @@ serve(async (req) => {
 
         if (memberData) {
           userId = memberData.user_id;
-          // Get their email
           const { data: userData } = await adminClient.auth.admin.getUserById(userId);
           if (!userData?.user) throw new Error("حساب مدیر یافت نشد");
           userEmail = userData.user.email!;
@@ -273,14 +294,13 @@ serve(async (req) => {
       if (!tokenHash) throw new Error("خطا در ایجاد توکن ورود");
 
       // Get building info for response
-      const buildingIds = [...new Set(units.map((u: any) => u.building_id))];
-      const { data: buildings } = await adminClient
-        .from("buildings")
-        .select("id, name")
-        .in("id", buildingIds);
-      const buildingMap: Record<string, string> = {};
-      (buildings || []).forEach((b: any) => { buildingMap[b.id] = b.name; });
+      const allBuildingIds = [...new Set([
+        ...units.map((u: any) => u.building_id),
+        ...managers.map((m: any) => m.building_id),
+      ])];
+      const buildingMap = await getBuildingMap(allBuildingIds);
 
+      // Build matches from units
       const matches = units.map((u: any) => ({
         unit_id: u.id,
         unit_number: u.unit_number,
@@ -291,6 +311,23 @@ serve(async (req) => {
         role: u.phone === normalizedPhone ? "owner" : "resident",
         isManager: managerBuildingIds.has(u.building_id),
       }));
+
+      // Add manager-only buildings
+      const unitBuildingIds = new Set(units.map((u: any) => u.building_id));
+      for (const mgr of managers) {
+        if (!unitBuildingIds.has(mgr.building_id)) {
+          matches.push({
+            unit_id: null,
+            unit_number: null,
+            building_id: mgr.building_id,
+            building_name: buildingMap[mgr.building_id] || "",
+            owner_name: mgr.external_name || "",
+            resident_name: null,
+            role: "manager",
+            isManager: true,
+          });
+        }
+      }
 
       return new Response(
         JSON.stringify({

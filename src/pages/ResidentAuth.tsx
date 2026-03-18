@@ -84,9 +84,17 @@ const ResidentAuth = () => {
       setIsManager(data.is_manager);
 
       if (data.is_manager) {
-        setStep("role-select");
+        // If manager has unit matches too, show role selection
+        const hasUnitMatches = data.matches.some((m: UnitMatch) => m.unit_id);
+        if (hasUnitMatches) {
+          setStep("role-select");
+        } else {
+          // Manager-only, go straight to dashboard
+          localStorage.setItem("resident_matches", JSON.stringify(data.matches));
+          navigate("/dashboard", { replace: true });
+        }
       } else {
-      // Store only the selected match and navigate
+        // Store only the selected match and navigate
         const selected = [data.matches[selectedMatchIndex] || data.matches[0]];
         localStorage.setItem("resident_matches", JSON.stringify(selected));
         navigate("/resident", { replace: true });
