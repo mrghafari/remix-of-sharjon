@@ -87,9 +87,6 @@ export default function Landing() {
             <a href="#faq" className="hover:text-foreground transition-colors">سوالات متداول</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/auth")} className="text-xs text-muted-foreground">
-              ادمین سایت
-            </Button>
             <Button variant="ghost" onClick={() => navigate("/resident-auth")}>
               ورود
             </Button>
