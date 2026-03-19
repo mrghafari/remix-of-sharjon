@@ -2,6 +2,7 @@ import { Building2, Shield, BarChart3, Users, CreditCard, Bell, ArrowLeft, Check
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import blueTehran from "@/assets/blue-tehran.png";
 
 const features = [
   {
