@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Building2, Plus, Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Dashboard } from "@/components/dashboard/Dashboard";
@@ -12,9 +13,113 @@ import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
 import { AnnouncementsPage } from "@/components/announcements/AnnouncementsPage";
 import { UtilitiesPage } from "@/components/utilities/UtilitiesPage";
 import { PhoneBookPage } from "@/components/phonebook/PhoneBookPage";
+import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+function CreateBuildingScreen() {
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [totalUnits, setTotalUnits] = useState("");
+  const createBuilding = useCreateBuilding();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    createBuilding.mutate({
+      name: name.trim(),
+      address: address.trim() || undefined,
+      total_units: totalUnits ? parseInt(totalUnits) : undefined,
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+      <div className="w-full max-w-lg space-y-6">
+        <div className="text-center space-y-3">
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+            <Building2 className="w-10 h-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">خوش آمدید!</h1>
+          <p className="text-muted-foreground">
+            برای شروع، اولین ساختمان خود را ایجاد کنید
+          </p>
+        </div>
+
+        <Card className="border-border/50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              ایجاد ساختمان جدید
+            </CardTitle>
+            <CardDescription>اطلاعات ساختمان را وارد کنید</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">نام ساختمان *</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="مثال: مجتمع مسکونی گلستان"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">آدرس</Label>
+                <Input
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="units">تعداد واحدها</Label>
+                <Input
+                  id="units"
+                  type="number"
+                  min="1"
+                  value={totalUnits}
+                  onChange={(e) => setTotalUnits(e.target.value)}
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-primary hover:opacity-90 shadow-glow"
+                disabled={createBuilding.isPending || !name.trim()}
+              >
+                {createBuilding.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
+                ایجاد ساختمان و شروع مدیریت
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { buildings, isLoading } = useBuilding();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground text-sm">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (buildings.length === 0) {
+    return <CreateBuildingScreen />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
