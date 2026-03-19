@@ -2,6 +2,7 @@ import { Building2, Shield, BarChart3, Users, CreditCard, Bell, ArrowLeft, Check
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import blueTehran from "@/assets/blue-tehran.png";
 
 const features = [
   {
@@ -100,10 +101,10 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-20 pb-32">
-        {/* Background decoration */}
+        {/* Background image */}
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-20 right-1/4 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
+          <img src={blueTehran} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px]" />
         </div>
 
         <div className="max-w-7xl mx-auto px-6 text-center">
