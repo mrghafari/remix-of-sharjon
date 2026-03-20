@@ -115,7 +115,7 @@ const ResidentAuth = () => {
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-4">خوش آمدید</h1>
           <p className="text-white/80 text-lg max-w-md mx-auto leading-relaxed">
-            پلتفرم هوشمند مدیریت ساختمان بلاک‌باس — مدیریت آسان، شفاف و حرفه‌ای
+            پلتفرم هوشمند مدیریت ساختمان شارژان — مدیریت آسان، شفاف و حرفه‌ای
           </p>
         </div>
       </div>
