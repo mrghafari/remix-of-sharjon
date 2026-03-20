@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import blueTehran from "@/assets/blue-tehran.png";
+import sharjanLogo from "@/assets/sharjan-logo.png";
 
 const features = [
   {
