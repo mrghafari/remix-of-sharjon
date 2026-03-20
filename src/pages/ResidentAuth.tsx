@@ -31,6 +31,7 @@ const ResidentAuth = () => {
   const [selectedMatchIndex, setSelectedMatchIndex] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isManager, setIsManager] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,10 +48,11 @@ const ResidentAuth = () => {
       });
       if (error) throw error;
       if (!data.found) {
-        toast({ title: "شماره یافت نشد", description: data.message, variant: "destructive" });
+        toast({ title: "خطا", description: "مشکلی پیش آمد", variant: "destructive" });
         return;
       }
-      setMatches(data.matches);
+      setMatches(data.matches || []);
+      setIsNewUser(!!data.is_new_user);
       setSelectedMatchIndex(0);
       setStep("otp");
       toast({ title: "کد تأیید ارسال شد", description: "کد ۱۲۳۴۵۶ را وارد کنید (حالت تست)" });
@@ -80,8 +82,15 @@ const ResidentAuth = () => {
       });
       if (otpErr) throw otpErr;
 
+      // If new user with no matches, go directly to dashboard to create building
+      if (data.is_new_user && (!data.matches || data.matches.length === 0)) {
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
       setMatches(data.matches);
       setIsManager(data.is_manager);
+      setIsNewUser(!!data.is_new_user);
       setStep("role-select");
     } catch (err: any) {
       toast({ title: "خطا در تأیید", description: err.message, variant: "destructive" });
@@ -129,14 +138,14 @@ const ResidentAuth = () => {
               <Building2 className="w-9 h-9 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">خوش آمدید</h1>
-            <p className="text-muted-foreground text-sm">ورود مدیران و ساکنین با شماره موبایل</p>
+            <p className="text-muted-foreground text-sm">ورود یا ثبت‌نام با شماره موبایل</p>
           </div>
 
           {step === "phone" && (
             <Card className="border-border/50 shadow-lg">
               <CardHeader className="text-center">
-                <CardTitle>ورود با شماره موبایل</CardTitle>
-                <CardDescription>شماره موبایلی که در ساختمان ثبت شده را وارد کنید</CardDescription>
+                <CardTitle>ورود یا ثبت‌نام</CardTitle>
+                <CardDescription>شماره موبایل خود را وارد کنید</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleRequestOtp} className="space-y-4">

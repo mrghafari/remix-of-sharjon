@@ -126,10 +126,10 @@ serve(async (req) => {
 
       const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
 
-      // If no units AND no managers found
+      // If no units AND no managers found — this is a NEW user, still allow them to proceed
       if (units.length === 0 && managers.length === 0) {
         return new Response(
-          JSON.stringify({ found: false, message: "شماره موبایل در هیچ ساختمانی ثبت نشده است" }),
+          JSON.stringify({ found: true, matches: [], is_new_user: true }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -171,7 +171,7 @@ serve(async (req) => {
       }
 
       return new Response(
-        JSON.stringify({ found: true, matches, is_manager_only: units.length === 0 && managers.length > 0 }),
+        JSON.stringify({ found: true, matches, is_new_user: false, is_manager_only: units.length === 0 && managers.length > 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -186,17 +186,50 @@ serve(async (req) => {
 
       const [units, managers] = await Promise.all([lookupUnits(), lookupManagers()]);
 
-      if (units.length === 0 && managers.length === 0) {
-        throw new Error("اطلاعاتی یافت نشد");
-      }
-
       const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
       const isManager = managerBuildingIds.size > 0;
+      const isNewUser = units.length === 0 && managers.length === 0;
 
       let userId: string;
       let userEmail: string;
 
-      if (isManager) {
+      if (isNewUser) {
+        // Brand new user — create account so they can create a building
+        userEmail = `${normalizedPhone}@resident.local`;
+
+        let existingUser = await findAuthUserByEmail(adminClient, userEmail);
+
+        if (existingUser) {
+          userId = existingUser.id;
+        } else {
+          const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
+            email: userEmail,
+            email_confirm: true,
+            user_metadata: {
+              phone: normalizedPhone,
+              full_name: normalizedPhone,
+            },
+          });
+
+          if (createErr) {
+            const isEmailExistsError =
+              createErr.message?.includes("already been registered") ||
+              createErr.message?.includes("email address") ||
+              (createErr as any)?.status === 422;
+
+            if (!isEmailExistsError) throw createErr;
+
+            existingUser = await findAuthUserByEmail(adminClient, userEmail);
+            if (!existingUser) throw createErr;
+            userId = existingUser.id;
+          } else {
+            userId = newUser.user.id;
+          }
+        }
+
+        await ensureProfile(adminClient, userId, normalizedPhone, normalizedPhone);
+
+      } else if (isManager) {
         // Find the manager's user account via building_members
         const managerBuildingId = [...managerBuildingIds][0];
         const { data: memberData } = await adminClient
@@ -335,6 +368,7 @@ serve(async (req) => {
           token_hash: tokenHash,
           email: userEmail,
           is_manager: isManager,
+          is_new_user: isNewUser,
           matches,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
