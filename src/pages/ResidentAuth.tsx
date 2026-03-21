@@ -173,7 +173,7 @@ const ResidentAuth = () => {
                   کد ارسال‌شده به {phone} را وارد کنید
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }} className="space-y-4">
                 <div className="flex justify-center" dir="ltr">
                   <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                     <InputOTPGroup>
@@ -187,14 +187,14 @@ const ResidentAuth = () => {
                   </InputOTP>
                 </div>
 
-                <Button onClick={handleVerifyOtp} className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading || otp.length !== 6}>
+                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading || otp.length !== 6}>
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
                   تأیید و ورود
                 </Button>
-                <Button variant="ghost" className="w-full" onClick={() => { setStep("phone"); setOtp(""); }}>
+                <Button type="button" variant="ghost" className="w-full" onClick={() => { setStep("phone"); setOtp(""); }}>
                   تغییر شماره
                 </Button>
-              </CardContent>
+              </form>
             </Card>
           )}
 
