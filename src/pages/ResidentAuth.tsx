@@ -289,7 +289,6 @@ const ResidentAuth = () => {
               </Button>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
