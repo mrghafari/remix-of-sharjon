@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Phone, KeyRound, Loader2, ShieldCheck, Home, Plus } from "lucide-react";
+import { Phone, KeyRound, Loader2, ShieldCheck, Home, Plus } from "lucide-react";
+import sharjanLogo from "@/assets/sharjan-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import blueTehran from "@/assets/blue-tehran.png";
+
 
 interface UnitMatch {
   unit_id: string;
@@ -113,33 +115,19 @@ const ResidentAuth = () => {
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Right side - Welcome */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-end justify-center">
-        <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-primary/60" />
-        <div className="relative z-10 p-12 pb-20 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-4xl font-extrabold text-white mb-4">خوش آمدید</h1>
-          <p className="text-white/80 text-lg max-w-md mx-auto leading-relaxed">
-            پلتفرم هوشمند مدیریت ساختمان شارژان — مدیریت آسان، شفاف و حرفه‌ای
-          </p>
-        </div>
-      </div>
+    <div className="min-h-screen relative flex items-center justify-center" dir="rtl">
+      {/* Full-page background */}
+      <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-black/50" />
 
-      {/* Left side - Auth forms */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
-        <div className="w-full max-w-md space-y-6">
-          {/* Mobile-only logo */}
-          <div className="text-center space-y-2 lg:hidden">
-            <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto shadow-lg">
-              <Building2 className="w-9 h-9 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground">خوش آمدید</h1>
-            <p className="text-muted-foreground text-sm">ورود یا ثبت‌نام با شماره موبایل</p>
-          </div>
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md p-6 space-y-6">
+        {/* Logo + Welcome */}
+        <div className="text-center space-y-3">
+          <img src={sharjanLogo} alt="شارژان" className="w-28 h-28 mx-auto drop-shadow-lg" />
+          <h1 className="text-3xl font-extrabold text-white">خوش آمدید</h1>
+          <p className="text-white/70 text-sm">ورود یا ثبت‌نام با شماره موبایل</p>
+        </div>
 
           {step === "phone" && (
             <Card className="border-border/50 shadow-lg">
@@ -301,7 +289,6 @@ const ResidentAuth = () => {
               </Button>
             </div>
           )}
-        </div>
       </div>
     </div>
   );
