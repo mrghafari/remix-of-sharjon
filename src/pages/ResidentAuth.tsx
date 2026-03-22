@@ -163,39 +163,80 @@ const ResidentAuth = () => {
           )}
 
           {step === "otp" && (
-            <Card className="border-border/50 shadow-lg">
-              <CardHeader className="text-center">
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <KeyRound className="w-5 h-5" />
-                  کد تأیید
-                </CardTitle>
-                <CardDescription>
-                  کد ارسال‌شده به {phone} را وارد کنید
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }} className="space-y-4">
-                <div className="flex justify-center" dir="ltr">
-                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
+            <div className="space-y-4">
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader className="text-center">
+                  <CardTitle className="flex items-center justify-center gap-2">
+                    <KeyRound className="w-5 h-5" />
+                    کد تأیید
+                  </CardTitle>
+                  <CardDescription>
+                    کد ارسال‌شده به {phone} را وارد کنید
+                  </CardDescription>
+                </CardHeader>
+                <form onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }} className="space-y-4 px-6 pb-6">
+                  <div className="flex justify-center" dir="ltr">
+                    <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
 
-                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading || otp.length !== 6}>
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
-                  تأیید و ورود
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={() => { setStep("phone"); setOtp(""); }}>
-                  تغییر شماره
-                </Button>
-              </form>
-            </Card>
+                  <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading || otp.length !== 6}>
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
+                    تأیید و ورود
+                  </Button>
+                  <Button type="button" variant="ghost" className="w-full" onClick={() => { setStep("phone"); setOtp(""); }}>
+                    تغییر شماره
+                  </Button>
+                </form>
+              </Card>
+
+              {/* Show matches preview below OTP */}
+              {matches.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-white/60 text-center">ساختمان‌های شما:</p>
+                  {matches.filter(m => m.isManager).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-white/50">🛡️ مدیریت</p>
+                      {matches.filter(m => m.isManager).map((match, idx) => (
+                        <Card key={`preview-mgr-${idx}`} className="opacity-80 border-primary/20">
+                          <CardContent className="p-3 flex items-center gap-3">
+                            <ShieldCheck className="w-5 h-5 text-primary shrink-0" />
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{match.building_name}</p>
+                              <p className="text-xs text-muted-foreground">مدیر</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                  {matches.filter(m => !m.isManager).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-white/50">🏠 ساکن / مالک</p>
+                      {matches.filter(m => !m.isManager).map((match, idx) => (
+                        <Card key={`preview-res-${idx}`} className="opacity-80 border-border/30">
+                          <CardContent className="p-3 flex items-center gap-3">
+                            <Home className="w-5 h-5 text-accent shrink-0" />
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{match.building_name}</p>
+                              <p className="text-xs text-muted-foreground">واحد {match.unit_number} — {match.role === "owner" ? "مالک" : "ساکن"}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {step === "role-select" && (
