@@ -47,7 +47,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
