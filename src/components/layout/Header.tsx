@@ -30,10 +30,20 @@ export function Header({ onTabChange }: HeaderProps) {
   };
 
   const rawEmail = user?.email || "";
+  const rawName = user?.user_metadata?.full_name || "";
+  
+  // Strip fake email domain from any displayed value
+  const cleanValue = (val: string) => val.replace(/@resident\.local$/i, "").trim();
+  
   const displayPhone = rawEmail.includes("@resident.local") 
-    ? rawEmail.replace("@resident.local", "") 
+    ? cleanValue(rawEmail) 
     : "";
-  const displayName = user?.user_metadata?.full_name || displayPhone || rawEmail || "کاربر";
+  
+  // Use cleaned name, fallback to phone, never show @resident.local
+  const displayName = (rawName && !rawName.includes("@resident.local") ? rawName : "") 
+    || displayPhone 
+    || cleanValue(rawEmail) 
+    || "کاربر";
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
