@@ -29,8 +29,11 @@ export function Header({ onTabChange }: HeaderProps) {
     }
   };
 
-  const displayName = user?.user_metadata?.full_name || user?.email || "کاربر";
-  const displayEmail = user?.email || "";
+  const rawEmail = user?.email || "";
+  const displayPhone = rawEmail.includes("@resident.local") 
+    ? rawEmail.replace("@resident.local", "") 
+    : "";
+  const displayName = user?.user_metadata?.full_name || displayPhone || rawEmail || "کاربر";
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
@@ -61,7 +64,6 @@ export function Header({ onTabChange }: HeaderProps) {
               <div className="flex items-center gap-3 pr-4 border-r border-border cursor-pointer hover:opacity-80 transition-opacity">
                 <div className="text-left">
                   <p className="text-sm font-medium">{displayName}</p>
-                  <p className="text-xs text-muted-foreground">{displayEmail}</p>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                   <User className="w-5 h-5 text-primary-foreground" />
