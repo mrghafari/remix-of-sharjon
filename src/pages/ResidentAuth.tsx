@@ -297,14 +297,19 @@ const ResidentAuth = () => {
                   </div>
                 )}
 
-                <Button type="button" variant="ghost" className="w-full" onClick={() => {
-                  setStep("phone");
-                  setOtp("");
-                  setMatches([]);
-                  setSelectedMatchIndex(0);
-                }}>
-                  تغییر شماره
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" className="flex-1" onClick={() => {
+                    setStep("phone");
+                    setOtp("");
+                    setMatches([]);
+                    setSelectedMatchIndex(0);
+                  }}>
+                    تغییر شماره
+                  </Button>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => navigate("/")}>
+                    انصراف
+                  </Button>
+                </div>
               </form>
             </Card>
           </div>
