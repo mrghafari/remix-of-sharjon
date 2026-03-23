@@ -141,33 +141,35 @@ serve(async (req) => {
       ])];
       const buildingMap = await getBuildingMap(allBuildingIds);
 
-      // Build matches from units
-      const matches = units.map((u: any) => ({
-        unit_id: u.id,
-        unit_number: u.unit_number,
-        building_id: u.building_id,
-        building_name: buildingMap[u.building_id] || "",
-        owner_name: u.owner_name,
-        resident_name: u.resident_name,
-        role: u.phone === normalizedPhone ? "owner" : "resident",
-        isManager: managerBuildingIds.has(u.building_id),
-      }));
+      // Build matches: separate manager and resident/owner roles
+      const matches: any[] = [];
 
-      // Add manager-only buildings (where manager has no unit match)
-      const unitBuildingIds = new Set(units.map((u: any) => u.building_id));
+      // Add manager entries first
       for (const mgr of managers) {
-        if (!unitBuildingIds.has(mgr.building_id)) {
-          matches.push({
-            unit_id: null,
-            unit_number: null,
-            building_id: mgr.building_id,
-            building_name: buildingMap[mgr.building_id] || "",
-            owner_name: mgr.external_name || "",
-            resident_name: null,
-            role: "manager",
-            isManager: true,
-          });
-        }
+        matches.push({
+          unit_id: null,
+          unit_number: null,
+          building_id: mgr.building_id,
+          building_name: buildingMap[mgr.building_id] || "",
+          owner_name: mgr.external_name || "",
+          resident_name: null,
+          role: "manager",
+          isManager: true,
+        });
+      }
+
+      // Add unit entries (as resident/owner, never as manager)
+      for (const u of units) {
+        matches.push({
+          unit_id: u.id,
+          unit_number: u.unit_number,
+          building_id: u.building_id,
+          building_name: buildingMap[u.building_id] || "",
+          owner_name: u.owner_name,
+          resident_name: u.resident_name,
+          role: u.phone === normalizedPhone ? "owner" : "resident",
+          isManager: false,
+        });
       }
 
       return new Response(
@@ -333,33 +335,35 @@ serve(async (req) => {
       ])];
       const buildingMap = await getBuildingMap(allBuildingIds);
 
-      // Build matches from units
-      const matches = units.map((u: any) => ({
-        unit_id: u.id,
-        unit_number: u.unit_number,
-        building_id: u.building_id,
-        building_name: buildingMap[u.building_id] || "",
-        owner_name: u.owner_name,
-        resident_name: u.resident_name,
-        role: u.phone === normalizedPhone ? "owner" : "resident",
-        isManager: managerBuildingIds.has(u.building_id),
-      }));
+      // Build matches: separate manager and resident/owner roles
+      const matches: any[] = [];
 
-      // Add manager-only buildings
-      const unitBuildingIds = new Set(units.map((u: any) => u.building_id));
+      // Add manager entries
       for (const mgr of managers) {
-        if (!unitBuildingIds.has(mgr.building_id)) {
-          matches.push({
-            unit_id: null,
-            unit_number: null,
-            building_id: mgr.building_id,
-            building_name: buildingMap[mgr.building_id] || "",
-            owner_name: mgr.external_name || "",
-            resident_name: null,
-            role: "manager",
-            isManager: true,
-          });
-        }
+        matches.push({
+          unit_id: null,
+          unit_number: null,
+          building_id: mgr.building_id,
+          building_name: buildingMap[mgr.building_id] || "",
+          owner_name: mgr.external_name || "",
+          resident_name: null,
+          role: "manager",
+          isManager: true,
+        });
+      }
+
+      // Add unit entries (as resident/owner)
+      for (const u of units) {
+        matches.push({
+          unit_id: u.id,
+          unit_number: u.unit_number,
+          building_id: u.building_id,
+          building_name: buildingMap[u.building_id] || "",
+          owner_name: u.owner_name,
+          resident_name: u.resident_name,
+          role: u.phone === normalizedPhone ? "owner" : "resident",
+          isManager: false,
+        });
       }
 
       return new Response(
