@@ -208,6 +208,93 @@ const ResidentAuth = () => {
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
                   تأیید و ورود
                 </Button>
+
+                {(matches.length > 0 || isNewUser) && (
+                  <div className="space-y-3 pt-2 border-t border-border/50">
+                    {matches.length > 0 && (
+                      <>
+                        <p className="text-sm font-semibold text-center text-muted-foreground">
+                          وارد کدام ساختمان شوید؟
+                        </p>
+
+                        {managerMatches.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">🛡️ مدیریت</p>
+                            {managerMatches.map((match) => {
+                              const matchIndex = matches.findIndex(
+                                (item) => item.building_id === match.building_id && item.unit_id === match.unit_id && item.role === match.role,
+                              );
+                              const isSelected = selectedMatchIndex === matchIndex;
+                              return (
+                                <div
+                                  key={`mgr-${match.building_id}-${match.unit_id ?? "manager"}`}
+                                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${isSelected ? "bg-primary/10 ring-1 ring-primary/40" : "bg-muted/50 hover:bg-muted"}`}
+                                  onClick={() => setSelectedMatchIndex(matchIndex)}
+                                >
+                                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="w-4 h-4 text-primary" />
+                                  </div>
+                                  <div className="flex-1 text-right">
+                                    <p className="text-sm font-bold">{match.building_name}</p>
+                                    <p className="text-xs text-muted-foreground">مدیر ساختمان</p>
+                                  </div>
+                                  {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {residentMatches.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-muted-foreground">🏠 ساکن / مالک</p>
+                            {residentMatches.map((match) => {
+                              const matchIndex = matches.findIndex(
+                                (item) => item.building_id === match.building_id && item.unit_id === match.unit_id && item.role === match.role,
+                              );
+                              const isSelected = selectedMatchIndex === matchIndex;
+                              return (
+                                <div
+                                  key={`res-${match.building_id}-${match.unit_id}`}
+                                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${isSelected ? "bg-primary/10 ring-1 ring-primary/40" : "bg-muted/50 hover:bg-muted"}`}
+                                  onClick={() => setSelectedMatchIndex(matchIndex)}
+                                >
+                                  <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                                    <Home className="w-4 h-4 text-accent" />
+                                  </div>
+                                  <div className="flex-1 text-right">
+                                    <p className="text-sm font-bold">{match.building_name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      واحد {match.unit_number} — {match.role === "owner" ? "مالک" : "ساکن"}
+                                    </p>
+                                  </div>
+                                  {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">➕ ساختمان جدید</p>
+                      <div
+                        className="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200"
+                        onClick={handleCreateBuilding}
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                          <Plus className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 text-right">
+                          <p className="text-sm font-bold">ایجاد ساختمان</p>
+                          <p className="text-xs text-muted-foreground">ساختمان جدید بسازید</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <Button type="button" variant="ghost" className="w-full" onClick={() => {
                   setStep("phone");
                   setOtp("");
@@ -218,100 +305,6 @@ const ResidentAuth = () => {
                 </Button>
               </form>
             </Card>
-
-            {(matches.length > 0 || isNewUser) && (
-              <div className="space-y-3">
-                {matches.length > 0 && (
-                  <>
-                    <p className="text-sm font-semibold text-white text-center">
-                      پس از تأیید، وارد کدام ساختمان شوید؟
-                    </p>
-
-                    {managerMatches.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-white/60">🛡️ مدیریت</p>
-                        {managerMatches.map((match) => {
-                          const matchIndex = matches.findIndex(
-                            (item) => item.building_id === match.building_id && item.unit_id === match.unit_id && item.role === match.role,
-                          );
-                          const isSelected = selectedMatchIndex === matchIndex;
-
-                          return (
-                            <Card
-                              key={`preview-mgr-${match.building_id}-${match.unit_id ?? "manager"}`}
-                              className={`cursor-pointer transition-all duration-200 ${isSelected ? "border-primary shadow-md ring-1 ring-primary/40" : "opacity-90 border-primary/20 hover:border-primary/50"}`}
-                              onClick={() => setSelectedMatchIndex(matchIndex)}
-                            >
-                              <CardContent className="p-4 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                  <ShieldCheck className="w-5 h-5 text-primary" />
-                                </div>
-                                <div className="flex-1 text-right">
-                                  <p className="text-sm font-bold">{match.building_name}</p>
-                                  <p className="text-xs text-muted-foreground">مدیر ساختمان</p>
-                                </div>
-                                {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {residentMatches.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-white/60">🏠 ساکن / مالک</p>
-                        {residentMatches.map((match) => {
-                          const matchIndex = matches.findIndex(
-                            (item) => item.building_id === match.building_id && item.unit_id === match.unit_id && item.role === match.role,
-                          );
-                          const isSelected = selectedMatchIndex === matchIndex;
-
-                          return (
-                            <Card
-                              key={`preview-res-${match.building_id}-${match.unit_id}`}
-                              className={`cursor-pointer transition-all duration-200 ${isSelected ? "border-primary shadow-md ring-1 ring-primary/40" : "opacity-90 border-border/30 hover:border-primary/40"}`}
-                              onClick={() => setSelectedMatchIndex(matchIndex)}
-                            >
-                              <CardContent className="p-4 flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                                  <Home className="w-5 h-5 text-accent" />
-                                </div>
-                                <div className="flex-1 text-right">
-                                  <p className="text-sm font-bold">{match.building_name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    واحد {match.unit_number} — {match.role === "owner" ? "مالک" : "ساکن"}
-                                  </p>
-                                </div>
-                                {isSelected && <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />}
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </>
-                )}
-
-                <div className="space-y-2">
-                  <p className="text-xs text-white/60">➕ ساختمان جدید</p>
-                  <Card
-                    className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 hover:shadow-md transition-all duration-200"
-                    onClick={handleCreateBuilding}
-                  >
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                        <Plus className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 text-right">
-                        <p className="text-sm font-bold">ایجاد ساختمان</p>
-                        <p className="text-xs text-muted-foreground">ساختمان جدید بسازید و مدیریت کنید</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
