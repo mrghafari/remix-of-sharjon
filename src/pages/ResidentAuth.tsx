@@ -277,21 +277,23 @@ const ResidentAuth = () => {
                       </>
                     )}
 
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground">➕ ساختمان جدید</p>
-                      <div
-                        className="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200"
-                        onClick={handleCreateBuilding}
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                          <Plus className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 text-right">
-                          <p className="text-sm font-bold">ایجاد ساختمان</p>
-                          <p className="text-xs text-muted-foreground">ساختمان جدید بسازید</p>
+                    {!isNewUser && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">➕ ساختمان جدید</p>
+                        <div
+                          className="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200"
+                          onClick={handleCreateBuilding}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <Plus className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 text-right">
+                            <p className="text-sm font-bold">ایجاد ساختمان</p>
+                            <p className="text-xs text-muted-foreground">ساختمان جدید بسازید</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
