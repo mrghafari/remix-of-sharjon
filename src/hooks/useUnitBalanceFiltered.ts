@@ -262,12 +262,16 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
 
   // Build share map from stored snapshots
   const shareMap = useMemo(() => {
-    const map = new Map<string, Map<string, number>>();
+    const map = new Map<string, Map<string, { amount: number; ownerName: string | null; residentName: string | null }>>();
     shares.forEach((s) => {
       if (!map.has(s.expense_id)) {
         map.set(s.expense_id, new Map());
       }
-      map.get(s.expense_id)!.set(s.unit_id, s.allocated_amount);
+      map.get(s.expense_id)!.set(s.unit_id, {
+        amount: s.allocated_amount,
+        ownerName: s.owner_name,
+        residentName: s.resident_name,
+      });
     });
     return map;
   }, [shares]);
@@ -275,11 +279,16 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
   const unitBalances = useMemo(() => {
     return units.map((unit): UnitBalance => {
       const expenseBreakdown = filteredExpenses
-        .map((expense) => ({
-          expense,
-          allocatedAmount: shareMap.get(expense.id)?.get(unit.id) || 0,
-          project: projects.find((p) => p.id === expense.project_id) || null,
-        }))
+        .map((expense) => {
+          const share = shareMap.get(expense.id)?.get(unit.id);
+          return {
+            expense,
+            allocatedAmount: share?.amount || 0,
+            project: projects.find((p) => p.id === expense.project_id) || null,
+            ownerName: share?.ownerName ?? unit.owner_name,
+            residentName: share?.residentName ?? unit.resident_name,
+          };
+        })
         .filter((e) => e.allocatedAmount > 0);
 
       const totalAllocatedExpenses = expenseBreakdown.reduce(
