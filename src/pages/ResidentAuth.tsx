@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Phone, KeyRound, Loader2, ShieldCheck, Home, Plus, CheckCircle2 } from "lucide-react";
 import sharjanLogo from "@/assets/sharjan-logo.png";
