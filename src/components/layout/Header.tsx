@@ -23,10 +23,19 @@ export function Header({ onTabChange }: HeaderProps) {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({ title: "خطا در خروج", variant: "destructive" });
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("currentBuildingId");
+      const { error } = await signOut();
+      // "Auth session missing" means we're already logged out — treat as success
+      if (error && !/session/i.test(error.message || "")) {
+        toast({ title: "خطا در خروج", description: error.message, variant: "destructive" });
+        return;
+      }
+    } catch (err: any) {
+      console.warn("signOut error ignored:", err?.message);
     }
+    window.location.href = "/";
   };
 
   const rawEmail = user?.email || "";
