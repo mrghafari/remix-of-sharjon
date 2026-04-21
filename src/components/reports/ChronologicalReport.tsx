@@ -323,6 +323,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                       <TableHead className="text-right">نوع</TableHead>
                       <TableHead className="text-right">شرح</TableHead>
                       <TableHead className="text-right">دسته‌بندی</TableHead>
+                      <TableHead className="text-right">واحد / شخص</TableHead>
                       <TableHead className="text-right text-green-600">دریافت</TableHead>
                       <TableHead className="text-right text-red-600">هزینه</TableHead>
                       <TableHead className="text-right">مانده</TableHead>
@@ -350,6 +351,10 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                         <TableCell>
                           <span className="text-sm">{t.category}</span>
                         </TableCell>
+                        <TableCell className="text-xs">
+                          <div className="font-semibold">واحد {t.unitNumber}</div>
+                          <div className="text-muted-foreground">{t.personName} <span className="text-[10px]">({t.personRole})</span></div>
+                        </TableCell>
                         <TableCell className="text-green-600 font-medium">
                           {t.type === "payment" ? formatNumber(t.amount) : "-"}
                         </TableCell>
@@ -366,7 +371,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                     ))}
                     {transactions.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                           هنوز تراکنشی ثبت نشده
                         </TableCell>
                       </TableRow>
@@ -374,7 +379,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                     {/* Total Row */}
                     {transactions.length > 0 && (
                       <TableRow className="bg-muted font-bold border-t-2">
-                        <TableCell colSpan={5} className="text-right">جمع کل</TableCell>
+                        <TableCell colSpan={6} className="text-right">جمع کل</TableCell>
                         <TableCell className="text-green-600">
                           {formatNumber(selectedBalance.totalPayments)}
                         </TableCell>
