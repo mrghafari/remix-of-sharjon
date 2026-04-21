@@ -90,8 +90,10 @@ const ResidentAuth = () => {
       });
 
       if (error) throw error;
-      if (!data.success) {
-        toast({ title: "کد اشتباه است", variant: "destructive" });
+      if (!data?.success) {
+        toast({ title: "کد اشتباه است", description: data?.message, variant: "destructive" });
+        setOtp("");
+        autoSubmittedRef.current = false;
         return;
       }
 
