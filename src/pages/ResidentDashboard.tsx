@@ -25,8 +25,14 @@ const ResidentDashboard = () => {
   } = useResidentUnit();
 
   const handleSignOut = async () => {
-    localStorage.removeItem("resident_matches");
-    await signOut();
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("currentBuildingId");
+      await signOut();
+    } catch (err) {
+      // Ignore — we'll redirect regardless
+      console.warn("signOut ignored", err);
+    }
     navigate("/resident-auth", { replace: true });
   };
 
