@@ -16,6 +16,8 @@ export interface UnitBalance {
     expense: Expense;
     allocatedAmount: number;
     project?: { name: string } | null;
+    ownerName?: string | null;
+    residentName?: string | null;
   }[];
   paymentBreakdown: PaymentWithUnit[];
   chargeBreakdown: UnitCharge[];
