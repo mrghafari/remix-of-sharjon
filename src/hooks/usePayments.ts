@@ -16,6 +16,8 @@ export interface Payment {
   fund_type: FundType;
   building_id: string;
   created_at: string;
+  owner_name: string | null;
+  resident_name: string | null;
 }
 
 export interface PaymentWithUnit extends Payment {

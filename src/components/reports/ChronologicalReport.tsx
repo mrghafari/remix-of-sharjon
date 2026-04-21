@@ -41,6 +41,9 @@ interface Transaction {
   category?: string;
   amount: number;
   runningBalance?: number;
+  unitNumber?: string;
+  personName?: string;
+  personRole?: string;
 }
 
 function formatNumber(num: number): string {
@@ -71,8 +74,12 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
 
     const allTransactions: Transaction[] = [];
 
+    const unitNumber = selectedBalance.unit.unit_number;
+
     // Add payments (دریافت - credit)
     selectedBalance.paymentBreakdown.forEach((payment) => {
+      const payerName = payment.resident_name || payment.owner_name || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
+      const payerRole = payment.resident_name ? "ساکن" : "مالک";
       allTransactions.push({
         id: payment.id,
         date: payment.payment_date,
@@ -80,11 +87,16 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         title: `پرداخت ${payment.month}/${payment.year}`,
         category: payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی",
         amount: payment.amount,
+        unitNumber,
+        personName: payerName,
+        personRole: payerRole,
       });
     });
 
     // Add expenses (هزینه - debit)
-    selectedBalance.expenseBreakdown.forEach(({ expense, allocatedAmount }) => {
+    selectedBalance.expenseBreakdown.forEach(({ expense, allocatedAmount, ownerName, residentName }) => {
+      const responsibleName = residentName || ownerName || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
+      const responsibleRole = residentName ? "ساکن" : "مالک";
       allTransactions.push({
         id: expense.id,
         date: expense.expense_date,
@@ -92,6 +104,9 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         title: expense.title,
         category: getCategoryLabel(expense.category),
         amount: allocatedAmount,
+        unitNumber,
+        personName: responsibleName,
+        personRole: responsibleRole,
       });
     });
 
@@ -121,6 +136,9 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       "نوع تراکنش": t.type === "payment" ? "دریافت" : "هزینه",
       شرح: t.title,
       "دسته‌بندی": t.category || "-",
+      "واحد": t.unitNumber || "-",
+      "نام شخص": t.personName || "-",
+      "سمت": t.personRole || "-",
       دریافت: t.type === "payment" ? Math.round(t.amount) : "",
       هزینه: t.type === "expense" ? Math.round(t.amount) : "",
       مانده: Math.round(t.runningBalance || 0),
@@ -133,6 +151,9 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       { width: 12 },
       { width: 30 },
       { width: 15 },
+      { width: 10 },
+      { width: 18 },
+      { width: 10 },
       { width: 15 },
       { width: 15 },
       { width: 15 },
@@ -302,6 +323,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                       <TableHead className="text-right">نوع</TableHead>
                       <TableHead className="text-right">شرح</TableHead>
                       <TableHead className="text-right">دسته‌بندی</TableHead>
+                      <TableHead className="text-right">واحد / شخص</TableHead>
                       <TableHead className="text-right text-green-600">دریافت</TableHead>
                       <TableHead className="text-right text-red-600">هزینه</TableHead>
                       <TableHead className="text-right">مانده</TableHead>
@@ -329,6 +351,10 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                         <TableCell>
                           <span className="text-sm">{t.category}</span>
                         </TableCell>
+                        <TableCell className="text-xs">
+                          <div className="font-semibold">واحد {t.unitNumber}</div>
+                          <div className="text-muted-foreground">{t.personName} <span className="text-[10px]">({t.personRole})</span></div>
+                        </TableCell>
                         <TableCell className="text-green-600 font-medium">
                           {t.type === "payment" ? formatNumber(t.amount) : "-"}
                         </TableCell>
@@ -345,7 +371,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                     ))}
                     {transactions.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                           هنوز تراکنشی ثبت نشده
                         </TableCell>
                       </TableRow>
@@ -353,7 +379,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                     {/* Total Row */}
                     {transactions.length > 0 && (
                       <TableRow className="bg-muted font-bold border-t-2">
-                        <TableCell colSpan={5} className="text-right">جمع کل</TableCell>
+                        <TableCell colSpan={6} className="text-right">جمع کل</TableCell>
                         <TableCell className="text-green-600">
                           {formatNumber(selectedBalance.totalPayments)}
                         </TableCell>
