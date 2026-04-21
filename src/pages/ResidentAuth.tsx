@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Phone, KeyRound, Loader2, ShieldCheck, Home, Plus, CheckCircle2 } from "lucide-react";
 import sharjanLogo from "@/assets/sharjan-logo.png";
@@ -134,6 +134,22 @@ const ResidentAuth = () => {
   const handleCreateBuilding = () => {
     navigate("/dashboard", { replace: true });
   };
+
+  // Auto-submit OTP once 6 digits are entered
+  const autoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (step !== "otp") {
+      autoSubmittedRef.current = false;
+      return;
+    }
+    if (otp.length === 6 && !isLoading && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
+      handleVerifyOtp();
+    }
+    if (otp.length < 6) {
+      autoSubmittedRef.current = false;
+    }
+  }, [otp, step, isLoading]);
 
   return (
     <div className="min-h-screen relative flex items-center justify-center" dir="rtl">
