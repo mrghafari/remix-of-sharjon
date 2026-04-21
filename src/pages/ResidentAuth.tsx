@@ -135,6 +135,22 @@ const ResidentAuth = () => {
     navigate("/dashboard", { replace: true });
   };
 
+  // Auto-submit OTP once 6 digits are entered
+  const autoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (step !== "otp") {
+      autoSubmittedRef.current = false;
+      return;
+    }
+    if (otp.length === 6 && !isLoading && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
+      handleVerifyOtp();
+    }
+    if (otp.length < 6) {
+      autoSubmittedRef.current = false;
+    }
+  }, [otp, step, isLoading]);
+
   return (
     <div className="min-h-screen relative flex items-center justify-center" dir="rtl">
       <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
