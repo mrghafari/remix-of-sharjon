@@ -90,8 +90,10 @@ const ResidentAuth = () => {
       });
 
       if (error) throw error;
-      if (!data.success) {
-        toast({ title: "کد اشتباه است", variant: "destructive" });
+      if (!data?.success) {
+        toast({ title: "کد اشتباه است", description: data?.message, variant: "destructive" });
+        setOtp("");
+        autoSubmittedRef.current = false;
         return;
       }
 
@@ -125,7 +127,9 @@ const ResidentAuth = () => {
 
       navigate("/resident", { replace: true });
     } catch (err: any) {
-      toast({ title: "خطا در تأیید", description: err.message, variant: "destructive" });
+      toast({ title: "خطا در تأیید", description: err?.message || "کد اشتباه است", variant: "destructive" });
+      setOtp("");
+      autoSubmittedRef.current = false;
     } finally {
       setIsLoading(false);
     }
