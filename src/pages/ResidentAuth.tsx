@@ -212,6 +212,20 @@ const ResidentAuth = () => {
                   تأیید و ورود
                 </Button>
 
+                <div className="flex gap-2">
+                  <Button type="button" variant="ghost" className="flex-1" onClick={() => {
+                    setStep("phone");
+                    setOtp("");
+                    setMatches([]);
+                    setSelectedMatchIndex(0);
+                  }}>
+                    تغییر شماره
+                  </Button>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => navigate("/")}>
+                    انصراف
+                  </Button>
+                </div>
+
                 {(matches.length > 0 || isNewUser) && (
                   <div className="space-y-3 pt-2 border-t border-border/50">
                     {matches.length > 0 && (
@@ -299,20 +313,6 @@ const ResidentAuth = () => {
                     )}
                   </div>
                 )}
-
-                <div className="flex gap-2">
-                  <Button type="button" variant="ghost" className="flex-1" onClick={() => {
-                    setStep("phone");
-                    setOtp("");
-                    setMatches([]);
-                    setSelectedMatchIndex(0);
-                  }}>
-                    تغییر شماره
-                  </Button>
-                  <Button type="button" variant="outline" className="flex-1" onClick={() => navigate("/")}>
-                    انصراف
-                  </Button>
-                </div>
               </form>
             </Card>
           </div>
