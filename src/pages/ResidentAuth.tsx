@@ -127,7 +127,9 @@ const ResidentAuth = () => {
 
       navigate("/resident", { replace: true });
     } catch (err: any) {
-      toast({ title: "خطا در تأیید", description: err.message, variant: "destructive" });
+      toast({ title: "خطا در تأیید", description: err?.message || "کد اشتباه است", variant: "destructive" });
+      setOtp("");
+      autoSubmittedRef.current = false;
     } finally {
       setIsLoading(false);
     }
