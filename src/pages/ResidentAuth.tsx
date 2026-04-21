@@ -162,16 +162,29 @@ const ResidentAuth = () => {
                     <Input
                       id="phone"
                       type="tel"
+                      inputMode="numeric"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))}
                       placeholder="09123456789"
-                      className="pr-10"
+                      maxLength={11}
+                      className={`pr-10 transition-colors ${
+                        normalizedPhone.length === 0
+                          ? ""
+                          : isPhoneValid
+                          ? "border-green-500 focus-visible:ring-green-500"
+                          : "border-destructive focus-visible:ring-destructive"
+                      }`}
                       dir="ltr"
                       required
                     />
                   </div>
+                  {normalizedPhone.length > 0 && !isPhoneValid && (
+                    <p className="text-xs text-destructive">
+                      شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود ({normalizedPhone.length}/۱۱)
+                    </p>
+                  )}
                 </div>
-                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 shadow-glow" disabled={isLoading || !isPhoneValid}>
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
                   دریافت کد تأیید
                 </Button>
