@@ -27,6 +27,33 @@ import { NumericInput } from "@/components/ui/numeric-input";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { fromJalaliString, toJalaliString } from "@/lib/jalaliDate";
 
+// Safely parse a stored date (ISO "yyyy-MM-dd" or Jalali "yyyy/MM/dd") into a Date
+const parseStoredDate = (value?: string): Date | undefined => {
+  if (!value) return undefined;
+  try {
+    if (value.includes("-")) {
+      // ISO date from DB
+      const d = new Date(value);
+      return isNaN(d.getTime()) ? undefined : d;
+    }
+    // Jalali "yyyy/MM/dd"
+    const iso = fromJalaliString(value);
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? undefined : d;
+  } catch {
+    return undefined;
+  }
+};
+
+// Convert a Date to ISO "yyyy-MM-dd" for DB storage
+const toIsoDate = (d?: Date): string => {
+  if (!d) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
 const formSchema = z.object({
   name: z.string().min(1, "نام پروژه را وارد کنید"),
   description: z.string().optional(),
@@ -167,8 +194,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                     <FormLabel>تاریخ شروع</FormLabel>
                     <FormControl>
                       <JalaliDatePicker
-                        value={field.value ? new Date(fromJalaliString(field.value)) : undefined}
-                        onChange={(d) => field.onChange(d ? toJalaliString(d) : "")}
+                        value={parseStoredDate(field.value)}
+                        onChange={(d) => field.onChange(toIsoDate(d))}
                         placeholder="انتخاب تاریخ"
                       />
                     </FormControl>
@@ -184,8 +211,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
                     <FormLabel>تاریخ پایان</FormLabel>
                     <FormControl>
                       <JalaliDatePicker
-                        value={field.value ? new Date(fromJalaliString(field.value)) : undefined}
-                        onChange={(d) => field.onChange(d ? toJalaliString(d) : "")}
+                        value={parseStoredDate(field.value)}
+                        onChange={(d) => field.onChange(toIsoDate(d))}
                         placeholder="انتخاب تاریخ"
                       />
                     </FormControl>
