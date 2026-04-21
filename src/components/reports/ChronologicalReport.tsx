@@ -74,8 +74,12 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
 
     const allTransactions: Transaction[] = [];
 
+    const unitNumber = selectedBalance.unit.unit_number;
+
     // Add payments (دریافت - credit)
     selectedBalance.paymentBreakdown.forEach((payment) => {
+      const payerName = payment.resident_name || payment.owner_name || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
+      const payerRole = payment.resident_name ? "ساکن" : "مالک";
       allTransactions.push({
         id: payment.id,
         date: payment.payment_date,
@@ -83,11 +87,16 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         title: `پرداخت ${payment.month}/${payment.year}`,
         category: payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی",
         amount: payment.amount,
+        unitNumber,
+        personName: payerName,
+        personRole: payerRole,
       });
     });
 
     // Add expenses (هزینه - debit)
-    selectedBalance.expenseBreakdown.forEach(({ expense, allocatedAmount }) => {
+    selectedBalance.expenseBreakdown.forEach(({ expense, allocatedAmount, ownerName, residentName }) => {
+      const responsibleName = residentName || ownerName || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
+      const responsibleRole = residentName ? "ساکن" : "مالک";
       allTransactions.push({
         id: expense.id,
         date: expense.expense_date,
@@ -95,6 +104,9 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         title: expense.title,
         category: getCategoryLabel(expense.category),
         amount: allocatedAmount,
+        unitNumber,
+        personName: responsibleName,
+        personRole: responsibleRole,
       });
     });
 
