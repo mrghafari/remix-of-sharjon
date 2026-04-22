@@ -34,20 +34,20 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     >
       <div className="flex flex-col h-full">
         {/* Logo */}
-        <div className="flex items-center gap-3 p-6 border-b border-sidebar-border">
-          <div className="w-10 h-10 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Building2 className="w-6 h-6 text-sidebar-primary-foreground" />
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border">
+          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
-            <div className="animate-fade-in">
-              <h1 className="font-bold text-lg">مدیریت ساختمان</h1>
-              <p className="text-xs text-sidebar-foreground/60">پنل مدیریت</p>
+            <div className="animate-fade-in overflow-hidden">
+              <h1 className="font-bold text-sm leading-tight">مدیریت ساختمان</h1>
+              <p className="text-[10px] text-sidebar-foreground/60">پنل مدیریت</p>
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -56,22 +56,22 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200",
                   isActive
                     ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
                     : "hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                <Icon className="w-4 h-4 shrink-0" />
+                {!collapsed && <span className="text-xs font-medium">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
         {/* Collapse Button */}
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-2 border-t border-sidebar-border">
           <Button
             variant="ghost"
             size="icon"
