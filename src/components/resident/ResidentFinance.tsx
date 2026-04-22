@@ -158,7 +158,9 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
         onOpenChange={setPayOpen}
         buildingId={buildingId}
         unitId={unitId}
-        defaultAmount={balance < 0 ? -balance : 0}
+        defaultAmount={preset ? preset.amount : (balance < 0 ? -balance : 0)}
+        defaultFundType={preset?.fundType}
+        defaultDescription={preset?.description}
         ownerName={unitInfo?.owner_name}
         residentName={unitInfo?.resident_name}
       />
