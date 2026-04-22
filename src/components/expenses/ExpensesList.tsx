@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Filter, Loader2, Eye, Paperclip } from "lucide-react";
+import { Trash2, Filter, Loader2, Eye, Paperclip, Upload } from "lucide-react";
 import {
   Select,
   SelectContent,
