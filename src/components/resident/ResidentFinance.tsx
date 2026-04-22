@@ -131,11 +131,11 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
           </CardContent>
         </Card>
         <Card
-          onClick={() => setPayOpen(true)}
+          onClick={() => openPay(null)}
           className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 active:scale-[0.98]"
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPayOpen(true); } }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPay(null); } }}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium">مانده حساب</CardTitle>
