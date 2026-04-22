@@ -391,7 +391,7 @@ export function PaymentGatewaySettings({ userId }: Props) {
           })}
         </div>
 
-
+        <div className="flex justify-end pt-4 border-t">
           <Button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending}
