@@ -285,8 +285,8 @@ export function useUnitBalanceFiltered(dateRange: DateRange) {
             expense,
             allocatedAmount: share?.amount || 0,
             project: projects.find((p) => p.id === expense.project_id) || null,
-            ownerName: share?.ownerName ?? unit.owner_name,
-            residentName: share?.residentName ?? unit.resident_name,
+            ownerName: share ? share.ownerName : unit.owner_name,
+            residentName: share ? share.residentName : unit.resident_name,
           };
         })
         .filter((e) => e.allocatedAmount > 0);

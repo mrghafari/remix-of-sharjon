@@ -67,8 +67,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "payment",
         title: `پرداخت ${p.month}/${p.year}${p.description ? ` - ${p.description}` : ""}`,
         amount: p.amount,
-        ownerName: (p as any).owner_name ?? balance.unit.owner_name,
-        residentName: (p as any).resident_name ?? balance.unit.resident_name,
+        ownerName: (p as any).owner_name,
+        residentName: (p as any).resident_name,
       });
     });
 
@@ -79,8 +79,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "expense",
         title: `${expense.title} (${getCategoryLabel(expense.category)})`,
         amount: allocatedAmount,
-        ownerName: ownerName ?? balance.unit.owner_name,
-        residentName: residentName ?? balance.unit.resident_name,
+        ownerName: ownerName,
+        residentName: residentName,
       });
     });
 
@@ -91,8 +91,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "charge",
         title: c.description || `بدهی شارژ ${c.month}/${c.year}`,
         amount: c.amount,
-        ownerName: c.owner_name ?? balance.unit.owner_name,
-        residentName: c.resident_name ?? balance.unit.resident_name,
+        ownerName: c.owner_name,
+        residentName: c.resident_name,
       });
     });
 
