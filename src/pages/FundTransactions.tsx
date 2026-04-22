@@ -89,7 +89,7 @@ export default function FundTransactions() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="shrink-0"
           >
             <ArrowRight className="h-5 w-5" />
