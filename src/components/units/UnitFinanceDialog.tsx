@@ -79,8 +79,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "expense",
         title: `${expense.title} (${getCategoryLabel(expense.category)})`,
         amount: allocatedAmount,
-        ownerName: ownerName ?? balance.unit.owner_name,
-        residentName: residentName ?? balance.unit.resident_name,
+        ownerName: ownerName,
+        residentName: residentName,
       });
     });
 
