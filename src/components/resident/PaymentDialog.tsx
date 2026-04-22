@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -15,23 +15,35 @@ interface Props {
   buildingId: string;
   unitId: string;
   defaultAmount: number;
+  defaultFundType?: "charge" | "extra_charge";
+  defaultDescription?: string;
   ownerName?: string | null;
   residentName?: string | null;
 }
 
 type Step = "form" | "gateway" | "success";
 
-export function PaymentDialog({ open, onOpenChange, buildingId, unitId, defaultAmount, ownerName, residentName }: Props) {
+export function PaymentDialog({ open, onOpenChange, buildingId, unitId, defaultAmount, defaultFundType, defaultDescription, ownerName, residentName }: Props) {
   const qc = useQueryClient();
   const [step, setStep] = useState<Step>("form");
   const [amount, setAmount] = useState<number>(Math.max(0, Math.round(defaultAmount)));
-  const [fundType, setFundType] = useState<"charge" | "extra_charge">("charge");
+  const [fundType, setFundType] = useState<"charge" | "extra_charge">(defaultFundType || "charge");
   const [processing, setProcessing] = useState(false);
+
+  // Sync form state when dialog opens with new presets
+  useEffect(() => {
+    if (open) {
+      setStep("form");
+      setAmount(Math.max(0, Math.round(defaultAmount)));
+      setFundType(defaultFundType || "charge");
+      setProcessing(false);
+    }
+  }, [open, defaultAmount, defaultFundType]);
 
   const reset = () => {
     setStep("form");
     setAmount(Math.max(0, Math.round(defaultAmount)));
-    setFundType("charge");
+    setFundType(defaultFundType || "charge");
     setProcessing(false);
   };
 
@@ -64,7 +76,7 @@ export function PaymentDialog({ open, onOpenChange, buildingId, unitId, defaultA
       payment_date: now.toISOString().slice(0, 10),
       month: now.getMonth() + 1,
       year: now.getFullYear(),
-      description: "پرداخت آنلاین (شبیه‌سازی درگاه)",
+      description: defaultDescription || "پرداخت آنلاین (شبیه‌سازی درگاه)",
       owner_name: ownerName || null,
       resident_name: residentName || null,
     });

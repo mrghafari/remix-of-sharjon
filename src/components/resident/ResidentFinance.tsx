@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { PaymentDialog } from "./PaymentDialog";
+
+type PayPreset = { amount: number; fundType: "charge" | "extra_charge"; description?: string } | null;
 
 interface Props {
   buildingId: string;
@@ -19,6 +22,9 @@ function formatNumber(n: number) {
 
 export function ResidentFinance({ buildingId, unitId }: Props) {
   const [payOpen, setPayOpen] = useState(false);
+  const [preset, setPreset] = useState<PayPreset>(null);
+
+  const openPay = (p: PayPreset) => { setPreset(p); setPayOpen(true); };
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
@@ -125,11 +131,11 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
           </CardContent>
         </Card>
         <Card
-          onClick={() => setPayOpen(true)}
+          onClick={() => openPay(null)}
           className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 active:scale-[0.98]"
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPayOpen(true); } }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPay(null); } }}
         >
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium">مانده حساب</CardTitle>
@@ -152,7 +158,9 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
         onOpenChange={setPayOpen}
         buildingId={buildingId}
         unitId={unitId}
-        defaultAmount={balance < 0 ? -balance : 0}
+        defaultAmount={preset ? preset.amount : (balance < 0 ? -balance : 0)}
+        defaultFundType={preset?.fundType}
+        defaultDescription={preset?.description}
         ownerName={unitInfo?.owner_name}
         residentName={unitInfo?.resident_name}
       />
@@ -253,6 +261,7 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
                   <TableHead className="text-right">مبلغ</TableHead>
+                  <TableHead className="text-right">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -266,6 +275,20 @@ export function ResidentFinance({ buildingId, unitId }: Props) {
                     </TableCell>
                     <TableCell className="text-xs">{c.description || "-"}</TableCell>
                     <TableCell className="font-semibold text-orange-600">{formatNumber(Number(c.amount))} تومان</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openPay({
+                          amount: Math.round(Number(c.amount)),
+                          fundType: c.fund_type as "charge" | "extra_charge",
+                          description: `پرداخت بدهی ${c.fund_type === "charge" ? "شارژ" : "فوق‌شارژ"} ${c.year}/${c.month}`,
+                        })}
+                      >
+                        <CreditCard className="w-3 h-3 ml-1" />
+                        پرداخت
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
