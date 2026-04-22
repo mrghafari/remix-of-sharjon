@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FileSpreadsheet, FileText, Loader2, Paperclip, Download, ExternalLink } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { FileSpreadsheet, FileText, Loader2, Paperclip, Download, ExternalLink, Upload, Trash2 } from "lucide-react";
 import { useUnits } from "@/hooks/useUnits";
 import { Expense } from "@/hooks/useExpenses";
 import { useExpenseShares } from "@/hooks/useExpenseShares";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useBuilding } from "@/contexts/BuildingContext";
+import { toast } from "@/hooks/use-toast";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import {
   exportToExcel,
