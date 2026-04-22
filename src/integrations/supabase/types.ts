@@ -185,6 +185,48 @@ export type Database = {
           },
         ]
       }
+      building_payment_policies: {
+        Row: {
+          building_id: string
+          created_at: string
+          early_pay_days: number
+          early_pay_discount_percent: number
+          early_pay_enabled: boolean
+          id: string
+          late_grace_days: number
+          late_penalty_enabled: boolean
+          late_penalty_max_months: number
+          late_penalty_percent_per_month: number
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          early_pay_days?: number
+          early_pay_discount_percent?: number
+          early_pay_enabled?: boolean
+          id?: string
+          late_grace_days?: number
+          late_penalty_enabled?: boolean
+          late_penalty_max_months?: number
+          late_penalty_percent_per_month?: number
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          early_pay_days?: number
+          early_pay_discount_percent?: number
+          early_pay_enabled?: boolean
+          id?: string
+          late_grace_days?: number
+          late_penalty_enabled?: boolean
+          late_penalty_max_months?: number
+          late_penalty_percent_per_month?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       building_poll_votes: {
         Row: {
           building_id: string
