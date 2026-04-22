@@ -244,7 +244,6 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-2">
-            <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
             <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
               <SelectTrigger className="w-48 h-8 text-xs">
                 <SelectValue placeholder="انتخاب واحد" />
@@ -258,6 +257,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                 ))}
               </SelectContent>
             </Select>
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={onDateRangeChange} />
             {selectedBalance && transactions.length > 0 && (
               <div className="flex gap-1.5 mr-auto">
                 <Button onClick={handleExportExcel} variant="outline" size="sm" className="gap-1 h-7 text-xs">
