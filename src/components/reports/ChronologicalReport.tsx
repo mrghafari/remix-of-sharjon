@@ -31,7 +31,7 @@ interface ChronologicalReportProps {
   onDateRangeChange: (range: DateRange) => void;
 }
 
-type TransactionType = "payment" | "expense";
+type TransactionType = "payment" | "expense" | "charge";
 
 interface Transaction {
   id: string;
@@ -104,6 +104,23 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
         title: expense.title,
         category: getCategoryLabel(expense.category),
         amount: allocatedAmount,
+        unitNumber,
+        personName: responsibleName,
+        personRole: responsibleRole,
+      });
+    });
+
+    // Add unit charges (بدهی شارژ - debit)
+    selectedBalance.chargeBreakdown.forEach((charge: any) => {
+      const responsibleName = charge.resident_name || charge.owner_name || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
+      const responsibleRole = charge.resident_name ? "ساکن" : "مالک";
+      allTransactions.push({
+        id: charge.id,
+        date: charge.created_at,
+        type: "charge",
+        title: charge.description || `بدهی شارژ ${charge.month}/${charge.year}`,
+        category: charge.fund_type === "charge" ? "شارژ" : "شارژ اضافی",
+        amount: charge.amount,
         unitNumber,
         personName: responsibleName,
         personRole: responsibleRole,
@@ -331,7 +348,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                   </TableHeader>
                   <TableBody>
                     {transactions.map((t, index) => (
-                      <TableRow key={t.id} className={t.type === "payment" ? "bg-green-50/50" : "bg-red-50/50"}>
+                      <TableRow key={`${t.type}-${t.id}`} className={t.type === "payment" ? "bg-green-50/50" : "bg-red-50/50"}>
                         <TableCell className="text-muted-foreground">{transactions.length - index}</TableCell>
                         <TableCell>{formatJalaliDate(t.date)}</TableCell>
                         <TableCell>
@@ -339,6 +356,11 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                             <Badge variant="outline" className="text-green-600 border-green-600 gap-1">
                               <ArrowUpCircle className="w-3 h-3" />
                               دریافت
+                            </Badge>
+                          ) : t.type === "charge" ? (
+                            <Badge variant="outline" className="text-orange-600 border-orange-600 gap-1">
+                              <ArrowDownCircle className="w-3 h-3" />
+                              بدهی شارژ
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-red-600 border-red-600 gap-1">
@@ -359,7 +381,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
                           {t.type === "payment" ? formatNumber(t.amount) : "-"}
                         </TableCell>
                         <TableCell className="text-red-600 font-medium">
-                          {t.type === "expense" ? formatNumber(t.amount) : "-"}
+                          {t.type === "expense" || t.type === "charge" ? formatNumber(t.amount) : "-"}
                         </TableCell>
                         <TableCell className={`font-bold ${(t.runningBalance || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatNumber(Math.abs(t.runningBalance || 0))}
