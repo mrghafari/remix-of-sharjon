@@ -76,7 +76,7 @@ export function PaymentDialog({ open, onOpenChange, buildingId, unitId, defaultA
       payment_date: now.toISOString().slice(0, 10),
       month: now.getMonth() + 1,
       year: now.getFullYear(),
-      description: "پرداخت آنلاین (شبیه‌سازی درگاه)",
+      description: defaultDescription || "پرداخت آنلاین (شبیه‌سازی درگاه)",
       owner_name: ownerName || null,
       resident_name: residentName || null,
     });
