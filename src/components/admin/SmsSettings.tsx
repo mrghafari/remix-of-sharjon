@@ -17,18 +17,26 @@ interface SmsConfig {
   sender?: string;
 }
 
+interface SmsTemplate {
+  id: string;
+  title: string;
+  content: string;
+}
+
 type SmsState = {
   active_provider: "smsir" | "kavenegar" | "melipayamak" | "faraz" | "";
   smsir: SmsConfig & { line_number?: string };
   kavenegar: SmsConfig;
   melipayamak: SmsConfig & { username?: string; password?: string };
   faraz: SmsConfig & { username?: string; password?: string };
-  templates: {
-    welcome: string;
-    payment_confirm: string;
-    charge_reminder: string;
-  };
+  templates: SmsTemplate[];
 };
+
+const DEFAULT_TEMPLATES: SmsTemplate[] = [
+  { id: crypto.randomUUID(), title: "پیام خوش‌آمدگویی / کد ورود", content: "به سامانه شارژان خوش آمدید. کد ورود: {code}" },
+  { id: crypto.randomUUID(), title: "تأیید پرداخت", content: "پرداخت شما به مبلغ {amount} تومان با موفقیت ثبت شد." },
+  { id: crypto.randomUUID(), title: "یادآوری شارژ", content: "شارژ ماهانه شما به مبلغ {amount} تومان در انتظار پرداخت است." },
+];
 
 const DEFAULT_STATE: SmsState = {
   active_provider: "",
@@ -36,11 +44,7 @@ const DEFAULT_STATE: SmsState = {
   kavenegar: { enabled: false, api_key: "", sender: "" },
   melipayamak: { enabled: false, username: "", password: "", sender: "" },
   faraz: { enabled: false, username: "", password: "", sender: "" },
-  templates: {
-    welcome: "به سامانه شارژان خوش آمدید. کد ورود: {code}",
-    payment_confirm: "پرداخت شما به مبلغ {amount} تومان با موفقیت ثبت شد.",
-    charge_reminder: "شارژ ماهانه شما به مبلغ {amount} تومان در انتظار پرداخت است.",
-  },
+  templates: DEFAULT_TEMPLATES,
 };
 
 interface Props {
