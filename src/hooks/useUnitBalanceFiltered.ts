@@ -226,8 +226,23 @@ export function calculateAllocatedAmount(
 
 function isInDateRange(dateStr: string, range: DateRange): boolean {
   if (!range.from && !range.to) return true;
-  const date = new Date(dateStr);
-  if (range.from && date < range.from) return false;
+
+  // Parse the date in LOCAL time to avoid UTC offset issues.
+  // dateStr can be either "YYYY-MM-DD" (expense_date) or full ISO timestamp (created_at).
+  let date: Date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    // Date-only string: parse as local midnight
+    const [y, m, d] = dateStr.split("-").map(Number);
+    date = new Date(y, m - 1, d);
+  } else {
+    date = new Date(dateStr);
+  }
+
+  if (range.from) {
+    const startOfDay = new Date(range.from);
+    startOfDay.setHours(0, 0, 0, 0);
+    if (date < startOfDay) return false;
+  }
   if (range.to) {
     const endOfDay = new Date(range.to);
     endOfDay.setHours(23, 59, 59, 999);
