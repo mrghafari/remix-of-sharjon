@@ -73,6 +73,12 @@ export function ExpenseDetailsDialog({
 }: ExpenseDetailsDialogProps) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [activeAttachmentId, setActiveAttachmentId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+  const { currentBuildingId } = useBuilding();
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: shares = [], isLoading: sharesLoading } = useExpenseShares();
 
