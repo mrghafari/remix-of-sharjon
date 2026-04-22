@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Filter, Loader2, Eye, Paperclip } from "lucide-react";
+import { Trash2, Filter, Loader2, Eye, Paperclip, Upload } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +35,8 @@ import { useProjects } from "@/hooks/useProjects";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpenseDetailsDialog } from "./ExpenseDetailsDialog";
+import { useBuilding } from "@/contexts/BuildingContext";
+import { toast } from "@/hooks/use-toast";
 
 const fundTypeLabels: Record<string, string> = {
   charge: "صندوق شارژ",
@@ -71,7 +73,12 @@ export function ExpensesList() {
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  
+  const [uploadingExpenseId, setUploadingExpenseId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const targetExpenseIdRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
+  const { currentBuildingId } = useBuilding();
+
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: categories = [] } = useExpenseCategories();
   const { data: projects = [] } = useProjects();
@@ -111,6 +118,61 @@ export function ExpensesList() {
   const handleExpenseClick = (expense: Expense) => {
     setSelectedExpense(expense);
     setDetailsOpen(true);
+  };
+
+  const triggerUpload = (expenseId: string) => {
+    targetExpenseIdRef.current = expenseId;
+    fileInputRef.current?.click();
+  };
+
+  const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const expenseId = targetExpenseIdRef.current;
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    targetExpenseIdRef.current = null;
+    if (!expenseId || !currentBuildingId || files.length === 0) return;
+
+    setUploadingExpenseId(expenseId);
+    try {
+      let successCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
+        const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "bin";
+        const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${i}_${crypto.randomUUID()}.${safeExtension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("expense-attachments")
+          .upload(filePath, file);
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          continue;
+        }
+        const { error: insertError } = await supabase.from("expense_attachments").insert({
+          expense_id: expenseId,
+          building_id: currentBuildingId,
+          file_name: file.name,
+          file_path: filePath,
+          file_size: file.size,
+          file_type: file.type,
+        });
+        if (insertError) {
+          console.error("DB insert error:", insertError);
+          continue;
+        }
+        successCount++;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["expense-attachments-summary"] });
+      await queryClient.invalidateQueries({ queryKey: ["expense_attachments", expenseId] });
+
+      toast({
+        title: successCount === files.length ? "موفق" : "هشدار",
+        description: `${successCount} از ${files.length} فایل آپلود شد`,
+        variant: successCount === files.length ? "default" : "destructive",
+      });
+    } finally {
+      setUploadingExpenseId(null);
+    }
   };
 
   const totalAmount = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
@@ -244,11 +306,29 @@ export function ExpensesList() {
                       <TableCell>{formatDate(expense.expense_date)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary hover:text-primary"
+                            title="افزودن پیوست"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              triggerUpload(expense.id);
+                            }}
+                            disabled={uploadingExpenseId === expense.id}
+                          >
+                            {uploadingExpenseId === expense.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Upload className="w-4 h-4" />
+                            )}
+                          </Button>
                           {hasAttachments && (
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-primary hover:text-primary"
+                              title="مشاهده پیوست‌ها"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleExpenseClick(expense);
@@ -257,10 +337,11 @@ export function ExpensesList() {
                               <Paperclip className="w-4 h-4" />
                             </Button>
                           )}
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-primary hover:text-primary"
+                            title="مشاهده جزئیات"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleExpenseClick(expense);
@@ -268,10 +349,11 @@ export function ExpensesList() {
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive"
+                            title="حذف"
                             onClick={(e) => {
                               e.stopPropagation();
                               setDeleteId(expense.id);
@@ -290,6 +372,15 @@ export function ExpensesList() {
           </div>
         )}
       </CardContent>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.xlsx,.xls"
+        className="hidden"
+        onChange={handleFilesSelected}
+      />
 
       <ExpenseDetailsDialog
         expense={selectedExpense}
