@@ -373,6 +373,15 @@ export function ExpensesList() {
         )}
       </CardContent>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="image/*,.pdf,.xlsx,.xls"
+        className="hidden"
+        onChange={handleFilesSelected}
+      />
+
       <ExpenseDetailsDialog
         expense={selectedExpense}
         open={detailsOpen}
