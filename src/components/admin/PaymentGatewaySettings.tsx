@@ -318,7 +318,6 @@ export function PaymentGatewaySettings({ userId }: Props) {
                 <div className="flex items-center justify-between pt-2">
                   <div>
                     <h4 className="font-medium">{bank.name}</h4>
-                    <p className="text-xs text-muted-foreground">{bank.desc}</p>
                   </div>
                   <Switch
                     checked={cfg.enabled}
