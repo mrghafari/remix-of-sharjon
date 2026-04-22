@@ -156,15 +156,15 @@ const ResidentAuth = () => {
   }, [otp, step, isLoading]);
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center" dir="rtl">
+    <div className="min-h-screen relative" dir="rtl">
       <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-black/50" />
 
-      <div className="relative z-10 w-full max-w-xl p-6 space-y-6">
-        <div className="text-center space-y-3">
-          <img src={sharjanLogo} alt="شارژان" className="w-28 h-28 mx-auto drop-shadow-lg" />
-          <h1 className="text-3xl font-extrabold text-white">خوش آمدید</h1>
-          <p className="text-white/70 text-sm">ورود یا ثبت‌نام با شماره موبایل</p>
+      <div className="relative z-10 w-full max-w-md p-4 sm:p-6 space-y-4 ml-auto mr-0 sm:mr-4 mt-4">
+        <div className="text-center space-y-2">
+          <img src={sharjanLogo} alt="شارژان" className="w-20 h-20 mx-auto drop-shadow-lg" />
+          <h1 className="text-2xl font-extrabold text-white">خوش آمدید</h1>
+          <p className="text-white/70 text-xs">ورود یا ثبت‌نام با شماره موبایل</p>
         </div>
 
         {step === "phone" && (
