@@ -9,12 +9,18 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Loader2, Save } from "lucide-react";
+import { MessageSquare, Loader2, Save, Plus, Trash2 } from "lucide-react";
 
 interface SmsConfig {
   enabled: boolean;
   api_key?: string;
   sender?: string;
+}
+
+interface SmsTemplate {
+  id: string;
+  title: string;
+  content: string;
 }
 
 type SmsState = {
@@ -23,12 +29,14 @@ type SmsState = {
   kavenegar: SmsConfig;
   melipayamak: SmsConfig & { username?: string; password?: string };
   faraz: SmsConfig & { username?: string; password?: string };
-  templates: {
-    welcome: string;
-    payment_confirm: string;
-    charge_reminder: string;
-  };
+  templates: SmsTemplate[];
 };
+
+const DEFAULT_TEMPLATES: SmsTemplate[] = [
+  { id: crypto.randomUUID(), title: "پیام خوش‌آمدگویی / کد ورود", content: "به سامانه شارژان خوش آمدید. کد ورود: {code}" },
+  { id: crypto.randomUUID(), title: "تأیید پرداخت", content: "پرداخت شما به مبلغ {amount} تومان با موفقیت ثبت شد." },
+  { id: crypto.randomUUID(), title: "یادآوری شارژ", content: "شارژ ماهانه شما به مبلغ {amount} تومان در انتظار پرداخت است." },
+];
 
 const DEFAULT_STATE: SmsState = {
   active_provider: "",
@@ -36,11 +44,7 @@ const DEFAULT_STATE: SmsState = {
   kavenegar: { enabled: false, api_key: "", sender: "" },
   melipayamak: { enabled: false, username: "", password: "", sender: "" },
   faraz: { enabled: false, username: "", password: "", sender: "" },
-  templates: {
-    welcome: "به سامانه شارژان خوش آمدید. کد ورود: {code}",
-    payment_confirm: "پرداخت شما به مبلغ {amount} تومان با موفقیت ثبت شد.",
-    charge_reminder: "شارژ ماهانه شما به مبلغ {amount} تومان در انتظار پرداخت است.",
-  },
+  templates: DEFAULT_TEMPLATES,
 };
 
 interface Props {
@@ -83,11 +87,23 @@ export function SmsSettings({ userId }: Props) {
   useEffect(() => {
     if (data?.setting_value) {
       const v = data.setting_value as any;
-      setState({
-        ...DEFAULT_STATE,
-        ...v,
-        templates: { ...DEFAULT_STATE.templates, ...(v.templates || {}) },
-      });
+      let templates: SmsTemplate[] = DEFAULT_TEMPLATES;
+      if (Array.isArray(v.templates)) {
+        templates = v.templates;
+      } else if (v.templates && typeof v.templates === "object") {
+        // Migrate legacy keyed object
+        const legacyTitles: Record<string, string> = {
+          welcome: "پیام خوش‌آمدگویی / کد ورود",
+          payment_confirm: "تأیید پرداخت",
+          charge_reminder: "یادآوری شارژ",
+        };
+        templates = Object.entries(v.templates).map(([key, content]) => ({
+          id: crypto.randomUUID(),
+          title: legacyTitles[key] || key,
+          content: String(content || ""),
+        }));
+      }
+      setState({ ...DEFAULT_STATE, ...v, templates });
     }
   }, [data]);
 
@@ -388,48 +404,87 @@ export function SmsSettings({ userId }: Props) {
 
         {/* Templates */}
         <div className="space-y-3">
-          <h3 className="font-semibold">قالب پیام‌ها</h3>
-          <p className="text-xs text-muted-foreground">
-            از متغیرهای {"{code}"}, {"{amount}"}, {"{name}"} می‌توانید استفاده کنید.
-          </p>
-          <div className="space-y-2">
-            <Label>پیام خوش‌آمدگویی / کد ورود</Label>
-            <Textarea
-              rows={2}
-              value={state.templates.welcome}
-              onChange={(e) =>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">قالب پیام‌ها</h3>
+              <p className="text-xs text-muted-foreground">
+                از متغیرهای {"{code}"}, {"{amount}"}, {"{name}"} می‌توانید استفاده کنید.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() =>
                 setState((s) => ({
                   ...s,
-                  templates: { ...s.templates, welcome: e.target.value },
+                  templates: [
+                    ...s.templates,
+                    { id: crypto.randomUUID(), title: `قالب جدید ${s.templates.length + 1}`, content: "" },
+                  ],
                 }))
               }
-            />
+            >
+              <Plus className="h-4 w-4" />
+              قالب جدید
+            </Button>
           </div>
-          <div className="space-y-2">
-            <Label>تأیید پرداخت</Label>
-            <Textarea
-              rows={2}
-              value={state.templates.payment_confirm}
-              onChange={(e) =>
-                setState((s) => ({
-                  ...s,
-                  templates: { ...s.templates, payment_confirm: e.target.value },
-                }))
-              }
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>یادآوری شارژ</Label>
-            <Textarea
-              rows={2}
-              value={state.templates.charge_reminder}
-              onChange={(e) =>
-                setState((s) => ({
-                  ...s,
-                  templates: { ...s.templates, charge_reminder: e.target.value },
-                }))
-              }
-            />
+
+          <div className="space-y-3">
+            {state.templates.map((tpl, idx) => (
+              <div key={tpl.id} className="rounded-lg border p-3 space-y-2 bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold px-2">
+                    {idx + 1}
+                  </span>
+                  <Input
+                    placeholder="عنوان قالب"
+                    value={tpl.title}
+                    onChange={(e) =>
+                      setState((s) => ({
+                        ...s,
+                        templates: s.templates.map((t) =>
+                          t.id === tpl.id ? { ...t, title: e.target.value } : t
+                        ),
+                      }))
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive shrink-0"
+                    onClick={() =>
+                      setState((s) => ({
+                        ...s,
+                        templates: s.templates.filter((t) => t.id !== tpl.id),
+                      }))
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  rows={2}
+                  placeholder="متن پیامک..."
+                  value={tpl.content}
+                  onChange={(e) =>
+                    setState((s) => ({
+                      ...s,
+                      templates: s.templates.map((t) =>
+                        t.id === tpl.id ? { ...t, content: e.target.value } : t
+                      ),
+                    }))
+                  }
+                />
+              </div>
+            ))}
+            {state.templates.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                هنوز قالبی تعریف نشده است. روی «قالب جدید» کلیک کنید.
+              </p>
+            )}
           </div>
         </div>
 
