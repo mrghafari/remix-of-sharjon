@@ -18,7 +18,8 @@ interface SmsConfig {
 }
 
 type SmsState = {
-  active_provider: "kavenegar" | "melipayamak" | "faraz" | "";
+  active_provider: "smsir" | "kavenegar" | "melipayamak" | "faraz" | "";
+  smsir: SmsConfig & { line_number?: string };
   kavenegar: SmsConfig;
   melipayamak: SmsConfig & { username?: string; password?: string };
   faraz: SmsConfig & { username?: string; password?: string };
@@ -31,6 +32,7 @@ type SmsState = {
 
 const DEFAULT_STATE: SmsState = {
   active_provider: "",
+  smsir: { enabled: false, api_key: "", line_number: "" },
   kavenegar: { enabled: false, api_key: "", sender: "" },
   melipayamak: { enabled: false, username: "", password: "", sender: "" },
   faraz: { enabled: false, username: "", password: "", sender: "" },
@@ -141,6 +143,59 @@ export function SmsSettings({ userId }: Props) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* SMS.ir */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold">SMS.ir</h3>
+            </div>
+            <Switch
+              checked={state.smsir.enabled}
+              onCheckedChange={(v) =>
+                setState((s) => ({
+                  ...s,
+                  smsir: { ...s.smsir, enabled: v },
+                  active_provider: v ? "smsir" : s.active_provider,
+                }))
+              }
+            />
+          </div>
+          {state.smsir.enabled && (
+            <div className="space-y-3 pr-4 border-r-2 border-primary/20">
+              <div className="space-y-2">
+                <Label>API Key</Label>
+                <Input
+                  dir="ltr"
+                  type="password"
+                  value={state.smsir.api_key || ""}
+                  onChange={(e) =>
+                    setState((s) => ({
+                      ...s,
+                      smsir: { ...s.smsir, api_key: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>شماره خط (Line Number)</Label>
+                <Input
+                  dir="ltr"
+                  placeholder="30007732"
+                  value={state.smsir.line_number || ""}
+                  onChange={(e) =>
+                    setState((s) => ({
+                      ...s,
+                      smsir: { ...s.smsir, line_number: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
         {/* Kavenegar */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
