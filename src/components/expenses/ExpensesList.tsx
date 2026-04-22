@@ -35,6 +35,8 @@ import { useProjects } from "@/hooks/useProjects";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { supabase } from "@/integrations/supabase/client";
 import { ExpenseDetailsDialog } from "./ExpenseDetailsDialog";
+import { useBuilding } from "@/contexts/BuildingContext";
+import { toast } from "@/hooks/use-toast";
 
 const fundTypeLabels: Record<string, string> = {
   charge: "صندوق شارژ",
