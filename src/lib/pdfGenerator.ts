@@ -43,7 +43,7 @@ export async function generateUnitReportPDF(
         clonedElement.style.direction = 'rtl';
         clonedElement.style.unicodeBidi = 'plaintext';
         clonedElement.style.textRendering = 'geometricPrecision';
-        clonedElement.style.webkitFontSmoothing = 'antialiased';
+        
       }
 
       if ((clonedDoc as any).fonts?.ready) {
