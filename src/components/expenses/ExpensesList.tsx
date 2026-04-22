@@ -132,20 +132,25 @@ export function ExpensesList() {
     targetExpenseIdRef.current = null;
     if (!expenseId || !currentBuildingId || files.length === 0) return;
 
+    // Immediate feedback
+    toast({
+      title: "در حال آپلود",
+      description: `${files.length} فایل در حال ارسال است...`,
+    });
+
     setUploadingExpenseId(expenseId);
-    try {
-      let successCount = 0;
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+
+    const uploadOne = async (file: File, index: number) => {
+      try {
         const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
         const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "bin";
-        const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${i}_${crypto.randomUUID()}.${safeExtension}`;
+        const filePath = `${currentBuildingId}/${expenseId}/${Date.now()}_${index}_${crypto.randomUUID()}.${safeExtension}`;
         const { error: uploadError } = await supabase.storage
           .from("expense-attachments")
-          .upload(filePath, file);
+          .upload(filePath, file, { cacheControl: "3600", upsert: false });
         if (uploadError) {
-          console.error("Upload error:", uploadError);
-          continue;
+          console.error("Upload error for", file.name, uploadError);
+          return { ok: false, name: file.name, message: uploadError.message };
         }
         const { error: insertError } = await supabase.from("expense_attachments").insert({
           expense_id: expenseId,
@@ -156,20 +161,39 @@ export function ExpensesList() {
           file_type: file.type,
         });
         if (insertError) {
-          console.error("DB insert error:", insertError);
-          continue;
+          console.error("DB insert error for", file.name, insertError);
+          // Cleanup orphan file
+          await supabase.storage.from("expense-attachments").remove([filePath]);
+          return { ok: false, name: file.name, message: insertError.message };
         }
-        successCount++;
+        return { ok: true as const, name: file.name };
+      } catch (err: any) {
+        console.error("Unexpected upload error for", file.name, err);
+        return { ok: false, name: file.name, message: err?.message || "خطای ناشناخته" };
       }
+    };
+
+    try {
+      // Upload in parallel for better speed
+      const results = await Promise.all(files.map((f, i) => uploadOne(f, i)));
+      const successCount = results.filter((r) => r.ok).length;
+      const failures = results.filter((r) => !r.ok);
 
       await queryClient.invalidateQueries({ queryKey: ["expense-attachments-summary"] });
       await queryClient.invalidateQueries({ queryKey: ["expense_attachments", expenseId] });
 
-      toast({
-        title: successCount === files.length ? "موفق" : "هشدار",
-        description: `${successCount} از ${files.length} فایل آپلود شد`,
-        variant: successCount === files.length ? "default" : "destructive",
-      });
+      if (failures.length === 0) {
+        toast({
+          title: "موفق",
+          description: `${successCount} فایل با موفقیت آپلود شد`,
+        });
+      } else {
+        toast({
+          title: "خطا در آپلود برخی فایل‌ها",
+          description: `${successCount} از ${files.length} فایل آپلود شد. خطا: ${failures[0].message}`,
+          variant: "destructive",
+        });
+      }
     } finally {
       setUploadingExpenseId(null);
     }
