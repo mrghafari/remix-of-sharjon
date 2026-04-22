@@ -358,7 +358,8 @@ export function ExpensesList() {
                               title="مشاهده پیوست‌ها"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleExpenseClick(expense);
+                                setAttachmentsExpense(expense);
+                                setAttachmentsOpen(true);
                               }}
                             >
                               <Paperclip className="w-4 h-4" />
