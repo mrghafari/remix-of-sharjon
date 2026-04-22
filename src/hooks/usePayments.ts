@@ -44,7 +44,8 @@ export function usePayments() {
           )
         `)
         .eq("building_id", currentBuildingId)
-        .order("payment_date", { ascending: false });
+        .order("payment_date", { ascending: false })
+        .order("created_at", { ascending: false });
       
       if (error) throw error;
       return data as PaymentWithUnit[];
