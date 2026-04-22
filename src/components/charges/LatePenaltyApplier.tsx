@@ -92,7 +92,7 @@ export function LatePenaltyApplier() {
         fund_type: "charge" as const,
         month: Number(month),
         year: Number(year),
-        description: `جریمه تأخیر ${policy!.late_penalty_percent_per_month}٪ روی مانده بدهی ${formatNumber(c.debt)} تومان`,
+        description: `جریمه ${persianMonths[Number(month) - 1]} ${year}`,
         owner_name: c.unit.owner_name || null,
         resident_name: c.unit.resident_name || null,
       }));

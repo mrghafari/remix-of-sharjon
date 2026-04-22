@@ -105,7 +105,7 @@ export function PaymentForm() {
                   fund_type: formData.fund_type as "charge" | "extra_charge",
                   month: Number(formData.month),
                   year: Number(formData.year),
-                  description: `تخفیف خوش‌حسابی ${policy.early_pay_discount_percent}٪ (پرداخت در روز ${dayOfMonth} ماه)`,
+                  description: `خوش‌حسابی ${persianMonths.find(m => m.value === Number(formData.month))?.label} ${formData.year}`,
                   owner_name: selectedUnit.owner_name || null,
                   resident_name: selectedUnit.resident_name || null,
                 });
