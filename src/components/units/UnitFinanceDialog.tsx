@@ -67,8 +67,8 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
         type: "payment",
         title: `پرداخت ${p.month}/${p.year}${p.description ? ` - ${p.description}` : ""}`,
         amount: p.amount,
-        ownerName: (p as any).owner_name ?? balance.unit.owner_name,
-        residentName: (p as any).resident_name ?? balance.unit.resident_name,
+        ownerName: (p as any).owner_name,
+        residentName: (p as any).resident_name,
       });
     });
 
