@@ -416,6 +416,13 @@ export function ExpensesList() {
         onOpenChange={setDetailsOpen}
       />
 
+      <AttachmentsQuickDialog
+        expenseId={attachmentsExpense?.id ?? null}
+        expenseTitle={attachmentsExpense?.title}
+        open={attachmentsOpen}
+        onOpenChange={setAttachmentsOpen}
+      />
+
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
