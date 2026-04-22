@@ -102,7 +102,12 @@ export function PaymentGatewaySettings({ userId }: Props) {
 
   useEffect(() => {
     if (data?.setting_value) {
-      setState({ ...DEFAULT_STATE, ...(data.setting_value as any) });
+      const incoming = data.setting_value as any;
+      setState({
+        ...DEFAULT_STATE,
+        ...incoming,
+        banks: { ...DEFAULT_STATE.banks, ...(incoming.banks || {}) },
+      });
     }
   }, [data]);
 
