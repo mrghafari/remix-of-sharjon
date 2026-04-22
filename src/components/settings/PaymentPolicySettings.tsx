@@ -126,18 +126,22 @@ export function PaymentPolicySettings() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            اگر واحدی بدهی خود را ظرف مهلت تعیین‌شده پرداخت کند، درصدی به‌عنوان تخفیف از مانده بدهی کسر می‌شود.
+            اگر واحدی پرداخت خود را تا روز مشخص‌شده از ماه شمسی انجام دهد، درصدی به‌عنوان تخفیف از مبلغ پرداخت کسر و به‌عنوان بستانکاری ثبت می‌شود.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>مهلت پرداخت سریع (روز)</Label>
+              <Label>روز ملاک در ماه (تا روز چندم ماه)</Label>
               <Input
                 type="number"
                 min={1}
+                max={31}
                 value={form.early_pay_days}
                 onChange={(e) => update("early_pay_days", Number(e.target.value) || 0)}
                 disabled={!form.early_pay_enabled}
               />
+              <p className="text-[11px] text-muted-foreground">
+                مثال: اگر ۷ باشد، پرداخت‌های روز ۱ تا ۷ هر ماه شمسی مشمول تخفیف می‌شوند.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>درصد تخفیف</Label>
