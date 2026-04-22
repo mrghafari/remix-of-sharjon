@@ -58,30 +58,43 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
   const transactions = useMemo(() => {
     if (!balance) return [];
 
-    const all: { id: string; date: string; type: "payment" | "expense"; title: string; amount: number; ownerName?: string | null; residentName?: string | null; runningBalance?: number }[] = [];
+    const all: { id: string; date: string; type: "payment" | "expense" | "charge"; title: string; amount: number; ownerName?: string | null; residentName?: string | null; runningBalance?: number }[] = [];
 
     balance.paymentBreakdown.forEach((p) => {
       all.push({
-        id: p.id,
+        id: `payment-${p.id}`,
         date: p.payment_date,
         type: "payment",
         title: `پرداخت ${p.month}/${p.year}${p.description ? ` - ${p.description}` : ""}`,
         amount: p.amount,
-        ownerName: (p as any).owner_name,
-        residentName: (p as any).resident_name,
+        ownerName: (p as any).owner_name ?? balance.unit.owner_name,
+        residentName: (p as any).resident_name ?? balance.unit.resident_name,
       });
     });
 
-    balance.expenseBreakdown.forEach(({ expense, allocatedAmount }) => {
+    balance.expenseBreakdown.forEach(({ expense, allocatedAmount, ownerName, residentName }) => {
       all.push({
-        id: expense.id,
+        id: `expense-${expense.id}`,
         date: expense.expense_date,
         type: "expense",
         title: `${expense.title} (${getCategoryLabel(expense.category)})`,
         amount: allocatedAmount,
+        ownerName: ownerName ?? balance.unit.owner_name,
+        residentName: residentName ?? balance.unit.resident_name,
       });
     });
 
+    (balance.chargeBreakdown || []).forEach((c: any) => {
+      all.push({
+        id: `charge-${c.id}`,
+        date: c.created_at,
+        type: "charge",
+        title: c.description || `بدهی شارژ ${c.month}/${c.year}`,
+        amount: c.amount,
+        ownerName: c.owner_name ?? balance.unit.owner_name,
+        residentName: c.resident_name ?? balance.unit.resident_name,
+      });
+    });
 
     all.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
