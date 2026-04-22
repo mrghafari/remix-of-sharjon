@@ -21,6 +21,7 @@ import { Loader2, FileDown, FileSpreadsheet, ArrowUpCircle, ArrowDownCircle, His
 import { useUnitBalanceFiltered, DateRange } from "@/hooks/useUnitBalanceFiltered";
 import { useExpenseCategories } from "@/hooks/useExpenseCategories";
 import { formatJalaliDate, toJalaliString } from "@/lib/jalaliDate";
+import { compareByBusinessDateAndCreationAsc } from "@/lib/transactionOrder";
 import { DateRangeFilter } from "./DateRangeFilter";
 import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
@@ -36,6 +37,7 @@ type TransactionType = "payment" | "expense" | "charge";
 interface Transaction {
   id: string;
   date: string;
+  createdAt?: string;
   type: TransactionType;
   title: string;
   category?: string;
@@ -83,6 +85,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       allTransactions.push({
         id: payment.id,
         date: payment.payment_date,
+        createdAt: payment.created_at,
         type: "payment",
         title: `پرداخت ${payment.month}/${payment.year}`,
         category: payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی",
@@ -100,6 +103,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       allTransactions.push({
         id: expense.id,
         date: expense.expense_date,
+        createdAt: expense.created_at,
         type: "expense",
         title: expense.title,
         category: getCategoryLabel(expense.category),
@@ -117,6 +121,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       allTransactions.push({
         id: charge.id,
         date: charge.created_at,
+        createdAt: charge.created_at,
         type: "charge",
         title: charge.description || `بدهی شارژ ${charge.month}/${charge.year}`,
         category: charge.fund_type === "charge" ? "شارژ" : "شارژ اضافی",
@@ -127,8 +132,8 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       });
     });
 
-    // Sort by date ascending
-    allTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Sort by business date, then by exact creation time for same-day records
+    allTransactions.sort(compareByBusinessDateAndCreationAsc);
 
     // Calculate running balance
     let runningBalance = 0;
