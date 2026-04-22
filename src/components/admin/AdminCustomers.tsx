@@ -159,37 +159,55 @@ export function AdminCustomers() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editCustomer} onOpenChange={(o) => !o && setEditCustomer(null)}>
-        <DialogContent dir="rtl">
+        <DialogContent dir="rtl" className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>ویرایش مشتری: {editCustomer?.full_name || editCustomer?.email}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>پلن اشتراک</Label>
-              <Select value={editPlan} onValueChange={setEditPlan}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="free">رایگان</SelectItem>
-                  <SelectItem value="pro">حرفه‌ای</SelectItem>
-                  <SelectItem value="enterprise">سازمانی</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>حداکثر تعداد ساختمان</Label>
-              <Input type="number" min={1} value={editMaxBuildings} onChange={(e) => setEditMaxBuildings(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>حداکثر واحد هر ساختمان</Label>
-              <Input type="number" min={1} value={editMaxUnits} onChange={(e) => setEditMaxUnits(Number(e.target.value))} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditCustomer(null)}>انصراف</Button>
-            <Button onClick={handleSaveEdit} disabled={updateCustomer.isPending}>
-              {updateCustomer.isPending ? "در حال ذخیره..." : "ذخیره"}
-            </Button>
-          </DialogFooter>
+
+          <Tabs defaultValue="account" dir="rtl" className="mt-2">
+            <TabsList>
+              <TabsTrigger value="account" className="gap-2">
+                <UserCog className="h-4 w-4" />
+                حساب کاربری
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-2">
+                <SettingsIcon className="h-4 w-4" />
+                تنظیمات اختصاصی
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="account" className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>پلن اشتراک</Label>
+                <Select value={editPlan} onValueChange={setEditPlan}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">رایگان</SelectItem>
+                    <SelectItem value="pro">حرفه‌ای</SelectItem>
+                    <SelectItem value="enterprise">سازمانی</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>حداکثر تعداد ساختمان</Label>
+                <Input type="number" min={1} value={editMaxBuildings} onChange={(e) => setEditMaxBuildings(Number(e.target.value))} />
+              </div>
+              <div className="space-y-2">
+                <Label>حداکثر واحد هر ساختمان</Label>
+                <Input type="number" min={1} value={editMaxUnits} onChange={(e) => setEditMaxUnits(Number(e.target.value))} />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setEditCustomer(null)}>انصراف</Button>
+                <Button onClick={handleSaveEdit} disabled={updateCustomer.isPending}>
+                  {updateCustomer.isPending ? "در حال ذخیره..." : "ذخیره"}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+
+            <TabsContent value="settings" className="py-4">
+              {editCustomer && <AdminPlatformSettings userId={editCustomer.user_id} />}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
