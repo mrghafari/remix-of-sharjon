@@ -77,7 +77,7 @@ export function ReportsPage() {
             </>
           ) : (
             <>
-              <div className="flex justify-end">
+              <div className="flex justify-end" dir="rtl">
                 <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
               </div>
               <UnitBalanceReport onSelectUnit={handleSelectUnit} dateRange={dateRange} />

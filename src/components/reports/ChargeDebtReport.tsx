@@ -130,7 +130,7 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
       {/* Controls */}
       <Card>
         <CardContent>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2 text-right" dir="rtl">
             <Select value={selectedUnitId} onValueChange={setSelectedUnitId}>
               <SelectTrigger className="w-48 h-8 text-xs">
                 <SelectValue placeholder="انتخاب واحد" />
