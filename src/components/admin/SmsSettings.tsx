@@ -87,11 +87,23 @@ export function SmsSettings({ userId }: Props) {
   useEffect(() => {
     if (data?.setting_value) {
       const v = data.setting_value as any;
-      setState({
-        ...DEFAULT_STATE,
-        ...v,
-        templates: { ...DEFAULT_STATE.templates, ...(v.templates || {}) },
-      });
+      let templates: SmsTemplate[] = DEFAULT_TEMPLATES;
+      if (Array.isArray(v.templates)) {
+        templates = v.templates;
+      } else if (v.templates && typeof v.templates === "object") {
+        // Migrate legacy keyed object
+        const legacyTitles: Record<string, string> = {
+          welcome: "پیام خوش‌آمدگویی / کد ورود",
+          payment_confirm: "تأیید پرداخت",
+          charge_reminder: "یادآوری شارژ",
+        };
+        templates = Object.entries(v.templates).map(([key, content]) => ({
+          id: crypto.randomUUID(),
+          title: legacyTitles[key] || key,
+          content: String(content || ""),
+        }));
+      }
+      setState({ ...DEFAULT_STATE, ...v, templates });
     }
   }, [data]);
 
