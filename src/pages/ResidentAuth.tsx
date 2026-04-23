@@ -160,14 +160,16 @@ const ResidentAuth = () => {
       <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-black/50" />
 
+      {/* Large logo on the left, opposite the auth card */}
+      <div className="hidden md:flex absolute inset-y-0 left-0 z-10 w-1/2 items-center justify-center p-8 pointer-events-none">
+        <img
+          src={sharjanLogo}
+          alt="شارژان"
+          className="max-w-2xl w-full h-auto drop-shadow-2xl"
+        />
+      </div>
+
       <div className="relative z-10 w-full max-w-md p-4 sm:p-6 space-y-3 ml-auto mr-0 sm:mr-4 mt-2">
-        <div className="flex justify-end">
-          <img
-            src={sharjanLogo}
-            alt="شارژان"
-            className="h-16 w-auto drop-shadow-2xl"
-          />
-        </div>
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-extrabold text-white">خوش آمدید</h1>
           <p className="text-white/70 text-xs">ورود یا ثبت‌نام با شماره موبایل</p>
