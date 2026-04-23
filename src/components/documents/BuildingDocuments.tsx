@@ -266,9 +266,9 @@ export function BuildingDocuments() {
       return;
     }
     setCustomFolders((prev) => [...prev, name]);
-    setActiveFolder(name);
     setNewFolderDialog(false);
     setNewFolderName("");
+    toast({ title: "پوشه ایجاد شد", description: name });
   };
 
   if (!currentBuildingId) return null;
