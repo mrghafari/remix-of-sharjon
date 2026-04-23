@@ -49,6 +49,24 @@ export function BuildingDocuments() {
   const [deleteTarget, setDeleteTarget] = useState<DocRow | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
 
+  // Persist custom folders per building in localStorage
+  const customFoldersKey = currentBuildingId ? `custom-folders:${currentBuildingId}` : null;
+  useEffect(() => {
+    if (!customFoldersKey) return;
+    try {
+      const raw = localStorage.getItem(customFoldersKey);
+      setCustomFolders(raw ? JSON.parse(raw) : []);
+    } catch {
+      setCustomFolders([]);
+    }
+  }, [customFoldersKey]);
+  useEffect(() => {
+    if (!customFoldersKey) return;
+    try {
+      localStorage.setItem(customFoldersKey, JSON.stringify(customFolders));
+    } catch {}
+  }, [customFolders, customFoldersKey]);
+
   const setActiveFolder = (name: string | null) => {
     if (name) {
       window.history.pushState({ folder: name }, "", `#documents/${encodeURIComponent(name)}`);
