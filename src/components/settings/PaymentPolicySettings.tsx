@@ -99,7 +99,24 @@ export function PaymentPolicySettings() {
   }
 
   const update = <K extends keyof PaymentPolicy>(k: K, v: PaymentPolicy[K]) =>
-    setForm((f) => (f ? { ...f, [k]: v } : f));
+    setForm((f) => {
+      if (!f) return f;
+      const next = { ...f, [k]: v } as PaymentPolicy;
+      // Enforce: late_grace_days >= early_pay_days
+      if (k === "early_pay_days") {
+        const newEarly = Number(v) || 0;
+        if (next.late_grace_days < newEarly) {
+          next.late_grace_days = newEarly;
+        }
+      }
+      if (k === "late_grace_days") {
+        const newLate = Number(v) || 0;
+        if (newLate < next.early_pay_days) {
+          next.late_grace_days = next.early_pay_days;
+        }
+      }
+      return next;
+    });
 
   return (
     <Card>
