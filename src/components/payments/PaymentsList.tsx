@@ -166,12 +166,18 @@ export function PaymentsList() {
             {payments.map((payment) => (
               <TableRow key={payment.id}>
                 <TableCell>
-                  <Badge variant="outline">
-                    واحد {payment.units?.unit_number || "-"}
-                  </Badge>
+                  {payment.unit_id ? (
+                    <Badge variant="outline">
+                      واحد {payment.units?.unit_number || "-"}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-green-600 border-green-600">
+                      درآمد
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {payment.units?.owner_name || "-"}
+                  {payment.unit_id ? (payment.units?.owner_name || "-") : "—"}
                 </TableCell>
                 <TableCell>
                   <span className="text-primary font-semibold">
