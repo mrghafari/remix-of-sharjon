@@ -250,7 +250,7 @@ export function PaymentPolicySettings() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            اگر بدهی واحد بیش از «مهلت روزها» باقی بماند، به ازای هر ماه تأخیر، درصد مشخصی از مانده بدهی به‌عنوان جریمه به بدهی او اضافه می‌شود.
+            اگر بدهی واحد بیش از «مهلت داده شده» باقی بماند، به ازای هر ماه تأخیر، درصد مشخصی از مانده بدهی به‌عنوان جریمه به بدهی او اضافه می‌شود.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
