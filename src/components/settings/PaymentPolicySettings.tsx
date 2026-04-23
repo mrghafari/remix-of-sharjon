@@ -199,11 +199,14 @@ export function PaymentPolicySettings() {
               <Label>مهلت بدون جریمه (روز)</Label>
               <Input
                 type="number"
-                min={0}
+                min={form.early_pay_days}
                 value={form.late_grace_days}
                 onChange={(e) => update("late_grace_days", Number(e.target.value) || 0)}
                 disabled={!form.late_penalty_enabled}
               />
+              <p className="text-[11px] text-muted-foreground">
+                نمی‌تواند کمتر از روز ملاک تخفیف ({form.early_pay_days}) باشد.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>درصد جریمه ماهانه</Label>
