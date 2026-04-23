@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, UserCog, Plus, Pencil, Trash2, Phone, Mail, Calendar } from "lucide-react";
+import { Loader2, UserCog, Plus, Pencil, Trash2, Phone, Mail, Calendar, History } from "lucide-react";
 import { useManagers, useDeleteManager, Manager } from "@/hooks/useManagers";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { useBuilding } from "@/contexts/BuildingContext";
@@ -80,17 +80,26 @@ export function ManagerSettings() {
               هنوز مدیری ثبت نشده است
             </div>
           ) : (
-            <div className="space-y-4">
-              {managers.map((manager) => (
+            (() => {
+              const activeManagers = managers.filter(isActiveManager);
+              const pastManagers = managers
+                .filter((m) => !isActiveManager(m))
+                .sort((a, b) => {
+                  const aEnd = a.end_date || a.start_date;
+                  const bEnd = b.end_date || b.start_date;
+                  return bEnd.localeCompare(aEnd);
+                });
+
+              const renderManagerCard = (manager: Manager, isPast: boolean) => (
                 <div
                   key={manager.id}
                   className={`p-4 border rounded-lg space-y-3 ${
-                    isActiveManager(manager) ? "border-primary bg-primary/5" : ""
+                    !isPast ? "border-primary bg-primary/5" : "bg-muted/30"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">
                           {manager.role_type === "external"
                             ? manager.external_name || "مدیر خارجی"
@@ -99,8 +108,10 @@ export function ManagerSettings() {
                         <Badge variant={manager.role_type === "owner" ? "default" : manager.role_type === "external" ? "outline" : "secondary"}>
                           {manager.role_type === "owner" ? "مالک" : manager.role_type === "external" ? "خارج از ساختمان" : "ساکن"}
                         </Badge>
-                        {isActiveManager(manager) && (
+                        {!isPast ? (
                           <Badge variant="outline" className="text-primary border-primary">فعال</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">پایان‌یافته</Badge>
                         )}
                       </div>
                       {manager.role_type !== "external" && (
@@ -129,23 +140,33 @@ export function ManagerSettings() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    {manager.mobile && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-4 h-4" />
-                        {manager.mobile}
-                      </div>
-                    )}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="w-4 h-4 shrink-0" />
+                      <span dir="ltr">
+                        {manager.mobile ||
+                          (manager.role_type === "owner"
+                            ? manager.unit?.phone
+                            : manager.unit?.resident_phone || manager.unit?.phone) ||
+                          "—"}
+                      </span>
+                    </div>
                     {manager.email && (
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="w-4 h-4" />
-                        {manager.email}
+                        <Mail className="w-4 h-4 shrink-0" />
+                        <span dir="ltr" className="truncate">{manager.email}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      از {formatJalaliDate(manager.start_date)}
-                      {manager.end_date && ` تا ${formatJalaliDate(manager.end_date)}`}
+                      <Calendar className="w-4 h-4 shrink-0" />
+                      <span>
+                        از {formatJalaliDate(manager.start_date)}
+                        {manager.end_date
+                          ? ` تا ${formatJalaliDate(manager.end_date)}`
+                          : !isPast
+                          ? " تا کنون"
+                          : ""}
+                      </span>
                     </div>
                   </div>
 
@@ -166,8 +187,40 @@ export function ManagerSettings() {
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+
+              return (
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold flex items-center gap-2">
+                      <UserCog className="w-4 h-4 text-primary" />
+                      مدیر فعال
+                    </h3>
+                    {activeManagers.length === 0 ? (
+                      <div className="text-sm text-muted-foreground p-4 border border-dashed rounded-lg text-center">
+                        در حال حاضر مدیر فعالی ثبت نشده است
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {activeManagers.map((m) => renderManagerCard(m, false))}
+                      </div>
+                    )}
+                  </div>
+
+                  {pastManagers.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold flex items-center gap-2">
+                        <History className="w-4 h-4 text-muted-foreground" />
+                        سوابق مدیریت ({pastManagers.length.toLocaleString("fa-IR")})
+                      </h3>
+                      <div className="space-y-3">
+                        {pastManagers.map((m) => renderManagerCard(m, true))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
           )}
         </CardContent>
       </Card>
