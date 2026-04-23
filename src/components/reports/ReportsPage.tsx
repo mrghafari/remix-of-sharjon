@@ -4,10 +4,11 @@ import { UnitDetailReport } from "./UnitDetailReport";
 import { ProjectReport } from "./ProjectReport";
 import { ChronologicalReport } from "./ChronologicalReport";
 import { ChargeDebtReport } from "./ChargeDebtReport";
+import { ManagersHistoryReport } from "./ManagersHistoryReport";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowRight, FileText, FolderKanban, History, CreditCard } from "lucide-react";
+import { ArrowRight, FileText, FolderKanban, History, CreditCard, UserCog } from "lucide-react";
 import { DateRange } from "@/hooks/useUnitBalanceFiltered";
 
 export function ReportsPage() {
@@ -36,10 +37,12 @@ export function ReportsPage() {
                 ? "گزارش بدهی شارژ - مبالغ اعلام‌شده و وضعیت پرداخت هر واحد"
                 : activeTab === "chronological"
                 ? "دفتر معین - گردش حساب به ترتیب زمانی با مانده"
+                : activeTab === "managers"
+                ? "سوابق مدیران - مدیر فعال و تاریخچه مدیران پیشین به تفکیک نقش"
                 : "گزارش مالی پروژه‌ها - سهم هر واحد از هزینه‌های پروژه"}
             </p>
           </div>
-          <TabsList className="grid w-full sm:w-auto grid-cols-4">
+          <TabsList className="grid w-full sm:w-auto grid-cols-5">
             <TabsTrigger value="units" className="gap-2">
               <FileText className="w-4 h-4" />
               بیلان واحدها
@@ -51,6 +54,10 @@ export function ReportsPage() {
             <TabsTrigger value="chronological" className="gap-2">
               <History className="w-4 h-4" />
               دفتر معین
+            </TabsTrigger>
+            <TabsTrigger value="managers" className="gap-2">
+              <UserCog className="w-4 h-4" />
+              سوابق مدیران
             </TabsTrigger>
             <TabsTrigger value="projects" className="gap-2">
               <FolderKanban className="w-4 h-4" />
@@ -91,6 +98,10 @@ export function ReportsPage() {
 
         <TabsContent value="chronological" className="mt-6">
           <ChronologicalReport dateRange={dateRange} onDateRangeChange={setDateRange} />
+        </TabsContent>
+
+        <TabsContent value="managers" className="mt-6">
+          <ManagersHistoryReport />
         </TabsContent>
 
         <TabsContent value="projects" className="mt-6">

@@ -12,7 +12,6 @@ import {
   Phone,
   Mail,
   Calendar,
-  History,
   ArrowRightLeft,
   Tag,
   X,
@@ -281,15 +280,6 @@ export function ManagerSettings() {
         {roles.map((role) => {
           const inRole = managersByRole(role.id);
           const active = inRole.find(isActiveManager) || null;
-          const past = inRole
-            .filter((m) => !isActiveManager(m))
-            .sort((a, b) => {
-              const aEnd = a.end_date || a.start_date;
-              const bEnd = b.end_date || b.start_date;
-              return bEnd.localeCompare(aEnd);
-            });
-          // candidates for transfer = all managers in this building except current active in this role
-          const transferCandidates = managers.filter((m) => m.id !== active?.id);
 
           return (
             <Card key={role.id}>
@@ -325,25 +315,13 @@ export function ManagerSettings() {
                     در حال حاضر مدیر فعالی برای این نقش ثبت نشده است
                   </div>
                 )}
-
-                {past.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold flex items-center gap-2 text-muted-foreground">
-                      <History className="w-3.5 h-3.5" />
-                      سوابق ({past.length.toLocaleString("fa-IR")})
-                    </h4>
-                    <div className="space-y-2">
-                      {past.map((m) => renderManagerCard(m, true))}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
         })}
 
-        {/* Unassigned legacy managers */}
-        {unassignedManagers.length > 0 && (
+        {/* Unassigned active managers */}
+        {unassignedManagers.filter(isActiveManager).length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -352,7 +330,7 @@ export function ManagerSettings() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {unassignedManagers.map((m) => renderManagerCard(m, !isActiveManager(m)))}
+              {unassignedManagers.filter(isActiveManager).map((m) => renderManagerCard(m, false))}
             </CardContent>
           </Card>
         )}
