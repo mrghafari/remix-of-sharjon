@@ -77,17 +77,21 @@ interface ManagerFormDialogProps {
 
 export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDialogProps) {
   const { data: units = [] } = useUnits();
+  const { data: roles = [] } = useManagerRoles();
   const createManager = useCreateManager();
   const updateManager = useUpdateManager();
 
   const isExternal = manager ? manager.role_type === "external" : false;
   const [source, setSource] = useState<"internal" | "external">(isExternal ? "external" : "internal");
 
+  const defaultRoleId = roles.find((r) => r.name === "main")?.id || roles[0]?.id || "";
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       source: "internal",
       unit_id: "",
+      role_id: defaultRoleId,
       role_type: "owner",
       mobile: "",
       email: "",
@@ -108,6 +112,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
       form.reset({
         source: src,
         unit_id: manager.unit_id || "",
+        role_id: manager.role_id || defaultRoleId,
         role_type: manager.role_type as any,
         mobile: manager.mobile || "",
         email: manager.email || "",
@@ -123,6 +128,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
       form.reset({
         source: "internal",
         unit_id: "",
+        role_id: defaultRoleId,
         role_type: "owner",
         mobile: "",
         email: "",
@@ -134,7 +140,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
         is_active: true,
       } as FormValues);
     }
-  }, [manager, form, open]);
+  }, [manager, form, open, defaultRoleId]);
 
   const handleSourceChange = (newSource: "internal" | "external") => {
     setSource(newSource);
@@ -153,6 +159,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
   const onSubmit = (values: FormValues) => {
     const data = {
       unit_id: values.source === "internal" ? values.unit_id : null,
+      role_id: values.role_id,
       role_type: values.role_type,
       external_name: values.source === "external" ? values.external_name : undefined,
       mobile: values.mobile || undefined,
