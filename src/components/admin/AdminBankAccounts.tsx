@@ -68,12 +68,14 @@ export function AdminBankAccounts() {
     mutationFn: async (vars: {
       id: string;
       is_approved: boolean;
+      is_rejected: boolean;
       admin_notes: string | null;
     }) => {
       const { error } = await supabase
         .from("building_bank_accounts")
         .update({
           is_approved: vars.is_approved,
+          is_rejected: vars.is_rejected,
           approved_at: vars.is_approved ? new Date().toISOString() : null,
           approved_by: vars.is_approved ? user?.id : null,
           admin_notes: vars.admin_notes,
@@ -96,7 +98,7 @@ export function AdminBankAccounts() {
 
   const filtered = accounts
     ?.filter((a) => {
-      if (filter === "pending") return !a.is_approved;
+      if (filter === "pending") return !a.is_approved && !a.is_rejected;
       if (filter === "approved") return a.is_approved;
       return true;
     })
@@ -119,14 +121,20 @@ export function AdminBankAccounts() {
 
   const confirmAction = () => {
     if (!actionTarget) return;
+    if (actionType === "reject" && !adminNotes.trim()) {
+      toast({ title: "یادداشت الزامی است", description: "لطفاً دلیل رد حساب را برای مدیر بنویسید", variant: "destructive" });
+      return;
+    }
     updateMutation.mutate({
       id: actionTarget.id,
       is_approved: actionType === "approve",
+      is_rejected: actionType === "reject",
       admin_notes: adminNotes.trim() || null,
     });
   };
 
-  const pendingCount = accounts?.filter((a) => !a.is_approved).length || 0;
+  const pendingCount = accounts?.filter((a) => !a.is_approved && !a.is_rejected).length || 0;
+
 
   return (
     <>
