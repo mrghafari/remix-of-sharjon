@@ -49,6 +49,7 @@ export function LatePenaltyApplier() {
   const { data: units = [] } = useUnits();
   const { data: payments = [] } = usePayments();
   const { data: shares = [] } = useExpenseShares();
+  const { data: expenses = [] } = useExpenses();
   const { data: existingCharges = [] } = useUnitCharges();
   const { currentBuildingId } = useBuilding();
   const qc = useQueryClient();
