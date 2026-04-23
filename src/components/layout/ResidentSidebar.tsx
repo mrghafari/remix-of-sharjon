@@ -1,4 +1,4 @@
-import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut } from "lucide-react";
+import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -17,6 +17,7 @@ const menuItems = [
   { id: "finance", label: "وضعیت مالی", icon: Wallet },
   { id: "announcements", label: "اطلاعیه‌ها", icon: Bell },
   { id: "polls", label: "نظرسنجی", icon: BarChart3 },
+  { id: "managers", label: "سوابق مدیران", icon: UserCog },
   { id: "documents", label: "اسناد", icon: FileText },
   { id: "contacts", label: "دفترچه تلفن", icon: Phone },
 ];
