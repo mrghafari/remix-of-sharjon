@@ -101,22 +101,79 @@ export function PaymentPolicySettings() {
   const update = <K extends keyof PaymentPolicy>(k: K, v: PaymentPolicy[K]) =>
     setForm((f) => {
       if (!f) return f;
-      const next = { ...f, [k]: v } as PaymentPolicy;
-      // Enforce: late_grace_days >= early_pay_days
-      if (k === "early_pay_days") {
-        const newEarly = Number(v) || 0;
-        if (next.late_grace_days < newEarly) {
-          next.late_grace_days = newEarly;
-        }
-      }
-      if (k === "late_grace_days") {
-        const newLate = Number(v) || 0;
-        if (newLate < next.early_pay_days) {
-          next.late_grace_days = next.early_pay_days;
-        }
+      return { ...f, [k]: v } as PaymentPolicy;
+    });
+
+  // Numeric field state for early_pay_days / late_grace_days that allows empty input
+  const [earlyDaysInput, setEarlyDaysInput] = useState<string>("");
+  const [lateDaysInput, setLateDaysInput] = useState<string>("");
+
+  useEffect(() => {
+    if (form) {
+      setEarlyDaysInput(String(form.early_pay_days ?? ""));
+      setLateDaysInput(String(form.late_grace_days ?? ""));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.building_id]);
+
+  const handleEarlyDaysChange = (raw: string) => {
+    // allow empty
+    if (raw === "") {
+      setEarlyDaysInput("");
+      return;
+    }
+    let n = parseInt(raw, 10);
+    if (isNaN(n)) return;
+    if (n < 1) n = 1;
+    if (n > 31) n = 31;
+    setEarlyDaysInput(String(n));
+    setForm((f) => {
+      if (!f) return f;
+      const next = { ...f, early_pay_days: n } as PaymentPolicy;
+      if (next.late_grace_days < n) {
+        next.late_grace_days = n;
+        setLateDaysInput(String(n));
       }
       return next;
     });
+  };
+
+  const handleEarlyDaysBlur = () => {
+    if (earlyDaysInput === "" || isNaN(parseInt(earlyDaysInput, 10))) {
+      const fallback = form?.early_pay_days || 1;
+      setEarlyDaysInput(String(fallback));
+    }
+  };
+
+  const handleLateDaysChange = (raw: string) => {
+    if (raw === "") {
+      setLateDaysInput("");
+      return;
+    }
+    let n = parseInt(raw, 10);
+    if (isNaN(n)) return;
+    if (n < 0) n = 0;
+    setLateDaysInput(String(n));
+    setForm((f) => {
+      if (!f) return f;
+      const next = { ...f, late_grace_days: n } as PaymentPolicy;
+      return next;
+    });
+  };
+
+  const handleLateDaysBlur = () => {
+    if (lateDaysInput === "" || isNaN(parseInt(lateDaysInput, 10))) {
+      const fallback = form?.early_pay_days || 0;
+      setLateDaysInput(String(fallback));
+      setForm((f) => (f ? { ...f, late_grace_days: fallback } : f));
+      return;
+    }
+    const n = parseInt(lateDaysInput, 10);
+    if (form && n < form.early_pay_days) {
+      setLateDaysInput(String(form.early_pay_days));
+      setForm((f) => (f ? { ...f, late_grace_days: f.early_pay_days } : f));
+    }
+  };
 
   return (
     <Card>
