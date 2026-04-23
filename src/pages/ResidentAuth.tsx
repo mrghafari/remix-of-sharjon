@@ -165,7 +165,7 @@ const ResidentAuth = () => {
       <div className="absolute inset-0 bg-black/50" />
 
       {/* Large logo on the left, aligned to top with the auth card */}
-      <div className="hidden md:flex absolute top-2 left-0 z-10 w-1/2 items-start justify-center p-8 pointer-events-none">
+      <div className="hidden md:flex absolute left-0 z-10 w-1/2 items-start justify-center p-8 pointer-events-none" style={{ top: "-4cm" }}>
         <img
           src={sharjanLogo}
           alt="شارژان"
