@@ -50,13 +50,14 @@ export interface ManagerInsert {
   is_active?: boolean;
 }
 
-export function useManagers() {
+export function useManagers(buildingIdOverride?: string) {
   const { currentBuildingId } = useBuilding();
+  const buildingId = buildingIdOverride ?? currentBuildingId;
   
   return useQuery({
-    queryKey: ["managers", currentBuildingId],
+    queryKey: ["managers", buildingId],
     queryFn: async () => {
-      if (!currentBuildingId) return [];
+      if (!buildingId) return [];
       const { data, error } = await supabase
         .from("managers")
         .select(`
@@ -64,13 +65,13 @@ export function useManagers() {
           unit:units(id, unit_number, owner_name, resident_name, phone, resident_phone),
           role:manager_roles(id, name, label, is_system, sort_order)
         `)
-        .eq("building_id", currentBuildingId)
+        .eq("building_id", buildingId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data as Manager[];
     },
-    enabled: !!currentBuildingId,
+    enabled: !!buildingId,
   });
 }
 
