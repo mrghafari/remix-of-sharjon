@@ -249,7 +249,7 @@ export function AdminBankAccounts() {
                     </div>
 
                     <div className="flex gap-2">
-                      {!acc.is_approved ? (
+                      {!acc.is_approved && !acc.is_rejected ? (
                         <>
                           <Button
                             size="sm"
@@ -261,14 +261,14 @@ export function AdminBankAccounts() {
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="destructive"
                             onClick={() => openAction(acc, "reject")}
                           >
                             <XCircle className="w-4 h-4 ml-1" />
-                            یادداشت
+                            رد
                           </Button>
                         </>
-                      ) : (
+                      ) : acc.is_approved ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -276,7 +276,7 @@ export function AdminBankAccounts() {
                         >
                           لغو تایید
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
