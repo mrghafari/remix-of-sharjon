@@ -209,8 +209,9 @@ export function PaymentPolicySettings() {
                 type="number"
                 min={1}
                 max={31}
-                value={form.early_pay_days}
-                onChange={(e) => update("early_pay_days", Number(e.target.value) || 0)}
+                value={earlyDaysInput}
+                onChange={(e) => handleEarlyDaysChange(e.target.value)}
+                onBlur={handleEarlyDaysBlur}
                 disabled={!form.early_pay_enabled}
               />
               <p className="text-[11px] text-muted-foreground">
