@@ -10,6 +10,7 @@ export interface BankAccount {
   account_holder: string;
   bank_name: string | null;
   is_approved: boolean;
+  is_rejected: boolean;
   is_active: boolean;
   approved_at: string | null;
   approved_by: string | null;

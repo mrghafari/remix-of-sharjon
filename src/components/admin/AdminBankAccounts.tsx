@@ -26,6 +26,7 @@ interface BankAccountWithBuilding {
   account_holder: string;
   bank_name: string | null;
   is_approved: boolean;
+  is_rejected: boolean;
   is_active: boolean;
   admin_notes: string | null;
   created_at: string;
@@ -68,12 +69,14 @@ export function AdminBankAccounts() {
     mutationFn: async (vars: {
       id: string;
       is_approved: boolean;
+      is_rejected: boolean;
       admin_notes: string | null;
     }) => {
       const { error } = await supabase
         .from("building_bank_accounts")
         .update({
           is_approved: vars.is_approved,
+          is_rejected: vars.is_rejected,
           approved_at: vars.is_approved ? new Date().toISOString() : null,
           approved_by: vars.is_approved ? user?.id : null,
           admin_notes: vars.admin_notes,
@@ -96,7 +99,7 @@ export function AdminBankAccounts() {
 
   const filtered = accounts
     ?.filter((a) => {
-      if (filter === "pending") return !a.is_approved;
+      if (filter === "pending") return !a.is_approved && !a.is_rejected;
       if (filter === "approved") return a.is_approved;
       return true;
     })
@@ -119,14 +122,20 @@ export function AdminBankAccounts() {
 
   const confirmAction = () => {
     if (!actionTarget) return;
+    if (actionType === "reject" && !adminNotes.trim()) {
+      toast({ title: "یادداشت الزامی است", description: "لطفاً دلیل رد حساب را برای مدیر بنویسید", variant: "destructive" });
+      return;
+    }
     updateMutation.mutate({
       id: actionTarget.id,
       is_approved: actionType === "approve",
+      is_rejected: actionType === "reject",
       admin_notes: adminNotes.trim() || null,
     });
   };
 
-  const pendingCount = accounts?.filter((a) => !a.is_approved).length || 0;
+  const pendingCount = accounts?.filter((a) => !a.is_approved && !a.is_rejected).length || 0;
+
 
   return (
     <>
@@ -194,7 +203,12 @@ export function AdminBankAccounts() {
                         <Badge variant="outline" className="text-base">
                           {acc.buildings?.name || "—"}
                         </Badge>
-                        {acc.is_approved ? (
+                        {acc.is_rejected ? (
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 ml-1" />
+                            رد شده
+                          </Badge>
+                        ) : acc.is_approved ? (
                           <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <CheckCircle2 className="w-3 h-3 ml-1" />
                             تایید شده
@@ -235,7 +249,7 @@ export function AdminBankAccounts() {
                     </div>
 
                     <div className="flex gap-2">
-                      {!acc.is_approved ? (
+                      {!acc.is_approved && !acc.is_rejected ? (
                         <>
                           <Button
                             size="sm"
@@ -247,14 +261,14 @@ export function AdminBankAccounts() {
                           </Button>
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="destructive"
                             onClick={() => openAction(acc, "reject")}
                           >
                             <XCircle className="w-4 h-4 ml-1" />
-                            یادداشت
+                            رد
                           </Button>
                         </>
-                      ) : (
+                      ) : acc.is_approved ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -262,7 +276,7 @@ export function AdminBankAccounts() {
                         >
                           لغو تایید
                         </Button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -276,12 +290,12 @@ export function AdminBankAccounts() {
         <DialogContent dir="rtl">
           <DialogHeader>
             <DialogTitle>
-              {actionType === "approve" ? "تایید حساب بانکی" : "لغو تایید / افزودن یادداشت"}
+              {actionType === "approve" ? "تایید حساب بانکی" : "رد حساب بانکی"}
             </DialogTitle>
             <DialogDescription>
               {actionType === "approve"
                 ? "با تایید این حساب، مدیر می‌تواند آن را به عنوان پذیرنده واریزی‌ها فعال کند."
-                : "این حساب از حالت تایید شده خارج خواهد شد."}
+                : "حساب رد می‌شود و یادداشت شما به مدیر نمایش داده خواهد شد. لطفاً دلیل رد را به‌طور واضح بنویسید."}
             </DialogDescription>
           </DialogHeader>
 
@@ -296,13 +310,22 @@ export function AdminBankAccounts() {
                 <p className="font-mono" dir="ltr">{formatIban(actionTarget.iban)}</p>
               </div>
               <div className="space-y-2">
-                <Label>یادداشت برای مدیر (اختیاری)</Label>
+                <Label>
+                  {actionType === "reject" ? "دلیل رد (الزامی) *" : "یادداشت برای مدیر (اختیاری)"}
+                </Label>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="مثلاً: پس از مذاکره با بانک تایید شد..."
-                  rows={3}
+                  placeholder={
+                    actionType === "reject"
+                      ? "مثلاً: شماره شبا با نام صاحب حساب در بانک مطابقت ندارد..."
+                      : "مثلاً: پس از مذاکره با بانک تایید شد..."
+                  }
+                  rows={4}
+                  maxLength={500}
+                  required={actionType === "reject"}
                 />
+                <p className="text-xs text-muted-foreground">{adminNotes.length.toLocaleString("fa-IR")}/۵۰۰</p>
               </div>
             </div>
           )}
