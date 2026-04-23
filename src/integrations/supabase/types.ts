@@ -189,11 +189,13 @@ export type Database = {
         Row: {
           building_id: string
           created_at: string
+          early_pay_auto_apply: boolean
           early_pay_days: number
           early_pay_discount_percent: number
           early_pay_enabled: boolean
           id: string
           late_grace_days: number
+          late_penalty_auto_apply: boolean
           late_penalty_enabled: boolean
           late_penalty_max_months: number
           late_penalty_percent_per_month: number
@@ -202,11 +204,13 @@ export type Database = {
         Insert: {
           building_id: string
           created_at?: string
+          early_pay_auto_apply?: boolean
           early_pay_days?: number
           early_pay_discount_percent?: number
           early_pay_enabled?: boolean
           id?: string
           late_grace_days?: number
+          late_penalty_auto_apply?: boolean
           late_penalty_enabled?: boolean
           late_penalty_max_months?: number
           late_penalty_percent_per_month?: number
@@ -215,11 +219,13 @@ export type Database = {
         Update: {
           building_id?: string
           created_at?: string
+          early_pay_auto_apply?: boolean
           early_pay_days?: number
           early_pay_discount_percent?: number
           early_pay_enabled?: boolean
           id?: string
           late_grace_days?: number
+          late_penalty_auto_apply?: boolean
           late_penalty_enabled?: boolean
           late_penalty_max_months?: number
           late_penalty_percent_per_month?: number
