@@ -14,22 +14,23 @@ export interface ManagerRole {
   updated_at: string;
 }
 
-export function useManagerRoles() {
+export function useManagerRoles(buildingIdOverride?: string) {
   const { currentBuildingId } = useBuilding();
+  const buildingId = buildingIdOverride ?? currentBuildingId;
 
   return useQuery({
-    queryKey: ["manager_roles", currentBuildingId],
+    queryKey: ["manager_roles", buildingId],
     queryFn: async () => {
-      if (!currentBuildingId) return [];
+      if (!buildingId) return [];
       const { data, error } = await supabase
         .from("manager_roles")
         .select("*")
-        .eq("building_id", currentBuildingId)
+        .eq("building_id", buildingId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
       return data as ManagerRole[];
     },
-    enabled: !!currentBuildingId,
+    enabled: !!buildingId,
   });
 }
 
