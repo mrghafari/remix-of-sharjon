@@ -8,6 +8,7 @@ import { useUnits } from "@/hooks/useUnits";
 import { useExpenses } from "@/hooks/useExpenses";
 import { usePayments } from "@/hooks/usePayments";
 import { useBackfillExpenseShares } from "@/hooks/useBackfillExpenseShares";
+import { useAutoLatePenalty } from "@/hooks/useAutoLatePenalty";
 
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
@@ -24,6 +25,8 @@ export function Dashboard({ onTabChange }: DashboardProps) {
   
   // Auto-backfill expense shares for existing expenses
   useBackfillExpenseShares();
+  // Auto-apply late penalties for past months when enabled in settings
+  useAutoLatePenalty();
 
   const isLoading = unitsLoading || expensesLoading || paymentsLoading;
   
