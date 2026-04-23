@@ -180,7 +180,12 @@ export function BankAccountSettings() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {acc.is_approved ? (
+                        {acc.is_rejected ? (
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 ml-1" />
+                            رد شده
+                          </Badge>
+                        ) : acc.is_approved ? (
                           <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <CheckCircle2 className="w-3 h-3 ml-1" />
                             تایید شده
@@ -211,7 +216,21 @@ export function BankAccountSettings() {
                         <p className="text-sm font-medium">{acc.account_holder}</p>
                       </div>
 
-                      {acc.admin_notes && (
+                      {acc.is_rejected && (
+                        <Alert variant="destructive">
+                          <XCircle className="h-4 w-4" />
+                          <AlertDescription className="text-sm">
+                            <b>این حساب توسط ادمین رد شد.</b>
+                            {acc.admin_notes ? (
+                              <div className="mt-1">دلیل: {acc.admin_notes}</div>
+                            ) : (
+                              <div className="mt-1">دلیلی ثبت نشده است. برای ثبت حساب جدید، این حساب را حذف کنید.</div>
+                            )}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+
+                      {!acc.is_rejected && acc.admin_notes && (
                         <Alert>
                           <Info className="h-4 w-4" />
                           <AlertDescription className="text-sm">
@@ -220,7 +239,7 @@ export function BankAccountSettings() {
                         </Alert>
                       )}
 
-                      {!acc.is_approved && (
+                      {!acc.is_approved && !acc.is_rejected && (
                         <p className="text-xs text-amber-700 dark:text-amber-400">
                           ⏳ در انتظار تایید ادمین — پس از مذاکره با بانک و تایید، می‌توانید این حساب را به عنوان پذیرنده واریزی‌ها فعال کنید.
                         </p>
