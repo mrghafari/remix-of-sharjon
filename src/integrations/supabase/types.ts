@@ -650,6 +650,39 @@ export type Database = {
           },
         ]
       }
+      manager_roles: {
+        Row: {
+          building_id: string
+          created_at: string
+          id: string
+          is_system: boolean
+          label: string
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          label: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          label?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       managers: {
         Row: {
           building_id: string
@@ -662,6 +695,7 @@ export type Database = {
           id: string
           is_active: boolean
           mobile: string | null
+          role_id: string | null
           role_type: string
           start_date: string
           unit_id: string | null
@@ -678,6 +712,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           mobile?: string | null
+          role_id?: string | null
           role_type: string
           start_date?: string
           unit_id?: string | null
@@ -694,6 +729,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           mobile?: string | null
+          role_id?: string | null
           role_type?: string
           start_date?: string
           unit_id?: string | null
@@ -705,6 +741,13 @@ export type Database = {
             columns: ["building_id"]
             isOneToOne: false
             referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "managers_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "manager_roles"
             referencedColumns: ["id"]
           },
           {

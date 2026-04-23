@@ -31,12 +31,14 @@ import { Loader2, Building2, UserCircle2 } from "lucide-react";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { useUnits } from "@/hooks/useUnits";
 import { useCreateManager, useUpdateManager, Manager } from "@/hooks/useManagers";
+import { useManagerRoles } from "@/hooks/useManagerRoles";
 import { toJalaliString, fromJalaliString, getTodayJalali } from "@/lib/jalaliDate";
 import { cn } from "@/lib/utils";
 
 const internalSchema = z.object({
   source: z.literal("internal"),
   unit_id: z.string().min(1, "واحد را انتخاب کنید"),
+  role_id: z.string().min(1, "نقش مدیریتی را انتخاب کنید"),
   role_type: z.enum(["owner", "resident"]),
   mobile: z.string().optional(),
   email: z.string().email("ایمیل نامعتبر است").optional().or(z.literal("")),
@@ -51,6 +53,7 @@ const internalSchema = z.object({
 const externalSchema = z.object({
   source: z.literal("external"),
   unit_id: z.string().optional(),
+  role_id: z.string().min(1, "نقش مدیریتی را انتخاب کنید"),
   role_type: z.literal("external"),
   external_name: z.string().min(1, "نام مدیر را وارد کنید"),
   mobile: z.string().optional(),
@@ -74,17 +77,21 @@ interface ManagerFormDialogProps {
 
 export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDialogProps) {
   const { data: units = [] } = useUnits();
+  const { data: roles = [] } = useManagerRoles();
   const createManager = useCreateManager();
   const updateManager = useUpdateManager();
 
   const isExternal = manager ? manager.role_type === "external" : false;
   const [source, setSource] = useState<"internal" | "external">(isExternal ? "external" : "internal");
 
+  const defaultRoleId = roles.find((r) => r.name === "main")?.id || roles[0]?.id || "";
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       source: "internal",
       unit_id: "",
+      role_id: defaultRoleId,
       role_type: "owner",
       mobile: "",
       email: "",
@@ -105,6 +112,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
       form.reset({
         source: src,
         unit_id: manager.unit_id || "",
+        role_id: manager.role_id || defaultRoleId,
         role_type: manager.role_type as any,
         mobile: manager.mobile || "",
         email: manager.email || "",
@@ -120,6 +128,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
       form.reset({
         source: "internal",
         unit_id: "",
+        role_id: defaultRoleId,
         role_type: "owner",
         mobile: "",
         email: "",
@@ -131,7 +140,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
         is_active: true,
       } as FormValues);
     }
-  }, [manager, form, open]);
+  }, [manager, form, open, defaultRoleId]);
 
   const handleSourceChange = (newSource: "internal" | "external") => {
     setSource(newSource);
@@ -150,6 +159,7 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
   const onSubmit = (values: FormValues) => {
     const data = {
       unit_id: values.source === "internal" ? values.unit_id : null,
+      role_id: values.role_id,
       role_type: values.role_type,
       external_name: values.source === "external" ? values.external_name : undefined,
       mobile: values.mobile || undefined,
@@ -209,6 +219,31 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
+            <FormField
+              control={form.control}
+              name="role_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>نقش مدیریتی</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="نقش را انتخاب کنید" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {source === "internal" ? (
               <>
