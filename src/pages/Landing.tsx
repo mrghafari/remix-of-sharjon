@@ -76,10 +76,10 @@ export default function Landing() {
     <div className="min-h-screen bg-background" dir="rtl">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={sharjanLogo} alt="شارژان" className="w-10 h-10" />
-            <span className="text-lg font-bold text-foreground">شارژان</span>
+            <img src={sharjanLogo} alt="شارژان" className="w-16 h-16 object-contain" />
+            <span className="text-xl font-bold text-foreground">شارژان</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">امکانات</a>
