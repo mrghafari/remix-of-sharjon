@@ -26,6 +26,7 @@ interface BankAccountWithBuilding {
   account_holder: string;
   bank_name: string | null;
   is_approved: boolean;
+  is_rejected: boolean;
   is_active: boolean;
   admin_notes: string | null;
   created_at: string;
