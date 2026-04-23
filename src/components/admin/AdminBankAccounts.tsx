@@ -290,12 +290,12 @@ export function AdminBankAccounts() {
         <DialogContent dir="rtl">
           <DialogHeader>
             <DialogTitle>
-              {actionType === "approve" ? "تایید حساب بانکی" : "لغو تایید / افزودن یادداشت"}
+              {actionType === "approve" ? "تایید حساب بانکی" : "رد حساب بانکی"}
             </DialogTitle>
             <DialogDescription>
               {actionType === "approve"
                 ? "با تایید این حساب، مدیر می‌تواند آن را به عنوان پذیرنده واریزی‌ها فعال کند."
-                : "این حساب از حالت تایید شده خارج خواهد شد."}
+                : "حساب رد می‌شود و یادداشت شما به مدیر نمایش داده خواهد شد. لطفاً دلیل رد را به‌طور واضح بنویسید."}
             </DialogDescription>
           </DialogHeader>
 
@@ -310,13 +310,22 @@ export function AdminBankAccounts() {
                 <p className="font-mono" dir="ltr">{formatIban(actionTarget.iban)}</p>
               </div>
               <div className="space-y-2">
-                <Label>یادداشت برای مدیر (اختیاری)</Label>
+                <Label>
+                  {actionType === "reject" ? "دلیل رد (الزامی) *" : "یادداشت برای مدیر (اختیاری)"}
+                </Label>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="مثلاً: پس از مذاکره با بانک تایید شد..."
-                  rows={3}
+                  placeholder={
+                    actionType === "reject"
+                      ? "مثلاً: شماره شبا با نام صاحب حساب در بانک مطابقت ندارد..."
+                      : "مثلاً: پس از مذاکره با بانک تایید شد..."
+                  }
+                  rows={4}
+                  maxLength={500}
+                  required={actionType === "reject"}
                 />
+                <p className="text-xs text-muted-foreground">{adminNotes.length.toLocaleString("fa-IR")}/۵۰۰</p>
               </div>
             </div>
           )}
