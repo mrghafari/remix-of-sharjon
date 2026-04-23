@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Landmark, Trash2, CheckCircle2, Clock, Plus, Info } from "lucide-react";
+import { Landmark, Trash2, CheckCircle2, Clock, Plus, Info, XCircle } from "lucide-react";
 import { useBankAccounts, useCreateBankAccount, useDeleteBankAccount, useUpdateBankAccount } from "@/hooks/useBankAccounts";
 import {
   AlertDialog,
