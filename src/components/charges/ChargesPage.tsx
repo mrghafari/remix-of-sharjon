@@ -1,6 +1,7 @@
 import { ChargeSettings } from "@/components/settings/ChargeSettings";
 import { ChargeHistory } from "./ChargeHistory";
 import { LatePenaltyApplier } from "./LatePenaltyApplier";
+import { CustomDebtForm } from "./CustomDebtForm";
 
 export function ChargesPage() {
   return (
@@ -13,6 +14,7 @@ export function ChargesPage() {
       </div>
       <ChargeSettings />
       <LatePenaltyApplier />
+      <CustomDebtForm />
       <ChargeHistory />
     </div>
   );
