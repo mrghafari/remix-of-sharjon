@@ -9,6 +9,7 @@ import { PaymentsPage } from "@/components/payments/PaymentsPage";
 import { ChargesPage } from "@/components/charges/ChargesPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 import { ReportsPage } from "@/components/reports/ReportsPage";
+import { ProjectSettings } from "@/components/projects/ProjectSettings";
 import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
 import { AnnouncementsPage } from "@/components/announcements/AnnouncementsPage";
 import { UtilitiesPage } from "@/components/utilities/UtilitiesPage";
@@ -129,6 +130,16 @@ const Index = () => {
         return <UnitsPage />;
       case "expenses":
         return <ExpensesPage />;
+      case "projects":
+        return (
+          <div className="max-w-6xl mx-auto space-y-6 animate-fade-in">
+            <div>
+              <h1 className="text-2xl font-bold">مدیریت پروژه</h1>
+              <p className="text-muted-foreground mt-1">پروژه‌های عمرانی و تعمیراتی ساختمان</p>
+            </div>
+            <ProjectSettings />
+          </div>
+        );
       case "payments":
         return <PaymentsPage />;
       case "charges":

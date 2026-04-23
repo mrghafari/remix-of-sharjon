@@ -1,7 +1,6 @@
 import { CategorySettings } from "./CategorySettings";
 import { ManagerSettings } from "./ManagerSettings";
 import { BuildingSettings } from "./BuildingSettings";
-import { ProjectSettings } from "@/components/projects/ProjectSettings";
 import { PaymentPolicySettings } from "./PaymentPolicySettings";
 
 export function SettingsPage() {
@@ -9,12 +8,11 @@ export function SettingsPage() {
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">تنظیمات</h1>
-        <p className="text-muted-foreground mt-1">مدیریت ساختمان‌ها، پروژه‌ها و دسته‌بندی‌ها</p>
+        <p className="text-muted-foreground mt-1">مدیریت ساختمان‌ها و دسته‌بندی‌ها</p>
       </div>
       
       <BuildingSettings />
       <ManagerSettings />
-      <ProjectSettings />
       <PaymentPolicySettings />
       <CategorySettings />
     </div>
