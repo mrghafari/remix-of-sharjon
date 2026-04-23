@@ -203,7 +203,12 @@ export function AdminBankAccounts() {
                         <Badge variant="outline" className="text-base">
                           {acc.buildings?.name || "—"}
                         </Badge>
-                        {acc.is_approved ? (
+                        {acc.is_rejected ? (
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 ml-1" />
+                            رد شده
+                          </Badge>
+                        ) : acc.is_approved ? (
                           <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                             <CheckCircle2 className="w-3 h-3 ml-1" />
                             تایید شده
