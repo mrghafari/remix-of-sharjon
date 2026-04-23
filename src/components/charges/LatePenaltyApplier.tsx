@@ -105,6 +105,7 @@ export function LatePenaltyApplier() {
     }
 
     return units
+      .filter((u: any) => !u.late_penalty_exempt)
       .map((u: any) => {
         const paid = paySum.get(u.id) || 0;
         const expenses = expSum.get(u.id) || 0;

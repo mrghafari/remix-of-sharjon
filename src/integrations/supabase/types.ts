@@ -967,6 +967,7 @@ export type Database = {
           id: string
           is_occupied: boolean | null
           landline_phone: string | null
+          late_penalty_exempt: boolean
           owner_name: string
           phone: string | null
           resident_count: number | null
@@ -983,6 +984,7 @@ export type Database = {
           id?: string
           is_occupied?: boolean | null
           landline_phone?: string | null
+          late_penalty_exempt?: boolean
           owner_name: string
           phone?: string | null
           resident_count?: number | null
@@ -999,6 +1001,7 @@ export type Database = {
           id?: string
           is_occupied?: boolean | null
           landline_phone?: string | null
+          late_penalty_exempt?: boolean
           owner_name?: string
           phone?: string | null
           resident_count?: number | null

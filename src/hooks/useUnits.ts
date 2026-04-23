@@ -15,6 +15,7 @@ export interface Unit {
   resident_name: string | null;
   resident_phone: string | null;
   landline_phone: string | null;
+  late_penalty_exempt: boolean;
   building_id: string;
   created_at: string;
   updated_at: string;

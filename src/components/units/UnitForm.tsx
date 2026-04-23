@@ -26,6 +26,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
   const [residentPhone, setResidentPhone] = useState(editUnit?.resident_phone || "");
   const [landlinePhone, setLandlinePhone] = useState(editUnit?.landline_phone || "");
   const [isOccupied, setIsOccupied] = useState(editUnit?.is_occupied ?? true);
+  const [latePenaltyExempt, setLatePenaltyExempt] = useState(editUnit?.late_penalty_exempt ?? false);
 
   const createUnit = useCreateUnit();
   const updateUnit = useUpdateUnit();
@@ -64,6 +65,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
       resident_phone: residentPhone.trim() || null,
       landline_phone: landlinePhone.trim() || null,
       is_occupied: isOccupied,
+      late_penalty_exempt: latePenaltyExempt,
     };
 
     if (editUnit) {
@@ -223,15 +225,27 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
           </div>
 
           {/* Status */}
-          <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-            <Switch
-              id="isOccupied"
-              checked={isOccupied}
-              onCheckedChange={setIsOccupied}
-            />
-            <Label htmlFor="isOccupied" className="cursor-pointer">
-              این واحد دارای ساکن است
-            </Label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <Switch
+                id="isOccupied"
+                checked={isOccupied}
+                onCheckedChange={setIsOccupied}
+              />
+              <Label htmlFor="isOccupied" className="cursor-pointer">
+                این واحد دارای ساکن است
+              </Label>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <Switch
+                id="latePenaltyExempt"
+                checked={latePenaltyExempt}
+                onCheckedChange={setLatePenaltyExempt}
+              />
+              <Label htmlFor="latePenaltyExempt" className="cursor-pointer">
+                این واحد از محاسبه جریمه تأخیر معاف است
+              </Label>
+            </div>
           </div>
 
           {/* Actions */}

@@ -101,6 +101,7 @@ export function useAutoLatePenalty() {
 
         const records: any[] = [];
         for (const u of units as any[]) {
+          if (u.late_penalty_exempt) continue;
           const alreadyApplied = (existingCharges as any[]).some(
             (c) =>
               c.unit_id === u.id &&
