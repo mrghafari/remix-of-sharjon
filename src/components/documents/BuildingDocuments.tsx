@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,13 +41,38 @@ export function BuildingDocuments() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeFolder, setActiveFolder] = useState<string | null>(null);
+  const [activeFolder, setActiveFolderState] = useState<string | null>(null);
   const [customFolders, setCustomFolders] = useState<string[]>([]);
   const [newFolderDialog, setNewFolderDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [uploading, setUploading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DocRow | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<string | null>(null);
+
+  const setActiveFolder = (name: string | null) => {
+    if (name) {
+      window.history.pushState({ folder: name }, "", `#documents/${encodeURIComponent(name)}`);
+      setActiveFolderState(name);
+    } else if (window.location.hash.startsWith("#documents/")) {
+      window.history.back();
+    } else {
+      setActiveFolderState(null);
+    }
+  };
+
+  useEffect(() => {
+    const sync = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#documents/")) {
+        setActiveFolderState(decodeURIComponent(hash.replace("#documents/", "")) || null);
+      } else {
+        setActiveFolderState(null);
+      }
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
 
   // Fetch documents
   const { data: documents = [], isLoading } = useQuery({

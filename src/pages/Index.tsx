@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Building2, Plus, Loader2 } from "lucide-react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
@@ -104,8 +104,32 @@ function CreateBuildingScreen() {
 }
 
 const Index = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTabState] = useState(() => {
+    const hash = window.location.hash.replace("#", "");
+    return hash || "dashboard";
+  });
   const { buildings, isLoading } = useBuilding();
+
+  const setActiveTab = (tab: string) => {
+    if (tab !== activeTab) {
+      window.history.pushState({ tab }, "", `#${tab}`);
+    }
+    setActiveTabState(tab);
+  };
+
+  useEffect(() => {
+    // Seed initial history state so first back press stays in-app
+    if (!window.history.state || !window.history.state.tab) {
+      window.history.replaceState({ tab: activeTab }, "", `#${activeTab}`);
+    }
+    const onPop = (e: PopStateEvent) => {
+      const tab = (e.state && e.state.tab) || window.location.hash.replace("#", "") || "dashboard";
+      setActiveTabState(tab);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) {
     return (
