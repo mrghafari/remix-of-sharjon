@@ -281,15 +281,6 @@ export function ManagerSettings() {
         {roles.map((role) => {
           const inRole = managersByRole(role.id);
           const active = inRole.find(isActiveManager) || null;
-          const past = inRole
-            .filter((m) => !isActiveManager(m))
-            .sort((a, b) => {
-              const aEnd = a.end_date || a.start_date;
-              const bEnd = b.end_date || b.start_date;
-              return bEnd.localeCompare(aEnd);
-            });
-          // candidates for transfer = all managers in this building except current active in this role
-          const transferCandidates = managers.filter((m) => m.id !== active?.id);
 
           return (
             <Card key={role.id}>
@@ -323,18 +314,6 @@ export function ManagerSettings() {
                 ) : (
                   <div className="text-sm text-muted-foreground p-4 border border-dashed rounded-lg text-center">
                     در حال حاضر مدیر فعالی برای این نقش ثبت نشده است
-                  </div>
-                )}
-
-                {past.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold flex items-center gap-2 text-muted-foreground">
-                      <History className="w-3.5 h-3.5" />
-                      سوابق ({past.length.toLocaleString("fa-IR")})
-                    </h4>
-                    <div className="space-y-2">
-                      {past.map((m) => renderManagerCard(m, true))}
-                    </div>
                   </div>
                 )}
               </CardContent>
