@@ -214,12 +214,22 @@ export function BuildingDocuments() {
         }
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, folderName) => {
       queryClient.invalidateQueries({ queryKey: ["building-documents", currentBuildingId] });
-      if (deleteFolderTarget) {
-        setCustomFolders((prev) => prev.filter((f) => f !== deleteFolderTarget));
+      const target = folderName ?? deleteFolderTarget;
+      if (target) {
+        setCustomFolders((prev) => {
+          const next = prev.filter((f) => f !== target);
+          if (customFoldersKey) {
+            try { localStorage.setItem(customFoldersKey, JSON.stringify(next)); } catch {}
+          }
+          return next;
+        });
+        if (activeFolder === target) setActiveFolderState(null);
+        if (window.location.hash.startsWith("#documents/")) {
+          window.history.replaceState(null, "", "#documents");
+        }
       }
-      if (activeFolder === deleteFolderTarget) setActiveFolder(null);
       toast({ title: "پوشه حذف شد" });
       setDeleteFolderTarget(null);
     },
