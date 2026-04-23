@@ -6,6 +6,7 @@ import { useBuilding } from "@/contexts/BuildingContext";
 export interface Manager {
   id: string;
   unit_id: string | null;
+  role_id: string | null;
   role_type: "owner" | "resident" | "external";
   mobile: string | null;
   email: string | null;
@@ -26,10 +27,18 @@ export interface Manager {
     phone: string | null;
     resident_phone: string | null;
   };
+  role?: {
+    id: string;
+    name: string;
+    label: string;
+    is_system: boolean;
+    sort_order: number;
+  } | null;
 }
 
 export interface ManagerInsert {
   unit_id?: string | null;
+  role_id?: string | null;
   role_type: "owner" | "resident" | "external";
   mobile?: string;
   email?: string;
