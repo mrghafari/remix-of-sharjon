@@ -1,0 +1,1 @@
+ALTER TABLE public.units ADD COLUMN IF NOT EXISTS late_penalty_exempt boolean NOT NULL DEFAULT false;
