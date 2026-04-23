@@ -164,12 +164,12 @@ const ResidentAuth = () => {
       <img src={blueTehran} alt="" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-black/50" />
 
-      {/* Large logo on the left, opposite the auth card */}
-      <div className="hidden md:flex absolute inset-y-0 left-0 z-10 w-1/2 items-center justify-center p-8 pointer-events-none">
+      {/* Large logo on the left, aligned to top with the auth card */}
+      <div className="hidden md:flex absolute top-2 left-0 z-10 w-1/2 items-start justify-center p-8 pointer-events-none">
         <img
           src={sharjanLogo}
           alt="شارژان"
-          className="max-w-2xl w-full h-auto drop-shadow-2xl"
+          className="max-w-sm w-full h-auto drop-shadow-2xl"
         />
       </div>
 
