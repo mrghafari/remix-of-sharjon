@@ -118,6 +118,21 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     );
   };
 
+  // Detect any approved/pending قرق (full-day exclusive) for the selected venue+date
+  const exclusiveLockOnDate = useMemo(() => {
+    if (!reqVenue || !reqDate) return null;
+    const dateStr = reqDate.toISOString().split("T")[0];
+    return (
+      reservations.find(
+        (r) =>
+          r.venue_id === reqVenue &&
+          r.reservation_date === dateStr &&
+          r.status !== "rejected" &&
+          r.is_exclusive
+      ) || null
+    );
+  }, [reqVenue, reqDate, reservations]);
+
   // Detect overlap with existing approved/pending reservations
   const overlapInfo = useMemo(() => {
     if (!reqVenue || !reqDate || !reqStart || !reqEnd) return null;
@@ -130,7 +145,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
       r.status !== "rejected"
     );
     const conflicts = sameDay.filter(r => {
-      // Existing exclusive booking blocks everything that day
+      // Existing exclusive booking blocks everything that day (any venue, any time)
       if (r.is_exclusive) return true;
       // New request is exclusive — blocks any other booking
       if (reqExclusive) return true;
@@ -145,6 +160,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     if (!bId || !reqVenue || !reqDate || !reqName.trim() || !reqStart || !reqEnd) return;
     if (reqStart >= reqEnd) return;
     if (overlapInfo) return;
+    if (exclusiveLockOnDate) return;
     const gregDate = reqDate.toISOString().split("T")[0];
     const targetUnitId = !residentMode && reqOnBehalfUnitId ? reqOnBehalfUnitId : (unitId || null);
     createReservation.mutate(
@@ -501,6 +517,16 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                 <div className="text-xs text-muted-foreground mt-0.5">کل روز مکان به نام شما رزرو می‌شود و دیگران نمی‌توانند رزرو کنند. مثلاً قرق استخر برای خانواده.</div>
               </div>
             </label>
+            {exclusiveLockOnDate && (
+              <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5 text-sm">
+                <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
+                  <Lock className="w-4 h-4" /> این مکان در این تاریخ قرق شده است
+                </div>
+                <div className="text-xs text-muted-foreground mr-5">
+                  توسط {exclusiveLockOnDate.requester_name} • {exclusiveLockOnDate.status === "approved" ? "تایید شده" : "در انتظار تایید"} — هیچ رزرو دیگری در این روز برای این مکان امکان‌پذیر نیست. لطفاً تاریخ یا مکان دیگری انتخاب کنید.
+                </div>
+              </div>
+            )}
             {overlapInfo && (
               <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5 text-sm">
                 <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
@@ -519,7 +545,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRequestDialog(false)}>انصراف</Button>
-            <Button onClick={handleCreateRequest} disabled={createReservation.isPending || !reqVenue || !reqName.trim() || !reqDate || !!overlapInfo}>
+            <Button onClick={handleCreateRequest} disabled={createReservation.isPending || !reqVenue || !reqName.trim() || !reqDate || !!overlapInfo || !!exclusiveLockOnDate}>
               {createReservation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
               {residentMode ? "ثبت درخواست" : "ثبت و تایید رزرو"}
             </Button>
