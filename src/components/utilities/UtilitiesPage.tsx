@@ -6,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useUtilityReadings, useCreateUtilityReading, useDeleteUtilityReading } from "@/hooks/useUtilityReadings";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useUtilityReadings, useCreateUtilityReading, useDeleteUtilityReading, useUpdateUtilityReading, type UtilityReading } from "@/hooks/useUtilityReadings";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { formatJalaliDate } from "@/lib/jalaliDate";
-import { Plus, Trash2, Droplets, Zap, Flame, TrendingUp, Loader2, Gauge } from "lucide-react";
+import { Plus, Trash2, Pencil, Droplets, Zap, Flame, TrendingUp, Loader2, Gauge } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const utilityTypes = [
