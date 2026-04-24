@@ -110,6 +110,7 @@ const Index = () => {
     const hash = window.location.hash.replace("#", "");
     return hash || "dashboard";
   });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { buildings, isLoading } = useBuilding();
 
   const setActiveTab = (tab: string) => {
@@ -201,10 +202,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="mr-64 transition-all duration-300">
-        <Header onTabChange={setActiveTab} />
-        <div className="p-6">
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        mobileOpen={mobileSidebarOpen}
+        onMobileOpenChange={setMobileSidebarOpen}
+      />
+      <main className="md:mr-64 transition-all duration-300">
+        <Header onTabChange={setActiveTab} onMenuClick={() => setMobileSidebarOpen(true)} />
+        <div className="p-3 md:p-6">
           {renderContent()}
         </div>
       </main>
