@@ -62,12 +62,25 @@ const ResidentAuth = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("resident-auth", {
-        body: { action: "request", phone: normalizedPhone },
-      });
+      let data: any = null;
+      let error: any = null;
+      // Retry up to 2 times on transient edge runtime errors (503)
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const res = await supabase.functions.invoke("resident-auth", {
+          body: { action: "request", phone: normalizedPhone },
+        });
+        data = res.data;
+        error = res.error;
+        const isTransient = error && /503|temporarily unavailable|EDGE_RUNTIME/i.test(error.message || "");
+        if (!isTransient) break;
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
 
-      if (error) throw error;
-      if (!data.found) {
+      if (error) {
+        const isTransient = /503|temporarily unavailable|EDGE_RUNTIME/i.test(error.message || "");
+        throw new Error(isTransient ? "سرویس موقتاً در دسترس نیست. لطفاً چند لحظه بعد دوباره تلاش کنید." : error.message);
+      }
+      if (!data?.found) {
         toast({ title: "خطا", description: "مشکلی پیش آمد", variant: "destructive" });
         return;
       }
@@ -89,11 +102,23 @@ const ResidentAuth = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("resident-auth", {
-        body: { action: "verify", phone: normalizedPhone, otp },
-      });
+      let data: any = null;
+      let error: any = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const res = await supabase.functions.invoke("resident-auth", {
+          body: { action: "verify", phone: normalizedPhone, otp },
+        });
+        data = res.data;
+        error = res.error;
+        const isTransient = error && /503|temporarily unavailable|EDGE_RUNTIME/i.test(error.message || "");
+        if (!isTransient) break;
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
 
-      if (error) throw error;
+      if (error) {
+        const isTransient = /503|temporarily unavailable|EDGE_RUNTIME/i.test(error.message || "");
+        throw new Error(isTransient ? "سرویس موقتاً در دسترس نیست. لطفاً چند لحظه بعد دوباره تلاش کنید." : error.message);
+      }
       if (!data?.success) {
         toast({ title: "کد اشتباه است", description: data?.message, variant: "destructive" });
         setOtp("");
