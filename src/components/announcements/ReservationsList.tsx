@@ -367,6 +367,13 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
               <label className="text-sm font-medium mb-1 block">توضیحات (اختیاری)</label>
               <Textarea value={venueDesc} onChange={e => setVenueDesc(e.target.value)} placeholder="ظرفیت، شرایط استفاده و..." />
             </div>
+            <label className="flex items-start gap-2 p-3 rounded-lg border bg-muted/30 cursor-pointer">
+              <Checkbox checked={venueExclusive} onCheckedChange={(c) => setVenueExclusive(!!c)} className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> مکان انحصاری (عدم تداخل زمانی)</div>
+                <div className="text-xs text-muted-foreground mt-0.5">برای مکان‌هایی مثل لابی که فقط یک نفر در یک بازه می‌تواند رزرو کند. برای استخر یا روف گاردن خاموش بگذارید.</div>
+              </div>
+            </label>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setVenueDialog(false)}>انصراف</Button>
