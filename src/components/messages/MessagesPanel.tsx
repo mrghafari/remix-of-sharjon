@@ -238,9 +238,15 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
               </div>
               {group.items.map((m, idx) => {
                 const unread = isUnread(m);
-                const mine = m.sender_user_id === user?.id;
+                // "mine" detection: match by user_id OR by sender_name+role (residents share auth user but have distinct names)
+                const mine =
+                  (m.sender_user_id === user?.id && m.sender_name === senderName) ||
+                  (m.sender_name === senderName && m.sender_role === senderRole);
                 const prev = group.items[idx - 1];
-                const sameSenderAsPrev = prev && prev.sender_user_id === m.sender_user_id;
+                const sameSenderAsPrev =
+                  prev &&
+                  prev.sender_name === m.sender_name &&
+                  prev.sender_role === m.sender_role;
                 const parent = findParent(m.parent_id);
 
                 return (
