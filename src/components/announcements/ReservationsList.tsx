@@ -83,6 +83,9 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
   const [reviewTarget, setReviewTarget] = useState<Reservation | null>(null);
   const [reviewNote, setReviewNote] = useState("");
 
+  // Day timeline detail
+  const [dayDetail, setDayDetail] = useState<Date | null>(null);
+
   // Visual calendar
   const [selectedVenueFilter, setSelectedVenueFilter] = useState<string>("all");
   const [viewDate, setViewDate] = useState(new Date());
@@ -331,9 +334,10 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                   return (
                     <div
                       key={i}
+                      onClick={() => inMonth && setDayDetail(day)}
                       className={cn(
-                        "min-h-[90px] rounded-lg border p-1.5 text-xs transition-colors",
-                        !inMonth && "opacity-40 bg-muted/30",
+                        "min-h-[90px] rounded-lg border p-1.5 text-xs transition-colors cursor-pointer hover:border-primary/60",
+                        !inMonth && "opacity-40 bg-muted/30 cursor-default",
                         approved && "bg-destructive/10 border-destructive/30",
                         !approved && pending && "bg-warning/10 border-warning/30",
                         today && "ring-2 ring-primary",
@@ -350,7 +354,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                               r.status === "pending" && "bg-warning/80 text-warning-foreground",
                               r.status === "rejected" && "bg-muted text-muted-foreground line-through",
                             )}
-                            onClick={() => setReviewTarget(r)}
+                            onClick={(e) => { e.stopPropagation(); setReviewTarget(r); }}
                             title={`${venueMap[r.venue_id]?.name || ""} • ${r.start_time.slice(0,5)}-${r.end_time.slice(0,5)} • ${r.requester_name}`}
                           >
                             {r.start_time.slice(0, 5)} {venueMap[r.venue_id]?.name?.slice(0, 8)}
@@ -592,7 +596,107 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
         </DialogContent>
       </Dialog>
 
-      {/* Delete venue confirm */}
+      {/* Day 24h timeline */}
+      <Dialog open={!!dayDetail} onOpenChange={(o) => !o && setDayDetail(null)}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalIcon className="w-4 h-4 text-primary" />
+              زمان‌بندی ۲۴ ساعته — {dayDetail && format(dayDetail, "d MMMM yyyy", { locale: faIR })}
+            </DialogTitle>
+          </DialogHeader>
+          {dayDetail && (() => {
+            const key = dayDetail.toISOString().split("T")[0];
+            const dayItems = (reservationsByDate[key] || []).filter(r => r.status !== "rejected");
+            const toMin = (t: string) => {
+              const [h, m] = t.slice(0, 5).split(":").map(Number);
+              return h * 60 + m;
+            };
+            const palette = ["bg-primary/70", "bg-success/70", "bg-warning/70", "bg-destructive/70", "bg-accent"];
+            return (
+              <div className="flex-1 overflow-auto">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3 flex-wrap">
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-success/70" /> تایید شده</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-warning/70" /> در انتظار</span>
+                  <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-muted" /> آزاد</span>
+                  <span className="mr-auto">{dayItems.length} رزرو</span>
+                </div>
+                {dayItems.length === 0 ? (
+                  <div className="py-10 text-center text-sm text-muted-foreground">هیچ رزروی برای این روز ثبت نشده — تمام ساعات آزاد است.</div>
+                ) : null}
+                {/* Timeline: hours on right (RTL), bar on left */}
+                <div className="relative border rounded-lg p-3 bg-muted/20">
+                  <div className="grid grid-cols-[auto,1fr] gap-2">
+                    {Array.from({ length: 24 }).map((_, h) => {
+                      const hourStart = h * 60;
+                      const hourEnd = (h + 1) * 60;
+                      const slotItems = dayItems.filter(r => {
+                        const s = toMin(r.start_time);
+                        const e = toMin(r.end_time);
+                        return s < hourEnd && e > hourStart;
+                      });
+                      return (
+                        <div key={h} className="contents">
+                          <div className="text-xs font-mono text-muted-foreground tabular-nums pt-1 text-left" dir="ltr">
+                            {String(h).padStart(2, "0")}:00
+                          </div>
+                          <div className={cn(
+                            "min-h-[36px] border-t border-dashed border-border/50 relative",
+                            h === 0 && "border-t-0"
+                          )}>
+                            {slotItems.length === 0 ? (
+                              <div className="h-full" />
+                            ) : (
+                              <div className="flex flex-wrap gap-1 p-1">
+                                {slotItems.map(r => {
+                                  const idx = dayItems.findIndex(x => x.id === r.id);
+                                  const isStart = toMin(r.start_time) >= hourStart && toMin(r.start_time) < hourEnd;
+                                  return (
+                                    <button
+                                      key={r.id}
+                                      onClick={() => { setDayDetail(null); setReviewTarget(r); }}
+                                      className={cn(
+                                        "text-[11px] px-2 py-1 rounded text-white text-right transition-opacity hover:opacity-90 truncate max-w-full",
+                                        r.status === "approved" ? "bg-success/80" : "bg-warning/80 text-warning-foreground",
+                                        r.is_exclusive && "ring-2 ring-warning ring-offset-1"
+                                      )}
+                                      title={`${venueMap[r.venue_id]?.name || ""} • ${r.requester_name} • ${r.start_time.slice(0,5)}-${r.end_time.slice(0,5)}`}
+                                    >
+                                      {isStart && (
+                                        <span className="font-mono ml-1" dir="ltr">{r.start_time.slice(0,5)}-{r.end_time.slice(0,5)}</span>
+                                      )}
+                                      <span>{venueMap[r.venue_id]?.name} • {r.requester_name}</span>
+                                      {r.is_exclusive && <Lock className="w-3 h-3 inline mr-1" />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDayDetail(null)}>بستن</Button>
+            {dayDetail && (
+              <Button onClick={() => {
+                setReqDate(dayDetail);
+                setDayDetail(null);
+                setRequestDialog(true);
+              }} className="gap-1">
+                <Plus className="w-4 h-4" /> رزرو جدید این روز
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <AlertDialog open={!!deleteVenueId} onOpenChange={(o) => !o && setDeleteVenueId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
