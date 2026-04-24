@@ -140,16 +140,17 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     return conflicts.length > 0 ? conflicts : null;
   }, [reqVenue, reqDate, reqStart, reqEnd, reqExclusive, reservations, venueMap]);
 
-  const handleCreateRequest = () => {
+  const handleCreateRequest = async () => {
     if (!bId || !reqVenue || !reqDate || !reqName.trim() || !reqStart || !reqEnd) return;
     if (reqStart >= reqEnd) return;
     if (overlapInfo) return;
     const gregDate = reqDate.toISOString().split("T")[0];
+    const targetUnitId = !residentMode && reqOnBehalfUnitId ? reqOnBehalfUnitId : (unitId || null);
     createReservation.mutate(
       {
         building_id: bId,
         venue_id: reqVenue,
-        unit_id: unitId || null,
+        unit_id: targetUnitId,
         requester_user_id: user?.id || null,
         requester_name: reqName.trim(),
         reservation_date: gregDate,
@@ -158,7 +159,32 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
         description: reqDesc.trim() || null,
         is_exclusive: reqExclusive,
       },
-      { onSuccess: () => { setRequestDialog(false); setReqDesc(""); setReqExclusive(false); } }
+      {
+        onSuccess: async (_data: any, _vars, _ctx) => {
+          // Auto-approve when manager creates on behalf
+          if (!residentMode) {
+            // best-effort: fetch latest reservation by these fields and approve
+            const { data: latest } = await supabase
+              .from("reservations" as any)
+              .select("id")
+              .eq("building_id", bId)
+              .eq("venue_id", reqVenue)
+              .eq("reservation_date", gregDate)
+              .eq("start_time", reqStart)
+              .eq("end_time", reqEnd)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (latest?.id) {
+              updateStatus.mutate({ id: latest.id, status: "approved", manager_note: "ثبت توسط مدیر" });
+            }
+          }
+          setRequestDialog(false);
+          setReqDesc("");
+          setReqExclusive(false);
+          setReqOnBehalfUnitId("");
+        },
+      }
     );
   };
 
