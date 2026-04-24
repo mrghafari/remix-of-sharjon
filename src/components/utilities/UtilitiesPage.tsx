@@ -11,7 +11,7 @@ import { useExpenses } from "@/hooks/useExpenses";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { Plus, Trash2, Droplets, Zap, Flame, TrendingUp, Loader2, Gauge } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const utilityTypes = [
   { id: "water", label: "آب", icon: "💧", unit: "متر مکعب", color: "hsl(200, 80%, 50%)", lucideIcon: Droplets },
@@ -36,23 +36,51 @@ export function UtilitiesPage() {
   // Form state
   const [formType, setFormType] = useState("water");
   const [formDate, setFormDate] = useState(new Date().toISOString().split("T")[0]);
-  const [formQuantity, setFormQuantity] = useState("");
+  const [formMeterValue, setFormMeterValue] = useState(""); // current meter reading (cumulative)
   const [formAmount, setFormAmount] = useState("");
   const [formDesc, setFormDesc] = useState("");
 
+  // Get last meter value for selected type to compute consumption
+  const lastMeterByType = useMemo(() => {
+    const map: Record<string, number> = {};
+    utilityTypes.forEach(ut => {
+      const items = readings
+        .filter(r => r.utility_type === ut.id)
+        .sort((a, b) => new Date(b.reading_date).getTime() - new Date(a.reading_date).getTime());
+      // Description format: "متر کنتور: <value>"
+      for (const r of items) {
+        const match = r.description?.match(/متر کنتور:\s*([\d.]+)/);
+        if (match) {
+          map[ut.id] = Number(match[1]);
+          break;
+        }
+      }
+    });
+    return map;
+  }, [readings]);
+
+  const previousMeter = lastMeterByType[formType] ?? 0;
+  const computedConsumption = formMeterValue
+    ? Math.max(0, Number(formMeterValue) - previousMeter)
+    : 0;
+
   const handleSubmit = () => {
-    if (!currentBuildingId || !formQuantity) return;
+    if (!currentBuildingId || !formMeterValue) return;
+    const meterVal = Number(formMeterValue);
+    const consumption = Math.max(0, meterVal - previousMeter);
+    const meterNote = `متر کنتور: ${meterVal}`;
+    const desc = formDesc ? `${meterNote} — ${formDesc}` : meterNote;
     createReading.mutate({
       building_id: currentBuildingId,
       utility_type: formType,
       reading_date: formDate,
-      quantity: Number(formQuantity),
+      quantity: consumption,
       amount: Number(formAmount || "0"),
-      description: formDesc || null,
+      description: desc,
     }, {
       onSuccess: () => {
         setShowForm(false);
-        setFormQuantity("");
+        setFormMeterValue("");
         setFormAmount("");
         setFormDesc("");
       },
@@ -88,21 +116,25 @@ export function UtilitiesPage() {
     });
   }, [readings, expenseByUtility]);
 
-  // Chart data - sorted by date ascending, grouped by month
-  const chartData = useMemo(() => {
-    const monthMap: Record<string, Record<string, number>> = {};
-    readings.forEach(r => {
-      const jalali = formatJalaliDate(r.reading_date); // "1404/01/15"
-      const key = jalali.substring(0, 7); // "1404/01"
-      if (!monthMap[key]) monthMap[key] = {};
-      const qtyKey = `${r.utility_type}_qty`;
-      const amtKey = `${r.utility_type}_amt`;
-      monthMap[key][qtyKey] = (monthMap[key][qtyKey] || 0) + Number(r.quantity);
-      monthMap[key][amtKey] = (monthMap[key][amtKey] || 0) + Number(r.amount);
+  // Per-utility chart data (sorted by date asc, by month)
+  const chartDataByType = useMemo(() => {
+    const result: Record<string, { month: string; quantity: number; amount: number }[]> = {};
+    utilityTypes.forEach(ut => {
+      const monthMap: Record<string, { quantity: number; amount: number }> = {};
+      readings
+        .filter(r => r.utility_type === ut.id)
+        .forEach(r => {
+          const jalali = formatJalaliDate(r.reading_date);
+          const key = jalali.substring(0, 7);
+          if (!monthMap[key]) monthMap[key] = { quantity: 0, amount: 0 };
+          monthMap[key].quantity += Number(r.quantity);
+          monthMap[key].amount += Number(r.amount);
+        });
+      result[ut.id] = Object.entries(monthMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, v]) => ({ month, ...v }));
     });
-    return Object.entries(monthMap)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, data]) => ({ month, ...data }));
+    return result;
   }, [readings]);
 
   if (isLoading) {
@@ -127,7 +159,7 @@ export function UtilitiesPage() {
         {!showForm && (
           <Button onClick={() => setShowForm(true)} className="gap-2">
             <Plus className="w-5 h-5" />
-            ثبت قرائت جدید
+            ثبت قرائت کنتور
           </Button>
         )}
       </div>
@@ -173,12 +205,12 @@ export function UtilitiesPage() {
       {showForm && (
         <Card className="animate-fade-in">
           <CardHeader>
-            <CardTitle>ثبت قرائت مصرف</CardTitle>
+            <CardTitle>ثبت قرائت کنتور</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="text-sm font-medium mb-1 block">نوع مصرف</label>
+                <label className="text-sm font-medium mb-1 block">نوع کنتور</label>
                 <Select value={formType} onValueChange={setFormType}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -194,9 +226,19 @@ export function UtilitiesPage() {
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">
-                  مقدار مصرف ({utilityTypes.find(u => u.id === formType)?.unit})
+                  رقم فعلی کنتور
+                  {previousMeter > 0 && (
+                    <span className="text-xs text-muted-foreground mr-2">
+                      (قبلی: {formatAmount(previousMeter)})
+                    </span>
+                  )}
                 </label>
-                <NumericInput value={formQuantity} onChange={setFormQuantity} placeholder="مقدار" />
+                <NumericInput value={formMeterValue} onChange={setFormMeterValue} placeholder="عدد روی کنتور" />
+                {formMeterValue && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    مصرف محاسبه‌شده: <span className="font-semibold text-foreground">{formatAmount(computedConsumption)}</span> {utilityTypes.find(u => u.id === formType)?.unit}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">مبلغ قبض (تومان)</label>
@@ -208,7 +250,7 @@ export function UtilitiesPage() {
               </div>
             </div>
             <div className="flex gap-2 mt-4">
-              <Button onClick={handleSubmit} disabled={createReading.isPending || !formQuantity}>
+              <Button onClick={handleSubmit} disabled={createReading.isPending || !formMeterValue}>
                 {createReading.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : null}
                 ثبت
               </Button>
@@ -218,88 +260,49 @@ export function UtilitiesPage() {
         </Card>
       )}
 
-      {/* Trend Charts */}
-      {chartData.length >= 1 && (
-        <>
-          {/* Quantity Trend */}
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                روند مقدار مصرف
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                      formatter={(value: number, name: string) => {
-                        const labels: Record<string, string> = {
-                          water_qty: "آب", electricity_qty: "برق", gas_qty: "گاز",
-                        };
-                        return [formatAmount(value), labels[name] || name];
-                      }}
-                    />
-                    <Legend formatter={(value: string) => {
-                      const labels: Record<string, string> = {
-                        water_qty: "💧 آب", electricity_qty: "💡 برق", gas_qty: "🔥 گاز",
-                      };
-                      return labels[value] || value;
-                    }} />
-                    <Line type="monotone" dataKey="water_qty" stroke="hsl(200, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="water_qty" connectNulls />
-                    <Line type="monotone" dataKey="electricity_qty" stroke="hsl(45, 90%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="electricity_qty" connectNulls />
-                    <Line type="monotone" dataKey="gas_qty" stroke="hsl(15, 80%, 50%)" strokeWidth={2} dot={{ r: 4 }} name="gas_qty" connectNulls />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Amount Trend */}
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                روند مبلغ قبوض (تومان)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => formatAmount(v)} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                      formatter={(value: number, name: string) => {
-                        const labels: Record<string, string> = {
-                          water_amt: "آب", electricity_amt: "برق", gas_amt: "گاز",
-                        };
-                        return [`${formatAmount(value)} تومان`, labels[name] || name];
-                      }}
-                    />
-                    <Legend formatter={(value: string) => {
-                      const labels: Record<string, string> = {
-                        water_amt: "💧 آب", electricity_amt: "💡 برق", gas_amt: "🔥 گاز",
-                      };
-                      return labels[value] || value;
-                    }} />
-                    <Line type="monotone" dataKey="water_amt" stroke="hsl(200, 80%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="water_amt" connectNulls />
-                    <Line type="monotone" dataKey="electricity_amt" stroke="hsl(45, 90%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="electricity_amt" connectNulls />
-                    <Line type="monotone" dataKey="gas_amt" stroke="hsl(15, 80%, 50%)" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="gas_amt" connectNulls />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+      {/* Per-utility Trend Charts */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {utilityTypes.map(ut => {
+          const data = chartDataByType[ut.id] || [];
+          const Icon = ut.lucideIcon;
+          return (
+            <Card key={ut.id} className="animate-fade-in">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Icon className="w-5 h-5" style={{ color: ut.color }} />
+                  روند مصرف {ut.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {data.length === 0 ? (
+                  <div className="h-56 flex items-center justify-center text-muted-foreground text-sm">
+                    داده‌ای برای نمایش وجود ندارد
+                  </div>
+                ) : (
+                  <div className="h-56">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={data}>
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip
+                          contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                          formatter={(value: number, name: string) => {
+                            if (name === "quantity") return [formatAmount(value) + ` ${ut.unit}`, "مصرف"];
+                            if (name === "amount") return [formatAmount(value) + " تومان", "مبلغ"];
+                            return [formatAmount(value), name];
+                          }}
+                        />
+                        <Line type="monotone" dataKey="quantity" stroke={ut.color} strokeWidth={2} dot={{ r: 3 }} name="quantity" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Readings Table */}
       <Card className="animate-fade-in">
@@ -326,7 +329,7 @@ export function UtilitiesPage() {
                 <TableRow>
                   <TableHead>نوع</TableHead>
                   <TableHead>تاریخ</TableHead>
-                  <TableHead>مقدار</TableHead>
+                  <TableHead>مصرف</TableHead>
                   <TableHead>مبلغ (تومان)</TableHead>
                   <TableHead>قیمت واحد</TableHead>
                   <TableHead>توضیحات</TableHead>
