@@ -354,7 +354,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                               r.status === "pending" && "bg-warning/80 text-warning-foreground",
                               r.status === "rejected" && "bg-muted text-muted-foreground line-through",
                             )}
-                            onClick={() => setReviewTarget(r)}
+                            onClick={(e) => { e.stopPropagation(); setReviewTarget(r); }}
                             title={`${venueMap[r.venue_id]?.name || ""} • ${r.start_time.slice(0,5)}-${r.end_time.slice(0,5)} • ${r.requester_name}`}
                           >
                             {r.start_time.slice(0, 5)} {venueMap[r.venue_id]?.name?.slice(0, 8)}
