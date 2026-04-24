@@ -294,9 +294,26 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
                         <div className="text-[12px] font-bold mb-0.5">{m.subject}</div>
                       )}
 
-                      <div className="whitespace-pre-wrap break-words leading-relaxed pr-1">
-                        {m.content}
-                      </div>
+                      {m.image_url && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setLightbox(m.image_url!); }}
+                          className="block mb-1 -mx-1 rounded-md overflow-hidden bg-muted/30 hover:opacity-90 transition-opacity"
+                        >
+                          <img
+                            src={m.image_url}
+                            alt="پیوست تصویر"
+                            className="max-h-64 max-w-full object-contain"
+                            loading="lazy"
+                          />
+                        </button>
+                      )}
+
+                      {m.content && m.content !== "📷 تصویر" && (
+                        <div className="whitespace-pre-wrap break-words leading-relaxed pr-1">
+                          {m.content}
+                        </div>
+                      )}
 
                       {/* Footer: time + status + actions */}
                       <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5">
