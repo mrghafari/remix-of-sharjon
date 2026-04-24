@@ -366,11 +366,11 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">از ساعت</label>
-                <Input type="time" value={reqStart} onChange={e => setReqStart(e.target.value)} />
+                <Input type="time" value={reqStart} onChange={e => setReqStart(normalizeTime(e.target.value))} dir="ltr" />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">تا ساعت</label>
-                <Input type="time" value={reqEnd} onChange={e => setReqEnd(e.target.value)} />
+                <Input type="time" value={reqEnd} onChange={e => setReqEnd(normalizeTime(e.target.value))} dir="ltr" />
               </div>
             </div>
             <div>
