@@ -109,16 +109,38 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
   const handleCreateVenue = () => {
     if (!venueName.trim() || !bId) return;
     createVenue.mutate(
-      { building_id: bId, name: venueName.trim(), description: venueDesc.trim() || null, is_active: true },
-      { onSuccess: () => { setVenueDialog(false); setVenueName(""); setVenueDesc(""); } }
+      { building_id: bId, name: venueName.trim(), description: venueDesc.trim() || null, is_active: true, exclusive: venueExclusive },
+      { onSuccess: () => { setVenueDialog(false); setVenueName(""); setVenueDesc(""); setVenueExclusive(false); } }
     );
   };
+
+  // Detect overlap with existing approved/pending reservations
+  const overlapInfo = useMemo(() => {
+    if (!reqVenue || !reqDate || !reqStart || !reqEnd) return null;
+    const venue = venueMap[reqVenue];
+    if (!venue) return null;
+    const dateStr = reqDate.toISOString().split("T")[0];
+    const sameDay = reservations.filter(r =>
+      r.venue_id === reqVenue &&
+      r.reservation_date === dateStr &&
+      r.status !== "rejected"
+    );
+    const conflicts = sameDay.filter(r => {
+      // Existing exclusive booking blocks everything that day
+      if (r.is_exclusive) return true;
+      // New request is exclusive — blocks any other booking
+      if (reqExclusive) return true;
+      // Time-overlap check (only for exclusive venues)
+      if (!venue.exclusive) return false;
+      return reqStart < r.end_time.slice(0, 5) && reqEnd > r.start_time.slice(0, 5);
+    });
+    return conflicts.length > 0 ? conflicts : null;
+  }, [reqVenue, reqDate, reqStart, reqEnd, reqExclusive, reservations, venueMap]);
 
   const handleCreateRequest = () => {
     if (!bId || !reqVenue || !reqDate || !reqName.trim() || !reqStart || !reqEnd) return;
     if (reqStart >= reqEnd) return;
-    const dateStr = format(reqDate, "yyyy-MM-dd");
-    // Use Gregorian date for storage
+    if (overlapInfo) return;
     const gregDate = reqDate.toISOString().split("T")[0];
     createReservation.mutate(
       {
@@ -131,8 +153,9 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
         start_time: reqStart,
         end_time: reqEnd,
         description: reqDesc.trim() || null,
+        is_exclusive: reqExclusive,
       },
-      { onSuccess: () => { setRequestDialog(false); setReqDesc(""); } }
+      { onSuccess: () => { setRequestDialog(false); setReqDesc(""); setReqExclusive(false); } }
     );
   };
 
