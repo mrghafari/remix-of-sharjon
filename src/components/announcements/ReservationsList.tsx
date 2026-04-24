@@ -366,6 +366,9 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {format(parseISO(r.reservation_date), "d MMMM yyyy", { locale: faIR })} • {r.start_time.slice(0,5)} تا {r.end_time.slice(0,5)} • {r.requester_name}
+                        {r.unit_id && units.find(u => u.id === r.unit_id) && (
+                          <span className="text-primary"> • واحد {units.find(u => u.id === r.unit_id)?.unit_number}</span>
+                        )}
                       </div>
                       {r.description && <div className="text-xs text-muted-foreground mt-1">{r.description}</div>}
                       {r.manager_note && <div className="text-xs mt-1 p-2 rounded bg-muted">یادداشت مدیر: {r.manager_note}</div>}
