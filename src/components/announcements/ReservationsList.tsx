@@ -426,17 +426,49 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
       {/* Request Dialog */}
       <Dialog open={requestDialog} onOpenChange={setRequestDialog}>
         <DialogContent>
-          <DialogHeader><DialogTitle>درخواست رزرو جدید</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {!residentMode && <UserCog className="w-5 h-5 text-primary" />}
+              {residentMode ? "درخواست رزرو جدید" : "ثبت رزرو به نیابت از واحد"}
+            </DialogTitle>
+          </DialogHeader>
           <div className="space-y-3">
+            {!residentMode && (
+              <div className="p-2 rounded bg-primary/5 border border-primary/20 text-xs text-muted-foreground">
+                این رزرو با عنوان مدیر ثبت و به‌صورت خودکار تایید می‌شود.
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium mb-1 block">مکان</label>
               <Select value={reqVenue} onValueChange={setReqVenue}>
                 <SelectTrigger><SelectValue placeholder="انتخاب مکان" /></SelectTrigger>
                 <SelectContent>
-                  {venues.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+                  {venues.map(v => <SelectItem key={v.id} value={v.id}>{v.name}{v.exclusive ? " (انحصاری)" : ""}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
+            {!residentMode && (
+              <div>
+                <label className="text-sm font-medium mb-1 block">واحد متقاضی (به نیابت از)</label>
+                <Select
+                  value={reqOnBehalfUnitId}
+                  onValueChange={(v) => {
+                    setReqOnBehalfUnitId(v);
+                    const u = units.find(x => x.id === v);
+                    if (u) setReqName(u.resident_name || u.owner_name || `واحد ${u.unit_number}`);
+                  }}
+                >
+                  <SelectTrigger><SelectValue placeholder="انتخاب واحد (اختیاری)" /></SelectTrigger>
+                  <SelectContent>
+                    {units.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        واحد {u.unit_number} — {u.resident_name || u.owner_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium mb-1 block">نام درخواست‌کننده</label>
               <Input value={reqName} onChange={e => setReqName(e.target.value)} placeholder="نام شما" />
