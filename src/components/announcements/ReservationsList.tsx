@@ -466,6 +466,11 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
               <div><span className="text-muted-foreground">تاریخ: </span>{format(parseISO(reviewTarget.reservation_date), "d MMMM yyyy", { locale: faIR })}</div>
               <div><span className="text-muted-foreground">ساعت: </span>{reviewTarget.start_time.slice(0,5)} - {reviewTarget.end_time.slice(0,5)}</div>
               <div><span className="text-muted-foreground">وضعیت: </span>{statusBadge(reviewTarget.status)}</div>
+              {reviewTarget.is_exclusive && (
+                <div className="p-2 rounded border border-warning/40 bg-warning/5 text-xs flex items-center gap-1.5 text-warning-foreground">
+                  <Lock className="w-3.5 h-3.5 text-warning" /> این درخواست برای قرق کامل مکان در طول روز است.
+                </div>
+              )}
               {reviewTarget.description && <div><span className="text-muted-foreground">توضیحات: </span>{reviewTarget.description}</div>}
               {reviewTarget.manager_note && <div className="p-2 rounded bg-muted text-xs">یادداشت مدیر: {reviewTarget.manager_note}</div>}
               {!residentMode && reviewTarget.status === "pending" && (
