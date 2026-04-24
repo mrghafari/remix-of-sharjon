@@ -334,9 +334,10 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                   return (
                     <div
                       key={i}
+                      onClick={() => inMonth && setDayDetail(day)}
                       className={cn(
-                        "min-h-[90px] rounded-lg border p-1.5 text-xs transition-colors",
-                        !inMonth && "opacity-40 bg-muted/30",
+                        "min-h-[90px] rounded-lg border p-1.5 text-xs transition-colors cursor-pointer hover:border-primary/60",
+                        !inMonth && "opacity-40 bg-muted/30 cursor-default",
                         approved && "bg-destructive/10 border-destructive/30",
                         !approved && pending && "bg-warning/10 border-warning/30",
                         today && "ring-2 ring-primary",
