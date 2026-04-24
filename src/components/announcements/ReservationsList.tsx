@@ -52,6 +52,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
 
   const { data: venues = [] } = useReservationVenues(bId || undefined);
   const { data: reservations = [], isLoading } = useReservations(bId || undefined);
+  const { data: units = [] } = useUnits();
   const createVenue = useCreateReservationVenue();
   const updateVenue = useUpdateReservationVenue();
   const deleteVenue = useDeleteReservationVenue();
@@ -75,6 +76,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
   const [reqEnd, setReqEnd] = useState("22:00");
   const [reqDesc, setReqDesc] = useState("");
   const [reqExclusive, setReqExclusive] = useState(false);
+  const [reqOnBehalfUnitId, setReqOnBehalfUnitId] = useState<string>("");
 
   // Approval
   const [reviewTarget, setReviewTarget] = useState<Reservation | null>(null);
