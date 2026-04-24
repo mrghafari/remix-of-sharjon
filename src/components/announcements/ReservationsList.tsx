@@ -160,6 +160,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     if (!bId || !reqVenue || !reqDate || !reqName.trim() || !reqStart || !reqEnd) return;
     if (reqStart >= reqEnd) return;
     if (overlapInfo) return;
+    if (exclusiveLockOnDate) return;
     const gregDate = reqDate.toISOString().split("T")[0];
     const targetUnitId = !residentMode && reqOnBehalfUnitId ? reqOnBehalfUnitId : (unitId || null);
     createReservation.mutate(
