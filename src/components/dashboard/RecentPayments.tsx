@@ -12,7 +12,11 @@ const formatDate = (dateString: string) => {
   return formatJalaliDate(dateString);
 };
 
-export function RecentPayments() {
+interface RecentPaymentsProps {
+  onViewAll?: () => void;
+}
+
+export function RecentPayments({ onViewAll }: RecentPaymentsProps = {}) {
   const { data: payments = [], isLoading } = usePayments();
   const recentPayments = payments.slice(0, 5);
 
@@ -38,7 +42,7 @@ export function RecentPayments() {
             </div>
           )}
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={onViewAll}>
           مشاهده همه
         </Button>
       </CardHeader>
