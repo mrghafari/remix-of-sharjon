@@ -254,7 +254,7 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
                     key={m.id}
                     className={cn(
                       "flex w-full group",
-                      mine ? "justify-end" : "justify-start",
+                      mine ? "justify-start" : "justify-end",
                       sameSenderAsPrev ? "mt-0.5" : "mt-2"
                     )}
                     onClick={() => unread && markRead.mutate(m.id)}
@@ -263,15 +263,15 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
                       className={cn(
                         "relative max-w-[78%] sm:max-w-[65%] px-2.5 py-1.5 rounded-lg shadow-sm text-sm cursor-pointer transition-all",
                         mine
-                          ? "bg-success/20 text-foreground rounded-tr-sm"
-                          : "bg-card text-foreground rounded-tl-sm",
-                        !sameSenderAsPrev && (mine ? "rounded-tr-lg" : "rounded-tl-lg")
+                          ? "bg-success/20 text-foreground rounded-tl-sm"
+                          : "bg-card text-foreground rounded-tr-sm",
+                        !sameSenderAsPrev && (mine ? "rounded-tl-lg" : "rounded-tr-lg")
                       )}
                     >
                       {/* Tail only on first bubble of a sender group */}
                       {!sameSenderAsPrev && (
                         <span className={cn(mine ? "text-success/20" : "text-card")}>
-                          <BubbleTail side={mine ? "right" : "left"} />
+                          <BubbleTail side={mine ? "left" : "right"} />
                         </span>
                       )}
 
