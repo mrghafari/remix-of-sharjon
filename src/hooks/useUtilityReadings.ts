@@ -52,6 +52,27 @@ export function useCreateUtilityReading() {
   });
 }
 
+export function useUpdateUtilityReading() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Omit<UtilityReading, "id" | "created_at" | "building_id">> }) => {
+      const { error } = await supabase
+        .from("utility_readings" as any)
+        .update(updates as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["utility_readings"] });
+      toast({ title: "موفق", description: "قرائت ویرایش شد" });
+    },
+    onError: () => {
+      toast({ title: "خطا", description: "خطا در ویرایش قرائت", variant: "destructive" });
+    },
+  });
+}
+
 export function useDeleteUtilityReading() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
