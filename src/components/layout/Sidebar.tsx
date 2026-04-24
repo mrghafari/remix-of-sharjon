@@ -64,7 +64,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200",
+                  "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 relative",
                   isActive
                     ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
                     : "hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
@@ -72,7 +72,12 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                {!collapsed && <span className="text-xs font-medium">{item.label}</span>}
+                {!collapsed && <span className="text-xs font-medium flex-1 text-right">{item.label}</span>}
+                {item.id === "tickets" && ticketUnread > 0 && (
+                  <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-destructive text-destructive-foreground">
+                    {ticketUnread}
+                  </Badge>
+                )}
               </button>
             );
           })}
