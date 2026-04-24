@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, MapPin, Check, X, Clock, Calendar as CalIcon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { useReservationVenues, useCreateReservationVenue, useDeleteReservationVenue, useReservations, useCreateReservation, useUpdateReservationStatus, useDeleteReservation, type Reservation } from "@/hooks/useReservations";
+import { Plus, Trash2, MapPin, Check, X, Clock, Calendar as CalIcon, ChevronLeft, ChevronRight, Loader2, Lock, AlertTriangle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useReservationVenues, useCreateReservationVenue, useUpdateReservationVenue, useDeleteReservationVenue, useReservations, useCreateReservation, useUpdateReservationStatus, useDeleteReservation, type Reservation } from "@/hooks/useReservations";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { useResidentUnit } from "@/hooks/useResidentUnit";
 import { useAuth } from "@/hooks/useAuth";
