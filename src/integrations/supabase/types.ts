@@ -236,6 +236,59 @@ export type Database = {
           },
         ]
       }
+      building_messages: {
+        Row: {
+          building_id: string
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          parent_id: string | null
+          recipient_user_id: string | null
+          sender_name: string
+          sender_role: string
+          sender_user_id: string
+          subject: string | null
+          unit_id: string | null
+        }
+        Insert: {
+          building_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          parent_id?: string | null
+          recipient_user_id?: string | null
+          sender_name: string
+          sender_role?: string
+          sender_user_id: string
+          subject?: string | null
+          unit_id?: string | null
+        }
+        Update: {
+          building_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          parent_id?: string | null
+          recipient_user_id?: string | null
+          sender_name?: string
+          sender_role?: string
+          sender_user_id?: string
+          subject?: string | null
+          unit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_messages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "building_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_payment_policies: {
         Row: {
           building_id: string
@@ -809,6 +862,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_reads: {
+        Row: {
+          building_id: string
+          id: string
+          notification_id: string
+          notification_type: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          building_id: string
+          id?: string
+          notification_id: string
+          notification_type: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          building_id?: string
+          id?: string
+          notification_id?: string
+          notification_type?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {

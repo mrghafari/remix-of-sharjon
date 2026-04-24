@@ -12,6 +12,8 @@ import { ResidentDocuments } from "@/components/resident/ResidentDocuments";
 import { ResidentContacts } from "@/components/resident/ResidentContacts";
 import { ManagersHistoryReport } from "@/components/reports/ManagersHistoryReport";
 import { ReservationsList } from "@/components/announcements/ReservationsList";
+import { MessagesPanel } from "@/components/messages/MessagesPanel";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 const ResidentDashboard = () => {
   const [activeTab, setActiveTab] = useState("finance");
@@ -69,6 +71,19 @@ const ResidentDashboard = () => {
     switch (activeTab) {
       case "finance":
         return <ResidentFinance buildingId={currentBuildingId} unitId={currentUnitId} />;
+      case "messages":
+        return (
+          <div className="max-w-3xl mx-auto space-y-4">
+            <h1 className="text-2xl font-bold">پیام به مدیر</h1>
+            <MessagesPanel
+              buildingId={currentBuildingId}
+              residentMode
+              unitId={currentUnitId}
+              senderName={personName}
+              senderRole={currentMatch?.role || "resident"}
+            />
+          </div>
+        );
       case "announcements":
         return <ResidentAnnouncements buildingId={currentBuildingId} />;
       case "polls":
@@ -105,6 +120,9 @@ const ResidentDashboard = () => {
         onSignOut={handleSignOut}
       />
       <main className="mr-64 transition-all duration-300">
+        <div className="flex items-center justify-end p-4 border-b">
+          <NotificationBell buildingId={currentBuildingId} isManager={false} onNavigate={setActiveTab} />
+        </div>
         <div className="p-6">
           {renderContent()}
         </div>
