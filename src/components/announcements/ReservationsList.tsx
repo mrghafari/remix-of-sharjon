@@ -517,6 +517,16 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                 <div className="text-xs text-muted-foreground mt-0.5">کل روز مکان به نام شما رزرو می‌شود و دیگران نمی‌توانند رزرو کنند. مثلاً قرق استخر برای خانواده.</div>
               </div>
             </label>
+            {exclusiveLockOnDate && (
+              <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5 text-sm">
+                <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
+                  <Lock className="w-4 h-4" /> این مکان در این تاریخ قرق شده است
+                </div>
+                <div className="text-xs text-muted-foreground mr-5">
+                  توسط {exclusiveLockOnDate.requester_name} • {exclusiveLockOnDate.status === "approved" ? "تایید شده" : "در انتظار تایید"} — هیچ رزرو دیگری در این روز برای این مکان امکان‌پذیر نیست. لطفاً تاریخ یا مکان دیگری انتخاب کنید.
+                </div>
+              </div>
+            )}
             {overlapInfo && (
               <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5 text-sm">
                 <div className="flex items-center gap-1.5 font-medium text-destructive mb-1">
