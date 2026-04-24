@@ -315,7 +315,7 @@ export function UtilitiesPage() {
           const data = chartDataByType[ut.id] || [];
           const Icon = ut.lucideIcon;
           return (
-            <Card key={ut.id} className="animate-fade-in">
+            <Card key={ut.id} className="animate-fade-in cursor-pointer hover:shadow-md transition-shadow" onClick={() => setZoomedType(ut.id)}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Icon className="w-5 h-5" style={{ color: ut.color }} />
