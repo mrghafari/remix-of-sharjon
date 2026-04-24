@@ -126,65 +126,67 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
               const unread = isUnread(m);
               const mine = m.sender_user_id === user?.id;
               return (
-                <Card
-                  key={m.id}
-                  className={cn(
-                    "transition-all hover:shadow-md cursor-pointer",
-                    unread && "border-primary/50 bg-primary/5"
-                  )}
-                  onClick={() => unread && markRead.mutate(m.id)}
-                >
-                  <CardContent className="p-3 space-y-2">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <div className={cn("w-7 h-7 rounded-full flex items-center justify-center", mine ? "bg-success/20" : "bg-primary/20")}>
-                          <User className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium flex items-center gap-2">
-                            {m.sender_name}
-                            {unread && <Badge className="h-4 text-[10px]">جدید</Badge>}
-                            {mine && <Badge variant="outline" className="h-4 text-[10px]">شما</Badge>}
+                <div key={m.id} className={cn("flex w-full", mine ? "justify-start" : "justify-end")}>
+                  <Card
+                    className={cn(
+                      "transition-all hover:shadow-md cursor-pointer max-w-[80%]",
+                      mine ? "bg-success/5 border-success/30" : "bg-primary/5 border-primary/20",
+                      unread && "border-primary/50 bg-primary/5"
+                    )}
+                    onClick={() => unread && markRead.mutate(m.id)}
+                  >
+                    <CardContent className="p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <div className={cn("w-7 h-7 rounded-full flex items-center justify-center", mine ? "bg-success/20" : "bg-primary/20")}>
+                            <User className="w-4 h-4" />
                           </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {format(parseISO(m.created_at), "d MMMM yyyy • HH:mm", { locale: faIR })}
-                            {m.recipient_user_id ? " • مستقیم" : " • عمومی"}
+                          <div>
+                            <div className="text-sm font-medium flex items-center gap-2">
+                              {m.sender_name}
+                              {unread && <Badge className="h-4 text-[10px]">جدید</Badge>}
+                              {mine && <Badge variant="outline" className="h-4 text-[10px]">شما</Badge>}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground">
+                              {format(parseISO(m.created_at), "d MMMM yyyy • HH:mm", { locale: faIR })}
+                              {m.recipient_user_id ? " • مستقیم" : " • عمومی"}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 gap-1 text-xs"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setReplyTo(m);
-                          }}
-                          title="پاسخ"
-                        >
-                          <CornerUpLeft className="w-3.5 h-3.5" />
-                          پاسخ
-                        </Button>
-                        {(mine || !residentMode) && (
+                        <div className="flex gap-1">
                           <Button
-                            size="icon"
+                            size="sm"
                             variant="ghost"
-                            className="h-7 w-7"
+                            className="h-7 px-2 gap-1 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
-                              deleteMessage.mutate(m.id);
+                              setReplyTo(m);
                             }}
+                            title="پاسخ"
                           >
-                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                            <CornerUpLeft className="w-3.5 h-3.5" />
+                            پاسخ
                           </Button>
-                        )}
+                          {(mine || !residentMode) && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteMessage.mutate(m.id);
+                              }}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {m.subject && <div className="text-sm font-semibold">{m.subject}</div>}
-                    <div className="text-sm whitespace-pre-wrap text-foreground/90">{m.content}</div>
-                  </CardContent>
-                </Card>
+                      {m.subject && <div className="text-sm font-semibold">{m.subject}</div>}
+                      <div className="text-sm whitespace-pre-wrap text-foreground/90">{m.content}</div>
+                    </CardContent>
+                  </Card>
+                </div>
               );
             })}
           </div>
