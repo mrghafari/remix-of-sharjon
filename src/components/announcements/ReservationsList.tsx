@@ -176,8 +176,9 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
               .order("created_at", { ascending: false })
               .limit(1)
               .maybeSingle();
-            if (latest?.id) {
-              updateStatus.mutate({ id: latest.id, status: "approved", manager_note: "ثبت توسط مدیر" });
+            const latestId = (latest as any)?.id as string | undefined;
+            if (latestId) {
+              updateStatus.mutate({ id: latestId, status: "approved", manager_note: "ثبت توسط مدیر" });
             }
           }
           setRequestDialog(false);
