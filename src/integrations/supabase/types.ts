@@ -242,6 +242,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           is_read: boolean
           parent_id: string | null
           recipient_user_id: string | null
@@ -256,6 +257,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean
           parent_id?: string | null
           recipient_user_id?: string | null
@@ -270,6 +272,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean
           parent_id?: string | null
           recipient_user_id?: string | null
