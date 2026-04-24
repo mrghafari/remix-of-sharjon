@@ -30,6 +30,8 @@ const menuItems = [
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { currentBuilding } = useBuilding();
+  const { data: ticketUnread = 0 } = useUnreadTicketsCount({ buildingId: currentBuilding?.id });
 
   return (
     <aside
