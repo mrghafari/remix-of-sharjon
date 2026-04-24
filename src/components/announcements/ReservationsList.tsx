@@ -545,7 +545,7 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRequestDialog(false)}>انصراف</Button>
-            <Button onClick={handleCreateRequest} disabled={createReservation.isPending || !reqVenue || !reqName.trim() || !reqDate || !!overlapInfo}>
+            <Button onClick={handleCreateRequest} disabled={createReservation.isPending || !reqVenue || !reqName.trim() || !reqDate || !!overlapInfo || !!exclusiveLockOnDate}>
               {createReservation.isPending && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
               {residentMode ? "ثبت درخواست" : "ثبت و تایید رزرو"}
             </Button>
