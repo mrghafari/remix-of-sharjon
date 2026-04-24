@@ -1179,6 +1179,109 @@ export type Database = {
           },
         ]
       }
+      support_ticket_messages: {
+        Row: {
+          attachment_url: string | null
+          building_id: string
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          sender_name: string
+          sender_role: string
+          sender_user_id: string
+          ticket_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          building_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_name: string
+          sender_role: string
+          sender_user_id: string
+          ticket_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          building_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          sender_name?: string
+          sender_role?: string
+          sender_user_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          building_id: string
+          category: Database["public"]["Enums"]["ticket_category"]
+          created_at: string
+          created_by: string
+          creator_name: string
+          description: string
+          id: string
+          last_reply_at: string
+          last_reply_by_role: string
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          category?: Database["public"]["Enums"]["ticket_category"]
+          created_at?: string
+          created_by: string
+          creator_name: string
+          description: string
+          id?: string
+          last_reply_at?: string
+          last_reply_by_role?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          category?: Database["public"]["Enums"]["ticket_category"]
+          created_at?: string
+          created_by?: string
+          creator_name?: string
+          description?: string
+          id?: string
+          last_reply_at?: string
+          last_reply_by_role?: string
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unit_charges: {
         Row: {
           amount: number
@@ -1483,6 +1586,9 @@ export type Database = {
         | "other"
       fund_type: "charge" | "extra_charge"
       reservation_status: "pending" | "approved" | "rejected"
+      ticket_category: "financial" | "technical" | "support" | "other"
+      ticket_priority: "low" | "medium" | "high" | "urgent"
+      ticket_status: "open" | "in_progress" | "answered" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1632,6 +1738,9 @@ export const Constants = {
       ],
       fund_type: ["charge", "extra_charge"],
       reservation_status: ["pending", "approved", "rejected"],
+      ticket_category: ["financial", "technical", "support", "other"],
+      ticket_priority: ["low", "medium", "high", "urgent"],
+      ticket_status: ["open", "in_progress", "answered", "closed"],
     },
   },
 } as const
