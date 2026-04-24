@@ -17,6 +17,7 @@ const menuItems = [
   { id: "charges", label: "شارژ / بدهی", icon: Zap },
   { id: "reports", label: "گزارش‌ها", icon: FileText },
   { id: "announcements", label: "اعلانات", icon: Bell },
+  { id: "messages", label: "پیام‌ها", icon: MessageSquare },
   { id: "documents", label: "اسناد ساختمان", icon: FolderOpen },
   { id: "utilities", label: "مصارف", icon: Gauge },
   { id: "phonebook", label: "دفترچه تلفن", icon: BookUser },

@@ -14,6 +14,7 @@ import { BuildingDocuments } from "@/components/documents/BuildingDocuments";
 import { AnnouncementsPage } from "@/components/announcements/AnnouncementsPage";
 import { UtilitiesPage } from "@/components/utilities/UtilitiesPage";
 import { PhoneBookPage } from "@/components/phonebook/PhoneBookPage";
+import { MessagesPage } from "@/components/messages/MessagesPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -184,6 +185,8 @@ const Index = () => {
         );
       case "announcements":
         return <AnnouncementsPage />;
+      case "messages":
+        return <MessagesPage />;
       case "utilities":
         return <UtilitiesPage />;
       case "phonebook":
