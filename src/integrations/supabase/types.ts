@@ -1147,6 +1147,30 @@ export type Database = {
           },
         ]
       }
+      unit_document_access_blocks: {
+        Row: {
+          blocked_at: string
+          blocked_by: string | null
+          building_id: string
+          id: string
+          unit_id: string
+        }
+        Insert: {
+          blocked_at?: string
+          blocked_by?: string | null
+          building_id: string
+          id?: string
+          unit_id: string
+        }
+        Update: {
+          blocked_at?: string
+          blocked_by?: string | null
+          building_id?: string
+          id?: string
+          unit_id?: string
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           area: number | null

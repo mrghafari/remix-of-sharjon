@@ -18,6 +18,7 @@ import {
   FolderOpen, Upload, Trash2, FileText, Image, Plus, FolderPlus, ArrowRight, Download, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DocumentAccessManager } from "./DocumentAccessManager";
 
 interface DocRow {
   id: string;
@@ -284,6 +285,7 @@ export function BuildingDocuments() {
   if (!currentBuildingId) return null;
 
   return (
+    <div className="space-y-4">
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
@@ -505,5 +507,7 @@ export function BuildingDocuments() {
         </AlertDialogContent>
       </AlertDialog>
     </Card>
+    <DocumentAccessManager />
+    </div>
   );
 }

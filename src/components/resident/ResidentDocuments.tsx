@@ -2,13 +2,32 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Folder, Loader2 } from "lucide-react";
+import { FileText, Download, Folder, Loader2, Lock } from "lucide-react";
+import { useResidentUnit } from "@/hooks/useResidentUnit";
 
 interface Props {
   buildingId: string;
 }
 
 export function ResidentDocuments({ buildingId }: Props) {
+  const { currentUnitId } = useResidentUnit();
+
+  const { data: isBlocked, isLoading: checkingAccess } = useQuery({
+    queryKey: ["unit_doc_access_check", buildingId, currentUnitId],
+    queryFn: async () => {
+      if (!currentUnitId) return false;
+      const { data, error } = await supabase
+        .from("unit_document_access_blocks" as any)
+        .select("id")
+        .eq("building_id", buildingId)
+        .eq("unit_id", currentUnitId)
+        .maybeSingle();
+      if (error) throw error;
+      return !!data;
+    },
+    enabled: !!buildingId && !!currentUnitId,
+  });
+
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["resident_documents", buildingId],
     queryFn: async () => {
@@ -20,6 +39,7 @@ export function ResidentDocuments({ buildingId }: Props) {
       if (error) throw error;
       return data || [];
     },
+    enabled: !isBlocked,
   });
 
   const handleDownload = async (filePath: string, fileName: string) => {
@@ -29,11 +49,23 @@ export function ResidentDocuments({ buildingId }: Props) {
     }
   };
 
-  if (isLoading) {
+  if (checkingAccess || isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (isBlocked) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+          <Lock className="w-12 h-12 mb-3 opacity-40" />
+          <p className="font-medium text-foreground">دسترسی شما به اسناد ساختمان غیرفعال است</p>
+          <p className="text-sm mt-1">برای فعال‌سازی با مدیر ساختمان تماس بگیرید.</p>
+        </CardContent>
+      </Card>
     );
   }
 
