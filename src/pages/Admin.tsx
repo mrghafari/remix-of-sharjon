@@ -60,6 +60,15 @@ export default function Admin() {
               <BarChart3 className="h-4 w-4" />
               آمار کلی
             </TabsTrigger>
+            <TabsTrigger value="tickets" className="gap-2 relative">
+              <LifeBuoy className="h-4 w-4" />
+              تیکت‌ها
+              {ticketUnread > 0 && (
+                <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-destructive text-destructive-foreground mr-1">
+                  {ticketUnread}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
               تنظیمات
