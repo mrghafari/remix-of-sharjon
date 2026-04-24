@@ -103,6 +103,13 @@ function ManagerRow({ manager, isPast }: { manager: Manager; isPast: boolean }) 
                 : ""}
             </span>
           </div>
+          <div className="flex items-center gap-2 text-muted-foreground md:col-span-3">
+            <Clock className="w-4 h-4 shrink-0" />
+            <span>
+              مدت تصدی: {tenureDays(manager).toLocaleString("fa-IR")} روز
+              {!isPast && !manager.end_date ? " (در حال ادامه)" : ""}
+            </span>
+          </div>
         </div>
       </div>
     </div>
