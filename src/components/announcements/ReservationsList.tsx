@@ -31,6 +31,12 @@ interface ReservationsListProps {
 
 const weekDays = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 
+const normalizeTime = (v: string) => {
+  return v
+    .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+};
+
 const statusBadge = (s: string) => {
   if (s === "approved") return <Badge className="bg-success text-success-foreground">تایید شده</Badge>;
   if (s === "rejected") return <Badge variant="destructive">رد شده</Badge>;
@@ -360,11 +366,11 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm font-medium mb-1 block">از ساعت</label>
-                <Input type="time" value={reqStart} onChange={e => setReqStart(e.target.value)} />
+                <Input type="time" value={reqStart} onChange={e => setReqStart(normalizeTime(e.target.value))} dir="ltr" />
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">تا ساعت</label>
-                <Input type="time" value={reqEnd} onChange={e => setReqEnd(e.target.value)} />
+                <Input type="time" value={reqEnd} onChange={e => setReqEnd(normalizeTime(e.target.value))} dir="ltr" />
               </div>
             </div>
             <div>
