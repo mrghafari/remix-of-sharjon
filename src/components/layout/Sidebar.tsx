@@ -1,7 +1,10 @@
-import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare } from "lucide-react";
+import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useBuilding } from "@/contexts/BuildingContext";
+import { useUnreadTicketsCount } from "@/hooks/useSupportTickets";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarProps {
   activeTab: string;
@@ -21,6 +24,7 @@ const menuItems = [
   { id: "documents", label: "اسناد ساختمان", icon: FolderOpen },
   { id: "utilities", label: "مصارف", icon: Gauge },
   { id: "phonebook", label: "دفترچه تلفن", icon: BookUser },
+  { id: "tickets", label: "پشتیبانی", icon: LifeBuoy },
   { id: "settings", label: "تنظیمات", icon: Settings },
 ];
 
