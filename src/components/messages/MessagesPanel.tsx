@@ -401,8 +401,45 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
         </div>
       )}
 
+      {/* Image preview before sending */}
+      {imagePreview && (
+        <div className="bg-card border-t px-3 py-2 flex items-center gap-3">
+          <div className="relative">
+            <img src={imagePreview} alt="پیش‌نمایش" className="h-16 w-16 object-cover rounded-md border" />
+            <button
+              onClick={clearImage}
+              className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center shadow"
+              type="button"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <div className="flex-1 text-xs text-muted-foreground">
+            <div className="font-semibold text-foreground">{imageFile?.name}</div>
+            <div>{((imageFile?.size || 0) / 1024).toFixed(0)} KB</div>
+          </div>
+        </div>
+      )}
+
       {/* Composer */}
       <div className="bg-card border-t p-2 flex items-end gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handlePickImage}
+        />
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-9 w-9 rounded-full shrink-0"
+          onClick={() => fileInputRef.current?.click()}
+          title="ارسال تصویر"
+          disabled={uploading || sendMessage.isPending}
+        >
+          <ImageIcon className="w-4 h-4" />
+        </Button>
         {!residentMode && !replyTo && (
           <Button
             size="icon"
@@ -424,13 +461,29 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
         />
         <Button
           onClick={handleSend}
-          disabled={!content.trim() || sendMessage.isPending}
+          disabled={(!content.trim() && !imageFile) || sendMessage.isPending || uploading}
           size="icon"
           className="h-10 w-10 rounded-full shrink-0"
         >
-          {sendMessage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          {(sendMessage.isPending || uploading) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
       </div>
+
+      {/* Lightbox for viewing images full-size */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 cursor-zoom-out"
+          onClick={() => setLightbox(null)}
+        >
+          <img src={lightbox} alt="نمایش کامل" className="max-h-full max-w-full object-contain rounded-lg shadow-2xl" />
+          <button
+            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2"
+            onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
