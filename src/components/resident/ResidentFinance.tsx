@@ -300,7 +300,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">تاریخ</TableHead>
-                  <TableHead class[...]
+                  <TableHead className="text-right">عنوان</TableHead>
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">سهم شما</TableHead>
                 </TableRow>
