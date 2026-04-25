@@ -119,8 +119,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const chargeDebt = Math.max(0, chargeOwed - chargePaid);
   const extraDebt = Math.max(0, extraOwed - extraPaid);
 
-  const openPay = () => {
+  const openPay = (chargeIds?: string[]) => {
     setBulkMode(null);
+    setPayChargeIds(chargeIds ?? charges.map((c) => c.id));
     setPayOpen(true);
   };
 
@@ -140,6 +141,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const openBulkPay = () => {
     if (selectedTotals.charge === 0 && selectedTotals.extra === 0) return;
     setBulkMode({ charge: selectedTotals.charge, extra: selectedTotals.extra });
+    setPayChargeIds(Array.from(selectedChargeIds));
     setPayOpen(true);
   };
 
