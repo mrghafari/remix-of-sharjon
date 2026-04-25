@@ -113,15 +113,23 @@ export function PaymentDialog({
     }
 
     const { error } = await supabase.from("payments").insert(records);
-    setProcessing(false);
 
     if (error) {
+      setProcessing(false);
       toast({ title: "خطا در ثبت پرداخت", description: error.message, variant: "destructive" });
       return;
     }
 
+    // پاک کردن ردیف‌های بدهی پرداخت‌شده تا از لیست بدهی‌های واحد حذف شوند
+    if (chargeIdsToClear && chargeIdsToClear.length > 0) {
+      await supabase.from("unit_charges").delete().in("id", chargeIdsToClear);
+    }
+
+    setProcessing(false);
+
     qc.invalidateQueries({ queryKey: ["resident_payments", unitId] });
     qc.invalidateQueries({ queryKey: ["resident_charges", unitId] });
+    qc.invalidateQueries({ queryKey: ["resident_expense_shares", unitId] });
     setStep("success");
   };
 
