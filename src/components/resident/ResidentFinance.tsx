@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,8 @@ function formatNumber(n: number) {
 
 export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }: Props) {
   const [payOpen, setPayOpen] = useState(false);
+  const [selectedChargeIds, setSelectedChargeIds] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState<{ charge: number; extra: number } | null>(null);
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
@@ -115,7 +118,43 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const chargeDebt = Math.max(0, chargeOwed - chargePaid);
   const extraDebt = Math.max(0, extraOwed - extraPaid);
 
-  const openPay = () => setPayOpen(true);
+  const openPay = () => {
+    setBulkMode(null);
+    setPayOpen(true);
+  };
+
+  // محاسبه تجمیعی موارد انتخاب‌شده با همان الگوریتم تفکیک fund_type
+  const selectedTotals = useMemo(() => {
+    let charge = 0;
+    let extra = 0;
+    charges.forEach((c) => {
+      if (!selectedChargeIds.has(c.id)) return;
+      const amt = Number(c.amount);
+      if (c.fund_type === "extra_charge") extra += amt;
+      else charge += amt;
+    });
+    return { charge: Math.round(charge), extra: Math.round(extra) };
+  }, [charges, selectedChargeIds]);
+
+  const openBulkPay = () => {
+    if (selectedTotals.charge === 0 && selectedTotals.extra === 0) return;
+    setBulkMode({ charge: selectedTotals.charge, extra: selectedTotals.extra });
+    setPayOpen(true);
+  };
+
+  const toggleChargeSelect = (id: string) => {
+    setSelectedChargeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedChargeIds.size === charges.length) setSelectedChargeIds(new Set());
+    else setSelectedChargeIds(new Set(charges.map((c) => c.id)));
+  };
 
   if (isLoading) {
     return (
@@ -194,12 +233,13 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
 
       <PaymentDialog
         open={payOpen}
-        onOpenChange={setPayOpen}
+        onOpenChange={(o) => { setPayOpen(o); if (!o) setBulkMode(null); }}
         buildingId={buildingId}
         unitId={unitId}
-        chargeDebt={chargeDebt}
-        extraDebt={extraDebt}
+        chargeDebt={bulkMode ? bulkMode.charge : chargeDebt}
+        extraDebt={bulkMode ? bulkMode.extra : extraDebt}
         defaultRole={viewerRole}
+        defaultDescription={bulkMode ? "پرداخت تجمیعی بدهی‌های انتخاب‌شده" : undefined}
         ownerName={unitInfo?.owner_name}
         residentName={unitInfo?.resident_name}
       />
@@ -283,11 +323,17 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
 
       {/* Charge Debts */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-orange-500" />
             بدهی شارژ ماهانه
           </CardTitle>
+          {selectedChargeIds.size > 0 && (
+            <Button size="sm" onClick={openBulkPay} className="gap-1">
+              <CreditCard className="w-3 h-3" />
+              پرداخت تجمیعی ({formatNumber(selectedTotals.charge + selectedTotals.extra)} تومان)
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {charges.length === 0 ? (
@@ -296,6 +342,13 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right w-10">
+                    <Checkbox
+                      checked={selectedChargeIds.size === charges.length && charges.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="انتخاب همه"
+                    />
+                  </TableHead>
                   <TableHead className="text-right">دوره</TableHead>
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
@@ -305,7 +358,14 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
               </TableHeader>
               <TableBody>
                 {charges.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} data-state={selectedChargeIds.has(c.id) ? "selected" : undefined}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedChargeIds.has(c.id)}
+                        onCheckedChange={() => toggleChargeSelect(c.id)}
+                        aria-label="انتخاب برای پرداخت تجمیعی"
+                      />
+                    </TableCell>
                     <TableCell className="text-xs">{c.year}/{c.month}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
