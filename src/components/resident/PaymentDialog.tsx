@@ -23,6 +23,8 @@ interface Props {
   defaultDescription?: string;
   ownerName?: string | null;
   residentName?: string | null;
+  /** شناسه ردیف‌های unit_charges که پس از پرداخت موفق باید حذف شوند */
+  chargeIdsToClear?: string[];
 }
 
 type Step = "form" | "gateway" | "success";
@@ -40,6 +42,7 @@ export function PaymentDialog({
   defaultDescription,
   ownerName,
   residentName,
+  chargeIdsToClear,
 }: Props) {
   const qc = useQueryClient();
   const [step, setStep] = useState<Step>("form");
@@ -110,15 +113,23 @@ export function PaymentDialog({
     }
 
     const { error } = await supabase.from("payments").insert(records);
-    setProcessing(false);
 
     if (error) {
+      setProcessing(false);
       toast({ title: "خطا در ثبت پرداخت", description: error.message, variant: "destructive" });
       return;
     }
 
+    // پاک کردن ردیف‌های بدهی پرداخت‌شده تا از لیست بدهی‌های واحد حذف شوند
+    if (chargeIdsToClear && chargeIdsToClear.length > 0) {
+      await supabase.from("unit_charges").delete().in("id", chargeIdsToClear);
+    }
+
+    setProcessing(false);
+
     qc.invalidateQueries({ queryKey: ["resident_payments", unitId] });
     qc.invalidateQueries({ queryKey: ["resident_charges", unitId] });
+    qc.invalidateQueries({ queryKey: ["resident_expense_shares", unitId] });
     setStep("success");
   };
 
