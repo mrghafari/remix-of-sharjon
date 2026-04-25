@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2 } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { PaymentDialog } from "./PaymentDialog";
@@ -212,27 +213,63 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             <p className="text-xs text-muted-foreground">تومان</p>
           </CardContent>
         </Card>
-        <Card
-          onClick={() => openPay()}
-          className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 active:scale-[0.98]"
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPay(); } }}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium">مانده حساب</CardTitle>
-            {balance >= 0 ? <TrendingUp className="h-4 w-4 text-emerald-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
-          </CardHeader>
-          <CardContent>
-            <div className={`text-lg font-bold ${balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-              {balance >= 0 ? "" : "-"}{formatNumber(balance)}
-            </div>
-            <p className="text-xs text-primary font-medium flex items-center gap-1 mt-1">
-              <CreditCard className="w-3 h-3" />
-              پرداخت آنلاین
-            </p>
-          </CardContent>
-        </Card>
+        <TooltipProvider delayDuration={150}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Card
+                onClick={() => openPay()}
+                className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 active:scale-[0.98]"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPay(); } }}
+              >
+                <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                  <CardTitle className="text-xs font-medium flex items-center gap-1">
+                    مانده حساب
+                    <Info className="w-3 h-3 text-muted-foreground" />
+                  </CardTitle>
+                  {balance >= 0 ? <TrendingUp className="h-4 w-4 text-emerald-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-lg font-bold ${balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                    {balance >= 0 ? "" : "-"}{formatNumber(balance)}
+                  </div>
+                  <p className="text-xs text-primary font-medium flex items-center gap-1 mt-1">
+                    <CreditCard className="w-3 h-3" />
+                    پرداخت آنلاین
+                  </p>
+                </CardContent>
+              </Card>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="max-w-xs">
+              <div className="space-y-2 text-xs" dir="rtl">
+                <p className="font-semibold border-b pb-1">فرمول محاسبه مانده حساب</p>
+                <p className="text-muted-foreground">
+                  مانده = مجموع پرداختی‌ها − مجموع هزینه‌های تسهیم‌شده
+                </p>
+                <div className="space-y-1 pt-1">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-emerald-600">+ مجموع پرداختی‌ها:</span>
+                    <span className="font-mono">{formatNumber(totalPayments)}</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-red-600">− هزینه‌های تسهیم‌شده:</span>
+                    <span className="font-mono">{formatNumber(totalExpenses)}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t pt-1 font-semibold">
+                    <span>= مانده حساب:</span>
+                    <span className={`font-mono ${balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      {balance >= 0 ? "" : "-"}{formatNumber(balance)}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground pt-1 border-t">
+                  توجه: بدهی‌های شارژ ماهانه ({formatNumber(totalCharges)} تومان) در کارت‌های جداگانه «بدهی (ساکن)» و «بدهی (مالک)» نمایش داده می‌شوند و در این مانده لحاظ نشده‌اند.
+                </p>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <PaymentDialog
