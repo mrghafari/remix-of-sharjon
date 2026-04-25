@@ -9,22 +9,19 @@ import { Button } from "@/components/ui/button";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { PaymentDialog } from "./PaymentDialog";
 
-type PayPreset = { amount: number; fundType: "charge" | "extra_charge"; description?: string } | null;
-
 interface Props {
   buildingId: string;
   unitId: string;
+  /** نقش فرد لاگین‌شده در این واحد */
+  viewerRole?: "resident" | "owner";
 }
 
 function formatNumber(n: number) {
   return Math.abs(Math.round(n)).toLocaleString("fa-IR");
 }
 
-export function ResidentFinance({ buildingId, unitId }: Props) {
+export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }: Props) {
   const [payOpen, setPayOpen] = useState(false);
-  const [preset, setPreset] = useState<PayPreset>(null);
-
-  const openPay = (p: PayPreset) => { setPreset(p); setPayOpen(true); };
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
