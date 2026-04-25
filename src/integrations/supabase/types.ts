@@ -194,6 +194,56 @@ export type Database = {
           },
         ]
       }
+      building_meeting_minutes: {
+        Row: {
+          building_id: string
+          content: string | null
+          created_at: string
+          created_by: string
+          id: string
+          meeting_date: string
+          pdf_file_name: string | null
+          pdf_file_path: string | null
+          pdf_file_size: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          content?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          meeting_date: string
+          pdf_file_name?: string | null
+          pdf_file_path?: string | null
+          pdf_file_size?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          meeting_date?: string
+          pdf_file_name?: string | null
+          pdf_file_path?: string | null
+          pdf_file_size?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_meeting_minutes_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_members: {
         Row: {
           building_id: string
