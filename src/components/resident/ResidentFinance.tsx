@@ -301,16 +301,23 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                 <TableRow>
                   <TableHead className="text-right">تاریخ</TableHead>
                   <TableHead className="text-right">عنوان</TableHead>
+                  <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">سهم شما</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {expenseShares.map((e) => {
                   const expense = e.expenses as any;
+                  const fundType = expense?.fund_type ?? "charge";
                   return (
                     <TableRow key={e.id}>
                       <TableCell className="text-xs">{expense ? formatJalaliDate(expense.expense_date) : "-"}</TableCell>
                       <TableCell className="text-xs">{expense?.title || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">
+                          {fundType === "charge" ? "شارژ" : "فوق‌شارژ"}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="font-semibold text-red-600">{formatNumber(Number(e.allocated_amount))} تومان</TableCell>
                     </TableRow>
                   );
