@@ -25,6 +25,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const [payOpen, setPayOpen] = useState(false);
   const [selectedChargeIds, setSelectedChargeIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState<{ charge: number; extra: number } | null>(null);
+  const [payChargeIds, setPayChargeIds] = useState<string[]>([]);
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
