@@ -435,6 +435,8 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
