@@ -54,12 +54,9 @@ export function PaymentDialog({
       setStep("form");
       setChargeAmount(r(chargeDebt));
       setExtraAmount(r(extraDebt));
-      // پیش‌فرض بر اساس نقش: ساکن → شارژ، مالک → فوق‌شارژ
-      setChargeChecked(defaultRole === "resident" ? r(chargeDebt) > 0 : false);
-      setExtraChecked(defaultRole === "owner" ? r(extraDebt) > 0 : false);
-      // اگر بدهی نقش پیش‌فرض صفر بود ولی نوع دیگر بدهکار است، آن را تیک بزن
-      if (defaultRole === "resident" && r(chargeDebt) === 0 && r(extraDebt) > 0) setExtraChecked(true);
-      if (defaultRole === "owner" && r(extraDebt) === 0 && r(chargeDebt) > 0) setChargeChecked(true);
+      // پیش‌فرض: هر دو نوع پرداخت در صورت وجود بدهی فعال باشند
+      setChargeChecked(r(chargeDebt) > 0);
+      setExtraChecked(r(extraDebt) > 0);
       setProcessing(false);
     }
   }, [open, chargeDebt, extraDebt, defaultRole]);
