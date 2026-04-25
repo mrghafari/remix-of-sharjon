@@ -83,7 +83,39 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const totalExpenses = useMemo(() => expenseShares.reduce((s, e) => s + Number(e.allocated_amount), 0), [expenseShares]);
   const totalCharges = useMemo(() => charges.reduce((s, c) => s + Number(c.amount), 0), [charges]);
   const balance = totalPayments - totalExpenses;
-  const chargeBalance = totalPayments - totalCharges;
+
+  // تفکیک بدهی شارژ و فوق‌شارژ بر اساس fund_type
+  const chargePaid = useMemo(
+    () => payments.filter((p) => p.fund_type === "charge").reduce((s, p) => s + Number(p.amount), 0),
+    [payments]
+  );
+  const extraPaid = useMemo(
+    () => payments.filter((p) => p.fund_type === "extra_charge").reduce((s, p) => s + Number(p.amount), 0),
+    [payments]
+  );
+  const chargeOwed = useMemo(() => {
+    const fromExpenses = expenseShares
+      .filter((e: any) => (e.expenses?.fund_type ?? "charge") === "charge")
+      .reduce((s, e) => s + Number(e.allocated_amount), 0);
+    const fromCharges = charges
+      .filter((c) => c.fund_type === "charge")
+      .reduce((s, c) => s + Number(c.amount), 0);
+    return fromExpenses + fromCharges;
+  }, [expenseShares, charges]);
+  const extraOwed = useMemo(() => {
+    const fromExpenses = expenseShares
+      .filter((e: any) => e.expenses?.fund_type === "extra_charge")
+      .reduce((s, e) => s + Number(e.allocated_amount), 0);
+    const fromCharges = charges
+      .filter((c) => c.fund_type === "extra_charge")
+      .reduce((s, c) => s + Number(c.amount), 0);
+    return fromExpenses + fromCharges;
+  }, [expenseShares, charges]);
+
+  const chargeDebt = Math.max(0, chargeOwed - chargePaid);
+  const extraDebt = Math.max(0, extraOwed - extraPaid);
+
+  const openPay = () => setPayOpen(true);
 
   if (isLoading) {
     return (
@@ -155,9 +187,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         onOpenChange={setPayOpen}
         buildingId={buildingId}
         unitId={unitId}
-        defaultAmount={preset ? preset.amount : (balance < 0 ? -balance : 0)}
-        defaultFundType={preset?.fundType}
-        defaultDescription={preset?.description}
+        chargeDebt={chargeDebt}
+        extraDebt={extraDebt}
+        defaultRole={viewerRole}
         ownerName={unitInfo?.owner_name}
         residentName={unitInfo?.resident_name}
       />
