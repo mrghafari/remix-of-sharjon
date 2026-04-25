@@ -323,11 +323,17 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
 
       {/* Charge Debts */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-orange-500" />
             بدهی شارژ ماهانه
           </CardTitle>
+          {selectedChargeIds.size > 0 && (
+            <Button size="sm" onClick={openBulkPay} className="gap-1">
+              <CreditCard className="w-3 h-3" />
+              پرداخت تجمیعی ({formatNumber(selectedTotals.charge + selectedTotals.extra)} تومان)
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {charges.length === 0 ? (
@@ -336,6 +342,13 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right w-10">
+                    <Checkbox
+                      checked={selectedChargeIds.size === charges.length && charges.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="انتخاب همه"
+                    />
+                  </TableHead>
                   <TableHead className="text-right">دوره</TableHead>
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
@@ -345,7 +358,14 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
               </TableHeader>
               <TableBody>
                 {charges.map((c) => (
-                  <TableRow key={c.id}>
+                  <TableRow key={c.id} data-state={selectedChargeIds.has(c.id) ? "selected" : undefined}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedChargeIds.has(c.id)}
+                        onCheckedChange={() => toggleChargeSelect(c.id)}
+                        aria-label="انتخاب برای پرداخت تجمیعی"
+                      />
+                    </TableCell>
                     <TableCell className="text-xs">{c.year}/{c.month}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
