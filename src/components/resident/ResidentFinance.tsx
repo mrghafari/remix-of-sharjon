@@ -190,7 +190,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium">بدهی شارژ (ساکن)</CardTitle>
+            <CardTitle className="text-xs font-medium">بدهی (ساکن)</CardTitle>
             <CreditCard className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
