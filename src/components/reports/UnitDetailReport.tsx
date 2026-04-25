@@ -207,7 +207,7 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {payment.fund_type === "charge" ? "شارژ" : "شارژ اضافی"}
+                          {payment.fund_type === "charge" ? "شارژ" : "فوق شارژ"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-green-600 font-medium">

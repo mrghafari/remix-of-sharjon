@@ -112,7 +112,7 @@ export function UnitReportPrintable({ unitBalance, dateRange, categoryLabels }: 
                 <tr key={p.id} style={{ backgroundColor: idx % 2 === 0 ? "#fff" : "#f9f9f9" }}>
                   <td style={{ padding: "8px", border: "1px solid #ddd" }}>{formatJalaliDate(p.payment_date)}</td>
                   <td style={{ padding: "8px", border: "1px solid #ddd" }}>{p.month}/{p.year}</td>
-                  <td style={{ padding: "8px", border: "1px solid #ddd" }}>{p.fund_type === "charge" ? "شارژ" : "شارژ اضافی"}</td>
+                  <td style={{ padding: "8px", border: "1px solid #ddd" }}>{p.fund_type === "charge" ? "شارژ" : "فوق شارژ"}</td>
                   <td style={{ padding: "8px", border: "1px solid #ddd", color: "#16a34a", fontWeight: "bold" }}>{formatNumber(p.amount)}</td>
                   <td style={{ padding: "8px", border: "1px solid #ddd" }}>{p.description || "-"}</td>
                 </tr>
