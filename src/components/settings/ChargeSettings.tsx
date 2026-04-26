@@ -69,16 +69,22 @@ export function ChargeSettings() {
   };
 
   const handleApply = () => {
-    const desc =
-      applyDescription ||
-      `شارژ ${JALALI_MONTHS[Number(selectedMonth) - 1]} ${selectedYear}`;
+    const monthLabel = `${JALALI_MONTHS[Number(selectedMonth) - 1]} ${selectedYear}`;
+    const baseDesc = applyDescription || "";
+    const chargeDesc = baseDesc
+      ? `شارژ ${monthLabel} - ${baseDesc}`
+      : `شارژ ${monthLabel}`;
+    const extraDesc = baseDesc
+      ? `فوق‌شارژ ${monthLabel} - ${baseDesc}`
+      : `فوق‌شارژ ${monthLabel}`;
     applyCharges.mutate(
       {
         chargeAmount: Number(chargeAmount) || 0,
         extraChargeAmount: Number(extraChargeAmount) || 0,
         month: Number(selectedMonth),
         year: Number(selectedYear),
-        description: desc,
+        chargeDescription: chargeDesc,
+        extraChargeDescription: extraDesc,
       },
       { onSuccess: () => setApplyDialogOpen(false) }
     );
