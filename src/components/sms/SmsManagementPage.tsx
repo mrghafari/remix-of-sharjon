@@ -19,7 +19,7 @@ import {
   type SmsProvider,
   type SmsRecipientMode,
 } from "@/hooks/useSms";
-import { toJalali } from "@/lib/jalaliDate";
+import { formatJalaliDate } from "@/lib/jalaliDate";
 
 const TEMPLATE_LABELS: Record<string, string> = {
   debt_report: "گزارش بدهی",
@@ -39,9 +39,8 @@ const TEMPLATE_VARIABLES: Record<string, string[]> = {
 
 function formatJalaliDateTime(iso: string) {
   const d = new Date(iso);
-  const j = toJalali(d);
   const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  return `${j.jy}/${String(j.jm).padStart(2, "0")}/${String(j.jd).padStart(2, "0")} ${time}`;
+  return `${formatJalaliDate(iso)} ${time}`;
 }
 
 export function SmsManagementPage() {
@@ -275,7 +274,7 @@ export function SmsManagementPage() {
                         <TableCell>{log.recipient_name ?? "-"}{log.recipient_role && ` (${log.recipient_role === "owner" ? "مالک" : "ساکن"})`}</TableCell>
                         <TableCell className="font-mono text-xs">{log.recipient_phone}</TableCell>
                         <TableCell>
-                          {log.status === "sent" && <Badge className="bg-emerald-600">ارسال شد</Badge>}
+                          {log.status === "sent" && <Badge>ارسال شد</Badge>}
                           {log.status === "failed" && <Badge variant="destructive" title={log.error_message ?? ""}>خطا</Badge>}
                           {log.status === "pending" && <Badge variant="secondary">در صف</Badge>}
                         </TableCell>
