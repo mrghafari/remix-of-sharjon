@@ -17,6 +17,7 @@ import { PhoneBookPage } from "@/components/phonebook/PhoneBookPage";
 import { MessagesPage } from "@/components/messages/MessagesPage";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 import { MeetingMinutesPage } from "@/components/meetings/MeetingMinutesPage";
+import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,6 +199,8 @@ const Index = () => {
         return <TicketsPage />;
       case "meetings":
         return <MeetingMinutesPage />;
+      case "sms":
+        return <SmsManagementPage />;
       default:
         return <Dashboard onTabChange={setActiveTab} />;
     }

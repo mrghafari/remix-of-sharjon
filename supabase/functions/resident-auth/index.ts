@@ -381,8 +381,9 @@ serve(async (req) => {
 
     throw new Error("عملیات نامعتبر");
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     return new Response(
-      JSON.stringify({ error: err.message }),
+      JSON.stringify({ error: msg }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -1229,6 +1229,168 @@ export type Database = {
           },
         ]
       }
+      sms_logs: {
+        Row: {
+          building_id: string
+          error_message: string | null
+          id: string
+          message_body: string
+          provider: string
+          provider_message_id: string | null
+          recipient_name: string | null
+          recipient_phone: string
+          recipient_role: string | null
+          sent_at: string
+          status: string
+          template_key: string
+          unit_id: string | null
+        }
+        Insert: {
+          building_id: string
+          error_message?: string | null
+          id?: string
+          message_body: string
+          provider: string
+          provider_message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone: string
+          recipient_role?: string | null
+          sent_at?: string
+          status?: string
+          template_key: string
+          unit_id?: string | null
+        }
+        Update: {
+          building_id?: string
+          error_message?: string | null
+          id?: string
+          message_body?: string
+          provider?: string
+          provider_message_id?: string | null
+          recipient_name?: string | null
+          recipient_phone?: string
+          recipient_role?: string | null
+          sent_at?: string
+          status?: string
+          template_key?: string
+          unit_id?: string | null
+        }
+        Relationships: []
+      }
+      sms_settings: {
+        Row: {
+          active_provider: string
+          balance_reminder_enabled: boolean
+          balance_reminder_recipient: string
+          building_id: string
+          created_at: string
+          debt_auto_schedule_day: number
+          debt_auto_schedule_enabled: boolean
+          debt_auto_schedule_hour: number
+          debt_report_enabled: boolean
+          debt_report_recipient: string
+          id: string
+          is_enabled: boolean
+          kavenegar_api_key: string | null
+          kavenegar_sender: string | null
+          melipayamak_password: string | null
+          melipayamak_sender: string | null
+          melipayamak_username: string | null
+          payment_thanks_enabled: boolean
+          payment_thanks_recipient: string
+          reservation_enabled: boolean
+          reservation_recipient: string
+          smsir_api_key: string | null
+          smsir_sender: string | null
+          updated_at: string
+        }
+        Insert: {
+          active_provider?: string
+          balance_reminder_enabled?: boolean
+          balance_reminder_recipient?: string
+          building_id: string
+          created_at?: string
+          debt_auto_schedule_day?: number
+          debt_auto_schedule_enabled?: boolean
+          debt_auto_schedule_hour?: number
+          debt_report_enabled?: boolean
+          debt_report_recipient?: string
+          id?: string
+          is_enabled?: boolean
+          kavenegar_api_key?: string | null
+          kavenegar_sender?: string | null
+          melipayamak_password?: string | null
+          melipayamak_sender?: string | null
+          melipayamak_username?: string | null
+          payment_thanks_enabled?: boolean
+          payment_thanks_recipient?: string
+          reservation_enabled?: boolean
+          reservation_recipient?: string
+          smsir_api_key?: string | null
+          smsir_sender?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active_provider?: string
+          balance_reminder_enabled?: boolean
+          balance_reminder_recipient?: string
+          building_id?: string
+          created_at?: string
+          debt_auto_schedule_day?: number
+          debt_auto_schedule_enabled?: boolean
+          debt_auto_schedule_hour?: number
+          debt_report_enabled?: boolean
+          debt_report_recipient?: string
+          id?: string
+          is_enabled?: boolean
+          kavenegar_api_key?: string | null
+          kavenegar_sender?: string | null
+          melipayamak_password?: string | null
+          melipayamak_sender?: string | null
+          melipayamak_username?: string | null
+          payment_thanks_enabled?: boolean
+          payment_thanks_recipient?: string
+          reservation_enabled?: boolean
+          reservation_recipient?: string
+          smsir_api_key?: string | null
+          smsir_sender?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sms_templates: {
+        Row: {
+          body: string
+          building_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          template_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          building_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          template_key: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          building_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          template_key?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_ticket_messages: {
         Row: {
           attachment_url: string | null
