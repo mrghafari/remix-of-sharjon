@@ -1,7 +1,8 @@
-import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText } from "lucide-react";
+import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ResidentSidebarProps {
   activeTab: string;
@@ -11,6 +12,8 @@ interface ResidentSidebarProps {
   role: string;
   personName: string;
   onSignOut: () => void;
+  mobileOpen?: boolean;
+  onMobileOpenChange?: (open: boolean) => void;
 }
 
 const menuItems = [
@@ -25,75 +28,114 @@ const menuItems = [
   { id: "meetings", label: "صورتجلسات", icon: ScrollText },
 ];
 
-export function ResidentSidebar({ activeTab, onTabChange, buildingName, unitNumber, role, personName, onSignOut }: ResidentSidebarProps) {
+export function ResidentSidebar({
+  activeTab,
+  onTabChange,
+  buildingName,
+  unitNumber,
+  role,
+  personName,
+  onSignOut,
+  mobileOpen = false,
+  onMobileOpenChange,
+}: ResidentSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const isMobile = useIsMobile();
+  const showLabels = isMobile ? true : !collapsed;
+
+  const handleItemClick = (id: string) => {
+    onTabChange(id);
+    if (isMobile) onMobileOpenChange?.(false);
+  };
 
   return (
-    <aside
-      className={cn(
-        "fixed right-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 z-50",
-        collapsed ? "w-20" : "w-64"
+    <>
+      {isMobile && mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => onMobileOpenChange?.(false)}
+        />
       )}
-    >
-      <div className="flex flex-col h-full">
+
+      <aside
+        className={cn(
+          "fixed right-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-transform duration-300 z-50 flex flex-col",
+          !isMobile && (collapsed ? "w-20" : "w-64"),
+          isMobile && "w-64",
+          isMobile && !mobileOpen && "translate-x-full",
+          isMobile && mobileOpen && "translate-x-0"
+        )}
+      >
         {/* Logo / Building info */}
-        <div className="flex items-center gap-3 p-6 border-b border-sidebar-border">
-          <div className="w-10 h-10 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
-            <Building2 className="w-6 h-6 text-sidebar-primary-foreground" />
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border">
+          <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-sidebar-primary-foreground" />
           </div>
-          {!collapsed && (
-            <div className="animate-fade-in overflow-hidden">
-              <h1 className="font-bold text-lg truncate">{buildingName}</h1>
-              <p className="text-xs text-sidebar-foreground/60 truncate">
+          {showLabels && (
+            <div className="animate-fade-in overflow-hidden flex-1">
+              <h1 className="font-bold text-sm leading-tight truncate">{buildingName}</h1>
+              <p className="text-[10px] text-sidebar-foreground/60 truncate">
                 واحد {unitNumber} • {role === "owner" ? "مالک" : "ساکن"}: {personName}
               </p>
             </div>
           )}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-sidebar-foreground"
+              onClick={() => onMobileOpenChange?.(false)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
           {menuItems.map((item, index) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => handleItemClick(item.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                  "w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200",
                   isActive
                     ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
                     : "hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
                 )}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                <Icon className="w-4 h-4 shrink-0" />
+                {showLabels && <span className="text-xs font-medium flex-1 text-right">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
         {/* Sign out & Collapse */}
-        <div className="p-4 border-t border-sidebar-border space-y-2">
+        <div className="p-2 border-t border-sidebar-border space-y-1">
           <button
             onClick={onSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
           >
-            <LogOut className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="text-sm font-medium">خروج</span>}
+            <LogOut className="w-4 h-4 shrink-0" />
+            {showLabels && <span className="text-xs font-medium flex-1 text-right">خروج</span>}
           </button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full hover:bg-sidebar-accent text-sidebar-foreground"
-          >
-            {collapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-          </Button>
+          {!isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full hover:bg-sidebar-accent text-sidebar-foreground"
+            >
+              {collapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+            </Button>
+          )}
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

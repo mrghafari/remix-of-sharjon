@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useResidentUnit } from "@/hooks/useResidentUnit";
@@ -18,6 +18,7 @@ import { MeetingMinutesPage } from "@/components/meetings/MeetingMinutesPage";
 
 const ResidentDashboard = () => {
   const [activeTab, setActiveTab] = useState("finance");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const {
@@ -121,12 +122,24 @@ const ResidentDashboard = () => {
         role={currentMatch?.role || "resident"}
         personName={personName}
         onSignOut={handleSignOut}
+        mobileOpen={mobileSidebarOpen}
+        onMobileOpenChange={setMobileSidebarOpen}
       />
-      <main className="mr-64 transition-all duration-300">
-        <div className="flex items-center justify-end p-4 border-b">
+      <main className="md:mr-64 transition-all duration-300">
+        <div className="flex items-center justify-between gap-2 p-3 md:p-4 border-b">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="منو"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <div className="flex-1" />
           <NotificationBell buildingId={currentBuildingId} isManager={false} onNavigate={setActiveTab} />
         </div>
-        <div className="p-6">
+        <div className="p-3 md:p-6">
           {renderContent()}
         </div>
       </main>
