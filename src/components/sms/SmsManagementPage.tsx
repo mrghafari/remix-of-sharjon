@@ -199,6 +199,94 @@ export function SmsManagementPage() {
           </Card>
         </TabsContent>
 
+        {/* CREDITS PURCHASE */}
+        <TabsContent value="credits" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>درخواست خرید بسته پیامک</CardTitle>
+              <CardDescription>بسته مورد نظر را انتخاب و درخواست خود را ثبت کنید. ادمین پس از بررسی، اعتبار را شارژ می‌کند.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="mb-2 block">انتخاب بسته</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {SMS_PACKAGES.map((pkg) => (
+                    <button
+                      key={pkg.count}
+                      type="button"
+                      onClick={() => setSelectedPackage(pkg.count)}
+                      className={`border rounded-lg p-4 text-right transition-all ${
+                        selectedPackage === pkg.count
+                          ? "border-primary bg-primary/5 ring-2 ring-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <div className="font-bold text-lg">{new Intl.NumberFormat("fa-IR").format(pkg.count)} پیامک</div>
+                      <div className="text-sm text-muted-foreground mt-1">{formatToman(pkg.price)}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="manager-note">توضیحات (اختیاری)</Label>
+                <Textarea
+                  id="manager-note"
+                  value={managerNote}
+                  onChange={(e) => setManagerNote(e.target.value)}
+                  placeholder="در صورت نیاز توضیحی برای ادمین بنویسید..."
+                  rows={3}
+                />
+              </div>
+
+              <Button onClick={() => submitRequest.mutate()} disabled={submitRequest.isPending}>
+                <Send className="w-4 h-4 ml-1" />
+                {submitRequest.isPending ? "در حال ارسال..." : "ثبت درخواست خرید"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>تاریخچه درخواست‌ها</CardTitle>
+              <CardDescription>{requests.length} درخواست</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>تعداد بسته</TableHead>
+                      <TableHead>وضعیت</TableHead>
+                      <TableHead>توضیحات شما</TableHead>
+                      <TableHead>پاسخ ادمین</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {requests.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">درخواستی ثبت نشده است</TableCell></TableRow>
+                    )}
+                    {requests.map((r: any) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="whitespace-nowrap text-xs">{formatJalaliDateTime(r.created_at)}</TableCell>
+                        <TableCell>{new Intl.NumberFormat("fa-IR").format(r.package_count)} پیامک</TableCell>
+                        <TableCell>
+                          {r.status === "pending" && <Badge variant="secondary">در انتظار بررسی</Badge>}
+                          {r.status === "approved" && <Badge>تأیید و شارژ شد</Badge>}
+                          {r.status === "rejected" && <Badge variant="destructive">رد شد</Badge>}
+                        </TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate" title={r.manager_note ?? ""}>{r.manager_note ?? "-"}</TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate" title={r.admin_note ?? ""}>{r.admin_note ?? "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* LOGS */}
         <TabsContent value="logs" className="mt-4">
           <Card>
