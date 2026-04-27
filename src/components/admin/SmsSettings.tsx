@@ -9,7 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MessageSquare, Loader2, Save, Plus, Trash2 } from "lucide-react";
+import { MessageSquare, Loader2, Save, Plus, Trash2, Send } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 interface SmsConfig {
   enabled: boolean;
@@ -55,6 +56,49 @@ export function SmsSettings({ userId }: Props) {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [state, setState] = useState<SmsState>(DEFAULT_STATE);
+  const [testProvider, setTestProvider] = useState<SmsState["active_provider"] | null>(null);
+  const [testPhone, setTestPhone] = useState("");
+  const [testMessage, setTestMessage] = useState("این یک پیامک تست از سامانه شارژان است.");
+  const [testing, setTesting] = useState(false);
+
+  const runTest = async () => {
+    if (!testProvider) return;
+    if (!/^09\d{9}$/.test(testPhone)) {
+      toast({ title: "شماره نامعتبر", description: "شماره موبایل باید با 09 شروع شود و 11 رقم باشد", variant: "destructive" });
+      return;
+    }
+    setTesting(true);
+    try {
+      const cfg = state[testProvider as "smsir" | "kavenegar" | "melipayamak" | "faraz"] as any;
+      const payload: any = { provider: testProvider, phone: testPhone, message: testMessage };
+      if (testProvider === "smsir") {
+        payload.api_key = cfg.api_key;
+        payload.line_number = cfg.line_number;
+      } else if (testProvider === "kavenegar") {
+        payload.api_key = cfg.api_key;
+        payload.sender = cfg.sender;
+      } else if (testProvider === "melipayamak" || testProvider === "faraz") {
+        payload.username = cfg.username;
+        payload.password = cfg.password;
+        payload.sender = cfg.sender;
+      }
+      const { data, error } = await supabase.functions.invoke("test-sms", { body: payload });
+      if (error) throw error;
+      if (data?.success) {
+        toast({
+          title: "پیامک تست ارسال شد ✅",
+          description: `به شماره ${testPhone} ارسال شد${data.provider_message_id ? ` (شناسه: ${data.provider_message_id})` : ""}`,
+        });
+        setTestProvider(null);
+      } else {
+        toast({ title: "ارسال ناموفق ❌", description: data?.error ?? "خطای نامشخص", variant: "destructive" });
+      }
+    } catch (e: any) {
+      toast({ title: "خطا در ارسال", description: e.message, variant: "destructive" });
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const queryKey = userId
     ? ["customer_settings", userId, "sms"]
@@ -206,6 +250,9 @@ export function SmsSettings({ userId }: Props) {
                   }
                 />
               </div>
+              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("smsir")}>
+                <Send className="h-4 w-4" /> تست ارسال
+              </Button>
             </div>
           )}
         </div>
@@ -260,6 +307,9 @@ export function SmsSettings({ userId }: Props) {
                   }
                 />
               </div>
+              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("kavenegar")}>
+                <Send className="h-4 w-4" /> تست ارسال
+              </Button>
             </div>
           )}
         </div>
@@ -328,6 +378,9 @@ export function SmsSettings({ userId }: Props) {
                   }
                 />
               </div>
+              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("melipayamak")}>
+                <Send className="h-4 w-4" /> تست ارسال
+              </Button>
             </div>
           )}
         </div>
@@ -396,6 +449,9 @@ export function SmsSettings({ userId }: Props) {
                   }
                 />
               </div>
+              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("faraz")}>
+                <Send className="h-4 w-4" /> تست ارسال
+              </Button>
             </div>
           )}
         </div>
@@ -503,6 +559,45 @@ export function SmsSettings({ userId }: Props) {
           </Button>
         </div>
       </CardContent>
+
+      <Dialog open={!!testProvider} onOpenChange={(o) => !o && setTestProvider(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تست ارسال پیامک</DialogTitle>
+            <DialogDescription>
+              یک پیامک واقعی با تنظیمات سرویس <span className="font-semibold">{testProvider}</span> ارسال می‌شود. ابتدا تنظیمات را ذخیره کنید یا مقادیر فعلی فرم استفاده می‌شود.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label>شماره موبایل گیرنده</Label>
+              <Input
+                dir="ltr"
+                placeholder="09121234567"
+                value={testPhone}
+                onChange={(e) => setTestPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>متن پیامک تست</Label>
+              <Textarea
+                rows={3}
+                value={testMessage}
+                onChange={(e) => setTestMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTestProvider(null)} disabled={testing}>
+              انصراف
+            </Button>
+            <Button onClick={runTest} disabled={testing} className="gap-2">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              ارسال تست
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
