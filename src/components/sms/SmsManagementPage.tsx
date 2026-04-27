@@ -3,20 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MessageSquare, Settings as SettingsIcon, FileText, History, Loader2, Save } from "lucide-react";
+import { MessageSquare, Clock, Users, History, Loader2, Save } from "lucide-react";
 import {
   useSmsSettings,
   useUpdateSmsSettings,
-  useSmsTemplates,
-  useUpdateSmsTemplate,
   useSmsLogs,
-  type SmsProvider,
   type SmsRecipientMode,
 } from "@/hooks/useSms";
 import { formatJalaliDate } from "@/lib/jalaliDate";
@@ -29,14 +25,6 @@ const TEMPLATE_LABELS: Record<string, string> = {
   balance_reminder: "یادآوری مانده بدهی",
 };
 
-const TEMPLATE_VARIABLES: Record<string, string[]> = {
-  debt_report: ["{نام}", "{واحد}", "{ساختمان}", "{مبلغ}"],
-  payment_thanks: ["{نام}", "{واحد}", "{ساختمان}", "{مبلغ}", "{مانده}"],
-  reservation_approved: ["{نام}", "{مکان}", "{تاریخ}", "{ساعت}", "{ساختمان}"],
-  reservation_rejected: ["{نام}", "{مکان}", "{تاریخ}", "{توضیحات}", "{ساختمان}"],
-  balance_reminder: ["{نام}", "{واحد}", "{مانده}", "{ساختمان}"],
-};
-
 function formatJalaliDateTime(iso: string) {
   const d = new Date(iso);
   const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -46,8 +34,6 @@ function formatJalaliDateTime(iso: string) {
 export function SmsManagementPage() {
   const { data: settings, isLoading } = useSmsSettings();
   const updateSettings = useUpdateSmsSettings();
-  const { data: templates = [] } = useSmsTemplates();
-  const updateTemplate = useUpdateSmsTemplate();
   const { data: logs = [] } = useSmsLogs(200);
 
   const [local, setLocal] = useState<typeof settings>(undefined);
@@ -69,96 +55,19 @@ export function SmsManagementPage() {
         <MessageSquare className="w-7 h-7 text-primary" />
         <div>
           <h1 className="text-2xl font-bold">مدیریت پیامک</h1>
-          <p className="text-muted-foreground text-sm">تنظیمات سرویس، قالب‌ها، گیرندگان و تاریخچه ارسال‌ها</p>
+          <p className="text-muted-foreground text-sm">زمان‌بندی خودکار، گیرندگان رویدادها و تاریخچه ارسال‌ها</p>
         </div>
       </div>
 
-      <Tabs defaultValue="provider" dir="rtl">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="provider"><SettingsIcon className="w-4 h-4 ml-1" /> سرویس و ارسال</TabsTrigger>
-          <TabsTrigger value="recipients">گیرندگان و رویدادها</TabsTrigger>
-          <TabsTrigger value="templates"><FileText className="w-4 h-4 ml-1" /> قالب‌ها</TabsTrigger>
+      <Tabs defaultValue="schedule" dir="rtl">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="schedule"><Clock className="w-4 h-4 ml-1" /> زمان‌بندی خودکار</TabsTrigger>
+          <TabsTrigger value="recipients"><Users className="w-4 h-4 ml-1" /> گیرندگان و رویدادها</TabsTrigger>
           <TabsTrigger value="logs"><History className="w-4 h-4 ml-1" /> تاریخچه</TabsTrigger>
         </TabsList>
 
-        {/* PROVIDER */}
-        <TabsContent value="provider" className="mt-4 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>سرویس پیامک</CardTitle>
-              <CardDescription>یک سرویس فعال انتخاب کنید و اطلاعات API آن را وارد کنید</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between border rounded-lg p-3">
-                <div>
-                  <Label className="font-medium">فعال‌سازی ارسال پیامک</Label>
-                  <p className="text-xs text-muted-foreground mt-1">تا زمانی که این کلید خاموش باشد هیچ پیامکی ارسال نمی‌شود</p>
-                </div>
-                <Switch checked={s.is_enabled} onCheckedChange={(v) => patch({ is_enabled: v })} />
-              </div>
-
-              <div>
-                <Label>سرویس فعال</Label>
-                <Select value={s.active_provider} onValueChange={(v) => patch({ active_provider: v as SmsProvider })}>
-                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kavenegar">کاوه‌نگار</SelectItem>
-                    <SelectItem value="smsir">SMS.ir</SelectItem>
-                    <SelectItem value="melipayamak">ملی‌پیامک</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {s.active_provider === "kavenegar" && (
-                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
-                  <div>
-                    <Label>API Key کاوه‌نگار</Label>
-                    <Input value={s.kavenegar_api_key ?? ""} onChange={(e) => patch({ kavenegar_api_key: e.target.value })} placeholder="کلید API" />
-                  </div>
-                  <div>
-                    <Label>شماره فرستنده</Label>
-                    <Input value={s.kavenegar_sender ?? ""} onChange={(e) => patch({ kavenegar_sender: e.target.value })} placeholder="مثل 10004346" />
-                  </div>
-                </div>
-              )}
-
-              {s.active_provider === "smsir" && (
-                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
-                  <div>
-                    <Label>API Key اس‌ام‌اس‌دات‌آی‌آر</Label>
-                    <Input value={s.smsir_api_key ?? ""} onChange={(e) => patch({ smsir_api_key: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>خط ارسال (Line Number)</Label>
-                    <Input value={s.smsir_sender ?? ""} onChange={(e) => patch({ smsir_sender: e.target.value })} placeholder="مثل 30007732" />
-                  </div>
-                </div>
-              )}
-
-              {s.active_provider === "melipayamak" && (
-                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
-                  <div>
-                    <Label>نام کاربری</Label>
-                    <Input value={s.melipayamak_username ?? ""} onChange={(e) => patch({ melipayamak_username: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>رمز عبور</Label>
-                    <Input type="password" value={s.melipayamak_password ?? ""} onChange={(e) => patch({ melipayamak_password: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>شماره فرستنده</Label>
-                    <Input value={s.melipayamak_sender ?? ""} onChange={(e) => patch({ melipayamak_sender: e.target.value })} />
-                  </div>
-                </div>
-              )}
-
-              <Button onClick={() => updateSettings.mutate(s)} disabled={updateSettings.isPending}>
-                <Save className="w-4 h-4 ml-1" />
-                ذخیره تنظیمات سرویس
-              </Button>
-            </CardContent>
-          </Card>
-
+        {/* SCHEDULE */}
+        <TabsContent value="schedule" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>زمان‌بندی خودکار گزارش بدهی</CardTitle>
@@ -180,7 +89,7 @@ export function SmsManagementPage() {
                 </div>
               </div>
               <Button onClick={() => updateSettings.mutate(s)} disabled={updateSettings.isPending}>
-                <Save className="w-4 h-4 ml-1" /> ذخیره
+                <Save className="w-4 h-4 ml-1" /> ذخیره زمان‌بندی
               </Button>
             </CardContent>
           </Card>
@@ -231,18 +140,6 @@ export function SmsManagementPage() {
           </Card>
         </TabsContent>
 
-        {/* TEMPLATES */}
-        <TabsContent value="templates" className="mt-4 space-y-4">
-          {templates.map((t) => (
-            <TemplateEditor
-              key={t.id}
-              template={t}
-              onSave={(patch) => updateTemplate.mutate({ id: t.id, patch })}
-              saving={updateTemplate.isPending}
-            />
-          ))}
-        </TabsContent>
-
         {/* LOGS */}
         <TabsContent value="logs" className="mt-4">
           <Card>
@@ -289,50 +186,5 @@ export function SmsManagementPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
-}
-
-function TemplateEditor({
-  template,
-  onSave,
-  saving,
-}: {
-  template: { id: string; template_key: string; title: string; body: string; is_active: boolean };
-  onSave: (patch: { title?: string; body?: string; is_active?: boolean }) => void;
-  saving: boolean;
-}) {
-  const [title, setTitle] = useState(template.title);
-  const [body, setBody] = useState(template.body);
-  const [active, setActive] = useState(template.is_active);
-  const vars = TEMPLATE_VARIABLES[template.template_key] ?? [];
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">{TEMPLATE_LABELS[template.template_key] ?? template.template_key}</CardTitle>
-          <div className="flex items-center gap-2">
-            <Label className="text-sm">فعال</Label>
-            <Switch checked={active} onCheckedChange={setActive} />
-          </div>
-        </div>
-        <CardDescription className="text-xs">
-          متغیرهای قابل استفاده: {vars.map((v) => <code key={v} className="mx-1 px-1 bg-muted rounded">{v}</code>)}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <Label>عنوان</Label>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
-        <div>
-          <Label>متن قالب</Label>
-          <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
-        </div>
-        <Button onClick={() => onSave({ title, body, is_active: active })} disabled={saving} size="sm">
-          <Save className="w-4 h-4 ml-1" /> ذخیره قالب
-        </Button>
-      </CardContent>
-    </Card>
   );
 }
