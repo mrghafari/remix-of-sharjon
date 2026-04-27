@@ -253,13 +253,6 @@ export function SmsSettings({ userId }: Props) {
               <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("smsir")}>
                 <Send className="h-4 w-4" /> تست ارسال
               </Button>
-                    setState((s) => ({
-                      ...s,
-                      smsir: { ...s.smsir, line_number: e.target.value },
-                    }))
-                  }
-                />
-              </div>
             </div>
           )}
         </div>
