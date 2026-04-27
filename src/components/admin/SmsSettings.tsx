@@ -559,6 +559,45 @@ export function SmsSettings({ userId }: Props) {
           </Button>
         </div>
       </CardContent>
+
+      <Dialog open={!!testProvider} onOpenChange={(o) => !o && setTestProvider(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تست ارسال پیامک</DialogTitle>
+            <DialogDescription>
+              یک پیامک واقعی با تنظیمات سرویس <span className="font-semibold">{testProvider}</span> ارسال می‌شود. ابتدا تنظیمات را ذخیره کنید یا مقادیر فعلی فرم استفاده می‌شود.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-2">
+              <Label>شماره موبایل گیرنده</Label>
+              <Input
+                dir="ltr"
+                placeholder="09121234567"
+                value={testPhone}
+                onChange={(e) => setTestPhone(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>متن پیامک تست</Label>
+              <Textarea
+                rows={3}
+                value={testMessage}
+                onChange={(e) => setTestMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTestProvider(null)} disabled={testing}>
+              انصراف
+            </Button>
+            <Button onClick={runTest} disabled={testing} className="gap-2">
+              {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              ارسال تست
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
