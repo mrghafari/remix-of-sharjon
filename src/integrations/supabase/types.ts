@@ -1229,6 +1229,48 @@ export type Database = {
           },
         ]
       }
+      sms_credit_requests: {
+        Row: {
+          admin_note: string | null
+          building_id: string
+          created_at: string
+          id: string
+          manager_note: string | null
+          package_count: number
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          building_id: string
+          created_at?: string
+          id?: string
+          manager_note?: string | null
+          package_count: number
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          building_id?: string
+          created_at?: string
+          id?: string
+          manager_note?: string | null
+          package_count?: number
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_logs: {
         Row: {
           building_id: string
