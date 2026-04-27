@@ -453,6 +453,12 @@ export function SmsSettings({ userId }: Props) {
                 <Send className="h-4 w-4" /> تست ارسال
               </Button>
             </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Templates */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
