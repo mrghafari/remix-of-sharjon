@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +72,11 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
   const [requestDialog, setRequestDialog] = useState(false);
   const [reqVenue, setReqVenue] = useState("");
   const [reqName, setReqName] = useState(requesterName || "");
+
+  // Sync reqName with requesterName prop when it loads/changes (resident mode)
+  useEffect(() => {
+    if (requesterName) setReqName(requesterName);
+  }, [requesterName]);
   const [reqDate, setReqDate] = useState<Date | undefined>(new Date());
   const [reqStart, setReqStart] = useState("18:00");
   const [reqEnd, setReqEnd] = useState("22:00");
@@ -494,7 +499,17 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
             )}
             <div>
               <label className="text-sm font-medium mb-1 block">نام درخواست‌کننده</label>
-              <Input value={reqName} onChange={e => setReqName(e.target.value)} placeholder="نام شما" />
+              <Input
+                value={reqName}
+                onChange={e => setReqName(e.target.value)}
+                placeholder="نام شما"
+                readOnly={residentMode}
+                disabled={residentMode}
+                className={residentMode ? "bg-muted cursor-not-allowed" : ""}
+              />
+              {residentMode && (
+                <p className="text-xs text-muted-foreground mt-1">نام شما به‌صورت خودکار از حساب کاربری شما ثبت می‌شود</p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">تاریخ رزرو</label>
