@@ -70,6 +70,10 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="sms-packages" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              بسته‌های پیامک
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
               تنظیمات
