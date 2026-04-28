@@ -72,6 +72,11 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
   const [requestDialog, setRequestDialog] = useState(false);
   const [reqVenue, setReqVenue] = useState("");
   const [reqName, setReqName] = useState(requesterName || "");
+
+  // Sync reqName with requesterName prop when it loads/changes (resident mode)
+  useEffect(() => {
+    if (requesterName) setReqName(requesterName);
+  }, [requesterName]);
   const [reqDate, setReqDate] = useState<Date | undefined>(new Date());
   const [reqStart, setReqStart] = useState("18:00");
   const [reqEnd, setReqEnd] = useState("22:00");
