@@ -1319,6 +1319,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_packages: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          package_count: number
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          package_count: number
+          price: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          package_count?: number
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sms_settings: {
         Row: {
           active_provider: string

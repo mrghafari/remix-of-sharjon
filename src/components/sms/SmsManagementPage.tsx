@@ -23,14 +23,6 @@ import { useBuilding } from "@/contexts/BuildingContext";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
-const SMS_PACKAGES = [
-  { count: 1000, price: 150000 },
-  { count: 5000, price: 700000 },
-  { count: 10000, price: 1300000 },
-  { count: 25000, price: 3000000 },
-  { count: 50000, price: 5500000 },
-];
-
 function formatToman(n: number) {
   return new Intl.NumberFormat("fa-IR").format(n) + " تومان";
 }
@@ -57,8 +49,21 @@ export function SmsManagementPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
+  const { data: packages = [] } = useQuery({
+    queryKey: ["sms_packages_active"],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("sms_packages")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const [local, setLocal] = useState<typeof settings>(undefined);
-  const [selectedPackage, setSelectedPackage] = useState<number>(SMS_PACKAGES[1].count);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
   const [managerNote, setManagerNote] = useState("");
 
   const { data: requests = [] } = useQuery({
@@ -79,10 +84,12 @@ export function SmsManagementPage() {
   const submitRequest = useMutation({
     mutationFn: async () => {
       if (!currentBuildingId || !user) throw new Error("ساختمان یا کاربر نامشخص");
+      const pkg = packages.find((p: any) => p.id === selectedPackageId);
+      if (!pkg) throw new Error("لطفاً یک بسته انتخاب کنید");
       const { error } = await (supabase as any).from("sms_credit_requests").insert({
         building_id: currentBuildingId,
         requested_by: user.id,
-        package_count: selectedPackage,
+        package_count: pkg.package_count,
         manager_note: managerNote || null,
       });
       if (error) throw error;
@@ -210,19 +217,25 @@ export function SmsManagementPage() {
               <div>
                 <Label className="mb-2 block">انتخاب بسته</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {SMS_PACKAGES.map((pkg) => (
+                  {packages.length === 0 && (
+                    <div className="col-span-full text-center text-muted-foreground text-sm py-4">
+                      بسته‌ای برای نمایش وجود ندارد
+                    </div>
+                  )}
+                  {packages.map((pkg: any) => (
                     <button
-                      key={pkg.count}
+                      key={pkg.id}
                       type="button"
-                      onClick={() => setSelectedPackage(pkg.count)}
+                      onClick={() => setSelectedPackageId(pkg.id)}
                       className={`border rounded-lg p-4 text-right transition-all ${
-                        selectedPackage === pkg.count
+                        selectedPackageId === pkg.id
                           ? "border-primary bg-primary/5 ring-2 ring-primary"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="font-bold text-lg">{new Intl.NumberFormat("fa-IR").format(pkg.count)} پیامک</div>
-                      <div className="text-sm text-muted-foreground mt-1">{formatToman(pkg.price)}</div>
+                      <div className="font-bold text-lg">{new Intl.NumberFormat("fa-IR").format(pkg.package_count)} پیامک</div>
+                      <div className="text-sm text-muted-foreground mt-1">{formatToman(Number(pkg.price))}</div>
+                      {pkg.label && <div className="text-xs text-primary mt-1">{pkg.label}</div>}
                     </button>
                   ))}
                 </div>

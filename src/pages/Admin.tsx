@@ -5,11 +5,12 @@ import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy } from "lucide-react";
+import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminPlatformSettings } from "@/components/admin/AdminPlatformSettings";
 import { AdminBankAccounts } from "@/components/admin/AdminBankAccounts";
+import { AdminSmsPackages } from "@/components/admin/AdminSmsPackages";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 
 export default function Admin() {
@@ -69,6 +70,10 @@ export default function Admin() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="sms-packages" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              بسته‌های پیامک
+            </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
               تنظیمات
@@ -89,6 +94,10 @@ export default function Admin() {
 
           <TabsContent value="tickets">
             <TicketsPage superAdminMode />
+          </TabsContent>
+
+          <TabsContent value="sms-packages">
+            <AdminSmsPackages />
           </TabsContent>
 
           <TabsContent value="settings">
