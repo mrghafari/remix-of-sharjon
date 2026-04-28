@@ -96,6 +96,10 @@ export default function Admin() {
             <TicketsPage superAdminMode />
           </TabsContent>
 
+          <TabsContent value="sms-packages">
+            <AdminSmsPackages />
+          </TabsContent>
+
           <TabsContent value="settings">
             <AdminPlatformSettings />
           </TabsContent>
