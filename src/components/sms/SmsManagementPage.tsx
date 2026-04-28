@@ -217,19 +217,25 @@ export function SmsManagementPage() {
               <div>
                 <Label className="mb-2 block">انتخاب بسته</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {SMS_PACKAGES.map((pkg) => (
+                  {packages.length === 0 && (
+                    <div className="col-span-full text-center text-muted-foreground text-sm py-4">
+                      بسته‌ای برای نمایش وجود ندارد
+                    </div>
+                  )}
+                  {packages.map((pkg: any) => (
                     <button
-                      key={pkg.count}
+                      key={pkg.id}
                       type="button"
-                      onClick={() => setSelectedPackage(pkg.count)}
+                      onClick={() => setSelectedPackageId(pkg.id)}
                       className={`border rounded-lg p-4 text-right transition-all ${
-                        selectedPackage === pkg.count
+                        selectedPackageId === pkg.id
                           ? "border-primary bg-primary/5 ring-2 ring-primary"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="font-bold text-lg">{new Intl.NumberFormat("fa-IR").format(pkg.count)} پیامک</div>
-                      <div className="text-sm text-muted-foreground mt-1">{formatToman(pkg.price)}</div>
+                      <div className="font-bold text-lg">{new Intl.NumberFormat("fa-IR").format(pkg.package_count)} پیامک</div>
+                      <div className="text-sm text-muted-foreground mt-1">{formatToman(Number(pkg.price))}</div>
+                      {pkg.label && <div className="text-xs text-primary mt-1">{pkg.label}</div>}
                     </button>
                   ))}
                 </div>
