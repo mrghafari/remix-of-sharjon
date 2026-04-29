@@ -1232,11 +1232,16 @@ export type Database = {
       sms_credit_requests: {
         Row: {
           admin_note: string | null
+          amount: number | null
+          authority: string | null
           building_id: string
           created_at: string
+          gateway: string | null
           id: string
           manager_note: string | null
           package_count: number
+          paid_at: string | null
+          ref_id: string | null
           requested_by: string
           reviewed_at: string | null
           reviewed_by: string | null
@@ -1245,11 +1250,16 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          amount?: number | null
+          authority?: string | null
           building_id: string
           created_at?: string
+          gateway?: string | null
           id?: string
           manager_note?: string | null
           package_count: number
+          paid_at?: string | null
+          ref_id?: string | null
           requested_by: string
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1258,11 +1268,16 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          amount?: number | null
+          authority?: string | null
           building_id?: string
           created_at?: string
+          gateway?: string | null
           id?: string
           manager_note?: string | null
           package_count?: number
+          paid_at?: string | null
+          ref_id?: string | null
           requested_by?: string
           reviewed_at?: string | null
           reviewed_by?: string | null
