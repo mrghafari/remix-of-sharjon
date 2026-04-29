@@ -214,8 +214,8 @@ export function SmsManagementPage() {
         <TabsContent value="credits" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>درخواست خرید بسته پیامک</CardTitle>
-              <CardDescription>بسته مورد نظر را انتخاب و درخواست خود را ثبت کنید. ادمین پس از بررسی، اعتبار را شارژ می‌کند.</CardDescription>
+              <CardTitle>خرید آنلاین بسته پیامک</CardTitle>
+              <CardDescription>بسته مورد نظر را انتخاب کنید و به درگاه پرداخت بانکی منتقل شوید. اعتبار بلافاصله پس از پرداخت موفق فعال می‌شود.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
