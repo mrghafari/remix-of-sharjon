@@ -290,7 +290,10 @@ export function SmsManagementPage() {
                         <TableCell>{new Intl.NumberFormat("fa-IR").format(r.package_count)} پیامک</TableCell>
                         <TableCell>
                           {r.status === "pending" && <Badge variant="secondary">در انتظار بررسی</Badge>}
+                          {r.status === "pending_payment" && <Badge variant="secondary">در انتظار پرداخت</Badge>}
                           {r.status === "approved" && <Badge>تأیید و شارژ شد</Badge>}
+                          {r.status === "paid" && <Badge>پرداخت موفق</Badge>}
+                          {r.status === "payment_failed" && <Badge variant="destructive">پرداخت ناموفق</Badge>}
                           {r.status === "rejected" && <Badge variant="destructive">رد شد</Badge>}
                         </TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate" title={r.manager_note ?? ""}>{r.manager_note ?? "-"}</TableCell>
