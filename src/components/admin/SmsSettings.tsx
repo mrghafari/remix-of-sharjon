@@ -410,6 +410,18 @@ export function SmsSettings({ userId }: Props) {
                   }
                 />
               </div>
+              <div className="space-y-2">
+                <Label>آدرس API (URL)</Label>
+                <Input
+                  dir="ltr"
+                  placeholder={DEFAULT_URLS.melipayamak}
+                  value={state.melipayamak.api_url || ""}
+                  onChange={(e) =>
+                    setState((s) => ({ ...s, melipayamak: { ...s.melipayamak, api_url: e.target.value } }))
+                  }
+                />
+                <p className="text-xs text-muted-foreground">پیش‌فرض: {DEFAULT_URLS.melipayamak}</p>
+              </div>
               <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setTestProvider("melipayamak")}>
                 <Send className="h-4 w-4" /> تست ارسال
               </Button>
