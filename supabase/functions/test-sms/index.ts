@@ -138,16 +138,16 @@ Deno.serve(async (req) => {
 
     if (provider === "kavenegar") {
       if (!body.api_key) throw new Error("API Key کاوه‌نگار وارد نشده است");
-      providerMsgId = await sendKavenegar(body.api_key, body.sender ?? "", phone, message);
+      providerMsgId = await sendKavenegar(body.api_key, body.sender ?? "", phone, message, body.api_url);
     } else if (provider === "smsir") {
       if (!body.api_key) throw new Error("API Key سرویس SMS.ir وارد نشده است");
-      providerMsgId = await sendSmsIr(body.api_key, body.line_number ?? body.sender ?? "", phone, message);
+      providerMsgId = await sendSmsIr(body.api_key, body.line_number ?? body.sender ?? "", phone, message, body.api_url);
     } else if (provider === "melipayamak") {
       if (!body.username || !body.password) throw new Error("نام کاربری و رمز ملی‌پیامک وارد نشده است");
-      providerMsgId = await sendMelipayamak(body.username, body.password, body.sender ?? "", phone, message);
+      providerMsgId = await sendMelipayamak(body.username, body.password, body.sender ?? "", phone, message, body.api_url);
     } else if (provider === "faraz") {
       if (!body.username || !body.password) throw new Error("نام کاربری و رمز فراز وارد نشده است");
-      providerMsgId = await sendFaraz(body.username, body.password, body.sender ?? "", phone, message);
+      providerMsgId = await sendFaraz(body.username, body.password, body.sender ?? "", phone, message, body.api_url);
     } else {
       throw new Error(`سرویس نامعتبر: ${provider}`);
     }
