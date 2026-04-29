@@ -84,20 +84,24 @@ export function SmsManagementPage() {
   const submitRequest = useMutation({
     mutationFn: async () => {
       if (!currentBuildingId || !user) throw new Error("ساختمان یا کاربر نامشخص");
-      const pkg = packages.find((p: any) => p.id === selectedPackageId);
-      if (!pkg) throw new Error("لطفاً یک بسته انتخاب کنید");
-      const { error } = await (supabase as any).from("sms_credit_requests").insert({
-        building_id: currentBuildingId,
-        requested_by: user.id,
-        package_count: pkg.package_count,
-        manager_note: managerNote || null,
+      if (!selectedPackageId) throw new Error("لطفاً یک بسته انتخاب کنید");
+      const { data, error } = await supabase.functions.invoke("sms-payment-init", {
+        body: {
+          building_id: currentBuildingId,
+          package_id: selectedPackageId,
+          manager_note: managerNote || null,
+        },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || "خطا در آغاز پرداخت");
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const redirect = (data as any)?.redirect_url;
+      if (!redirect) throw new Error("آدرس درگاه دریافت نشد");
+      return redirect as string;
     },
-    onSuccess: () => {
+    onSuccess: (redirect) => {
       qc.invalidateQueries({ queryKey: ["sms_credit_requests", currentBuildingId] });
-      setManagerNote("");
-      toast({ title: "درخواست ثبت شد", description: "ادمین به‌زودی بررسی خواهد کرد" });
+      toast({ title: "در حال انتقال به درگاه پرداخت..." });
+      window.location.href = redirect;
     },
     onError: (e: Error) => toast({ title: "خطا", description: e.message, variant: "destructive" }),
   });
@@ -210,8 +214,8 @@ export function SmsManagementPage() {
         <TabsContent value="credits" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>درخواست خرید بسته پیامک</CardTitle>
-              <CardDescription>بسته مورد نظر را انتخاب و درخواست خود را ثبت کنید. ادمین پس از بررسی، اعتبار را شارژ می‌کند.</CardDescription>
+              <CardTitle>خرید آنلاین بسته پیامک</CardTitle>
+              <CardDescription>بسته مورد نظر را انتخاب کنید و به درگاه پرداخت بانکی منتقل شوید. اعتبار بلافاصله پس از پرداخت موفق فعال می‌شود.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -252,9 +256,9 @@ export function SmsManagementPage() {
                 />
               </div>
 
-              <Button onClick={() => submitRequest.mutate()} disabled={submitRequest.isPending}>
+              <Button onClick={() => submitRequest.mutate()} disabled={submitRequest.isPending || !selectedPackageId}>
                 <Send className="w-4 h-4 ml-1" />
-                {submitRequest.isPending ? "در حال ارسال..." : "ثبت درخواست خرید"}
+                {submitRequest.isPending ? "در حال انتقال به درگاه..." : "پرداخت و خرید آنلاین"}
               </Button>
             </CardContent>
           </Card>
@@ -286,7 +290,10 @@ export function SmsManagementPage() {
                         <TableCell>{new Intl.NumberFormat("fa-IR").format(r.package_count)} پیامک</TableCell>
                         <TableCell>
                           {r.status === "pending" && <Badge variant="secondary">در انتظار بررسی</Badge>}
+                          {r.status === "pending_payment" && <Badge variant="secondary">در انتظار پرداخت</Badge>}
                           {r.status === "approved" && <Badge>تأیید و شارژ شد</Badge>}
+                          {r.status === "paid" && <Badge>پرداخت موفق</Badge>}
+                          {r.status === "payment_failed" && <Badge variant="destructive">پرداخت ناموفق</Badge>}
                           {r.status === "rejected" && <Badge variant="destructive">رد شد</Badge>}
                         </TableCell>
                         <TableCell className="text-xs max-w-[200px] truncate" title={r.manager_note ?? ""}>{r.manager_note ?? "-"}</TableCell>
