@@ -1665,6 +1665,66 @@ export type Database = {
         }
         Relationships: []
       }
+      unit_occupancy_history: {
+        Row: {
+          building_id: string
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          note: string | null
+          person_name: string
+          person_phone: string | null
+          person_type: string
+          start_date: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          note?: string | null
+          person_name: string
+          person_phone?: string | null
+          person_type: string
+          start_date?: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          note?: string | null
+          person_name?: string
+          person_phone?: string | null
+          person_type?: string
+          start_date?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_occupancy_history_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_occupancy_history_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       units: {
         Row: {
           area: number | null
