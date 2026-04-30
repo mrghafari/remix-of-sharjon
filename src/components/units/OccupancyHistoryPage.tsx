@@ -134,23 +134,25 @@ export function OccupancyHistoryPage({ embedded = false }: { embedded?: boolean 
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in" dir="rtl">
+    <div className={embedded ? "space-y-6 animate-fade-in" : "max-w-7xl mx-auto space-y-6 animate-fade-in"} dir="rtl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <History className="w-6 h-6 text-primary" />
-            تاریخچه مالک و ساکن
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            گردش افراد در هر واحد به همراه بازه‌های زمانی
-          </p>
-        </div>
+        {!embedded && (
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <History className="w-6 h-6 text-primary" />
+              تاریخچه مالک و ساکن
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              گردش افراد در هر واحد به همراه بازه‌های زمانی
+            </p>
+          </div>
+        )}
         <Button
           onClick={() => {
             setEditing(null);
             setDialogOpen(true);
           }}
-          className="gap-2"
+          className="gap-2 mr-auto"
         >
           <Plus className="w-4 h-4" />
           ثبت رکورد جدید
