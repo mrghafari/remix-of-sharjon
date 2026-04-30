@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { ExpensesPage } from "@/components/expenses/ExpensesPage";
 import { UnitsPage } from "@/components/units/UnitsPage";
+import { OccupancyHistoryPage } from "@/components/units/OccupancyHistoryPage";
 import { PaymentsPage } from "@/components/payments/PaymentsPage";
 import { ChargesPage } from "@/components/charges/ChargesPage";
 import { SettingsPage } from "@/components/settings/SettingsPage";
