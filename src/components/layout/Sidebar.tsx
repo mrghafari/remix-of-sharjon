@@ -1,4 +1,4 @@
-import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy, X, ScrollText, Send, History } from "lucide-react";
+import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy, X, ScrollText, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -17,7 +17,6 @@ interface SidebarProps {
 const menuItems = [
   { id: "dashboard", label: "داشبورد", icon: Home },
   { id: "units", label: "واحدها", icon: Building2 },
-  { id: "occupancy", label: "تاریخچه افراد", icon: History },
   { id: "expenses", label: "هزینه‌ها", icon: Receipt },
   { id: "projects", label: "مدیریت پروژه", icon: FolderKanban },
   { id: "payments", label: "پرداخت‌ها", icon: CreditCard },
