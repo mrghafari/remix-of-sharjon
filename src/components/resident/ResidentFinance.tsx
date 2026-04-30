@@ -306,16 +306,10 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
           <TabsTrigger value="payments" className="gap-2">
             <ArrowUpCircle className="w-4 h-4 text-emerald-500" />
             پرداختی‌ها
-            {payments.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{payments.length}</Badge>
-            )}
           </TabsTrigger>
           <TabsTrigger value="expenses" className="gap-2">
             <ArrowDownCircle className="w-4 h-4 text-red-500" />
             هزینه‌های تسهیم‌شده
-            {expenseShares.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{expenseShares.length}</Badge>
-            )}
           </TabsTrigger>
         </TabsList>
 
