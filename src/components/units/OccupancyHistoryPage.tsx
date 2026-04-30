@@ -269,10 +269,9 @@ function TimelineView({
   onEdit: (r: OccupancyRow) => void;
 }) {
   const visibleUnits = useMemo(() => {
-    if (unitFilter !== "all") return units.filter((u) => u.id === unitFilter);
-    const ids = new Set(rows.map((r) => r.unit_id));
-    return units.filter((u) => ids.has(u.id));
-  }, [units, rows, unitFilter]);
+    if (unitFilter === "all") return [];
+    return units.filter((u) => u.id === unitFilter);
+  }, [units, unitFilter]);
 
   const range = useMemo(() => {
     let minT = from ? from.getTime() : Infinity;
@@ -308,11 +307,21 @@ function TimelineView({
     );
   }
 
+  if (unitFilter === "all") {
+    return (
+      <Card>
+        <CardContent className="text-center py-12 text-muted-foreground text-sm">
+          برای مشاهده تایم‌لاین، یک واحد را از فیلتر بالا انتخاب کنید
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (visibleUnits.length === 0) {
     return (
       <Card>
         <CardContent className="text-center py-12 text-muted-foreground text-sm">
-          رکوردی برای نمایش وجود ندارد
+          رکوردی برای این واحد یافت نشد
         </CardContent>
       </Card>
     );
