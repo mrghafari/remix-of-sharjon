@@ -269,10 +269,9 @@ function TimelineView({
   onEdit: (r: OccupancyRow) => void;
 }) {
   const visibleUnits = useMemo(() => {
-    if (unitFilter !== "all") return units.filter((u) => u.id === unitFilter);
-    const ids = new Set(rows.map((r) => r.unit_id));
-    return units.filter((u) => ids.has(u.id));
-  }, [units, rows, unitFilter]);
+    if (unitFilter === "all") return [];
+    return units.filter((u) => u.id === unitFilter);
+  }, [units, unitFilter]);
 
   const range = useMemo(() => {
     let minT = from ? from.getTime() : Infinity;
