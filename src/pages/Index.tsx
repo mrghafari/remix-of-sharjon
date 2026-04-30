@@ -158,6 +158,8 @@ const Index = () => {
         return <Dashboard onTabChange={setActiveTab} />;
       case "units":
         return <UnitsPage />;
+      case "occupancy":
+        return <OccupancyHistoryPage />;
       case "expenses":
         return <ExpensesPage />;
       case "projects":
