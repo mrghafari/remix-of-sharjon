@@ -112,17 +112,19 @@ export function PaymentDialog({
       });
     }
 
-    const { error } = await supabase.from("payments").insert(records);
+    // استفاده از RPC امن تا پرداخت + پاک‌سازی بدهی‌ها در یک تراکنش انجام شود
+    // (ساکن نمی‌تواند مستقیم unit_charges را حذف کند به دلیل RLS)
+    const { error } = await supabase.rpc("resident_pay_and_clear", {
+      _building_id: buildingId,
+      _unit_id: unitId,
+      _payments: records as any,
+      _charge_ids_to_clear: chargeIdsToClear ?? [],
+    });
 
     if (error) {
       setProcessing(false);
       toast({ title: "خطا در ثبت پرداخت", description: error.message, variant: "destructive" });
       return;
-    }
-
-    // پاک کردن ردیف‌های بدهی پرداخت‌شده تا از لیست بدهی‌های واحد حذف شوند
-    if (chargeIdsToClear && chargeIdsToClear.length > 0) {
-      await supabase.from("unit_charges").delete().in("id", chargeIdsToClear);
     }
 
     setProcessing(false);

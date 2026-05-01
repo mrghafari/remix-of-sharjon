@@ -1926,6 +1926,15 @@ export type Database = {
         Args: { _building_id: string; _user_id: string }
         Returns: boolean
       }
+      resident_pay_and_clear: {
+        Args: {
+          _building_id: string
+          _charge_ids_to_clear: string[]
+          _payments: Json
+          _unit_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       allocation_type:
