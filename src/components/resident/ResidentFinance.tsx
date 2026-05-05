@@ -99,27 +99,27 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     () => payments.filter((p) => p.fund_type === "extra_charge").reduce((s, p) => s + Number(p.amount), 0),
     [payments]
   );
+  const chargeExpenses = useMemo(
+    () => expenseShares.filter((e: any) => (e.expenses?.fund_type ?? "charge") === "charge").reduce((s, e) => s + Number(e.allocated_amount), 0),
+    [expenseShares]
+  );
+  const extraExpenses = useMemo(
+    () => expenseShares.filter((e: any) => e.expenses?.fund_type === "extra_charge").reduce((s, e) => s + Number(e.allocated_amount), 0),
+    [expenseShares]
+  );
   const chargeOwed = useMemo(() => {
-    const fromExpenses = expenseShares
-      .filter((e: any) => (e.expenses?.fund_type ?? "charge") === "charge")
-      .reduce((s, e) => s + Number(e.allocated_amount), 0);
-    const fromCharges = charges
-      .filter((c) => c.fund_type === "charge")
-      .reduce((s, c) => s + Number(c.amount), 0);
-    return fromExpenses + fromCharges;
-  }, [expenseShares, charges]);
+    const fromCharges = charges.filter((c) => c.fund_type === "charge").reduce((s, c) => s + Number(c.amount), 0);
+    return chargeExpenses + fromCharges;
+  }, [chargeExpenses, charges]);
   const extraOwed = useMemo(() => {
-    const fromExpenses = expenseShares
-      .filter((e: any) => e.expenses?.fund_type === "extra_charge")
-      .reduce((s, e) => s + Number(e.allocated_amount), 0);
-    const fromCharges = charges
-      .filter((c) => c.fund_type === "extra_charge")
-      .reduce((s, c) => s + Number(c.amount), 0);
-    return fromExpenses + fromCharges;
-  }, [expenseShares, charges]);
+    const fromCharges = charges.filter((c) => c.fund_type === "extra_charge").reduce((s, c) => s + Number(c.amount), 0);
+    return extraExpenses + fromCharges;
+  }, [extraExpenses, charges]);
 
   const chargeDebt = Math.max(0, chargeOwed - chargePaid);
   const extraDebt = Math.max(0, extraOwed - extraPaid);
+  const chargeBalance = chargePaid - chargeExpenses;
+  const extraBalance = extraPaid - extraExpenses;
 
   const openPay = (chargeIds?: string[]) => {
     setBulkMode(null);
