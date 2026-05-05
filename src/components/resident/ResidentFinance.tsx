@@ -99,27 +99,27 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     () => payments.filter((p) => p.fund_type === "extra_charge").reduce((s, p) => s + Number(p.amount), 0),
     [payments]
   );
+  const chargeExpenses = useMemo(
+    () => expenseShares.filter((e: any) => (e.expenses?.fund_type ?? "charge") === "charge").reduce((s, e) => s + Number(e.allocated_amount), 0),
+    [expenseShares]
+  );
+  const extraExpenses = useMemo(
+    () => expenseShares.filter((e: any) => e.expenses?.fund_type === "extra_charge").reduce((s, e) => s + Number(e.allocated_amount), 0),
+    [expenseShares]
+  );
   const chargeOwed = useMemo(() => {
-    const fromExpenses = expenseShares
-      .filter((e: any) => (e.expenses?.fund_type ?? "charge") === "charge")
-      .reduce((s, e) => s + Number(e.allocated_amount), 0);
-    const fromCharges = charges
-      .filter((c) => c.fund_type === "charge")
-      .reduce((s, c) => s + Number(c.amount), 0);
-    return fromExpenses + fromCharges;
-  }, [expenseShares, charges]);
+    const fromCharges = charges.filter((c) => c.fund_type === "charge").reduce((s, c) => s + Number(c.amount), 0);
+    return chargeExpenses + fromCharges;
+  }, [chargeExpenses, charges]);
   const extraOwed = useMemo(() => {
-    const fromExpenses = expenseShares
-      .filter((e: any) => e.expenses?.fund_type === "extra_charge")
-      .reduce((s, e) => s + Number(e.allocated_amount), 0);
-    const fromCharges = charges
-      .filter((c) => c.fund_type === "extra_charge")
-      .reduce((s, c) => s + Number(c.amount), 0);
-    return fromExpenses + fromCharges;
-  }, [expenseShares, charges]);
+    const fromCharges = charges.filter((c) => c.fund_type === "extra_charge").reduce((s, c) => s + Number(c.amount), 0);
+    return extraExpenses + fromCharges;
+  }, [extraExpenses, charges]);
 
   const chargeDebt = Math.max(0, chargeOwed - chargePaid);
   const extraDebt = Math.max(0, extraOwed - extraPaid);
+  const chargeBalance = chargePaid - chargeExpenses;
+  const extraBalance = extraPaid - extraExpenses;
 
   const openPay = (chargeIds?: string[]) => {
     setBulkMode(null);
@@ -178,9 +178,15 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             <CardTitle className="text-xs font-medium">مجموع پرداختی‌ها</CardTitle>
             <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-emerald-600">{formatNumber(totalPayments)}</div>
-            <p className="text-xs text-muted-foreground">تومان</p>
+          <CardContent className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">ساکن</span>
+              <span className="font-bold text-emerald-600">{formatNumber(chargePaid)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">مالک</span>
+              <span className="font-bold text-emerald-600">{formatNumber(extraPaid)}</span>
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -188,29 +194,51 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             <CardTitle className="text-xs font-medium">هزینه‌های تسهیم‌شده</CardTitle>
             <ArrowDownCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-red-600">{formatNumber(totalExpenses)}</div>
-            <p className="text-xs text-muted-foreground">تومان</p>
+          <CardContent className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">ساکن</span>
+              <span className="font-bold text-red-600">{formatNumber(chargeExpenses)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">مالک</span>
+              <span className="font-bold text-red-600">{formatNumber(extraExpenses)}</span>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium">بدهی (ساکن)</CardTitle>
+            <CardTitle className="text-xs font-medium">بدهی</CardTitle>
             <CreditCard className="h-4 w-4 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-orange-600">{formatNumber(chargeDebt)}</div>
-            <p className="text-xs text-muted-foreground">تومان</p>
+          <CardContent className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">ساکن</span>
+              <span className="font-bold text-orange-600">{formatNumber(chargeDebt)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">مالک</span>
+              <span className="font-bold text-purple-600">{formatNumber(extraDebt)}</span>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium">بدهی (مالک)</CardTitle>
-            <CreditCard className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-xs font-medium">شارژ ماهانه</CardTitle>
+            <CreditCard className="h-4 w-4 text-orange-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold text-purple-600">{formatNumber(extraDebt)}</div>
-            <p className="text-xs text-muted-foreground">تومان</p>
+          <CardContent className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">ساکن</span>
+              <span className="font-bold text-orange-600">
+                {formatNumber(charges.filter((c) => c.fund_type === "charge").reduce((s, c) => s + Number(c.amount), 0))}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">مالک</span>
+              <span className="font-bold text-purple-600">
+                {formatNumber(charges.filter((c) => c.fund_type === "extra_charge").reduce((s, c) => s + Number(c.amount), 0))}
+              </span>
+            </div>
           </CardContent>
         </Card>
         <TooltipProvider delayDuration={150}>
@@ -230,11 +258,20 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   </CardTitle>
                   {balance >= 0 ? <TrendingUp className="h-4 w-4 text-emerald-500" /> : <TrendingDown className="h-4 w-4 text-red-500" />}
                 </CardHeader>
-                <CardContent>
-                  <div className={`text-lg font-bold ${balance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
-                    {balance >= 0 ? "" : "-"}{formatNumber(balance)}
+                <CardContent className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">ساکن</span>
+                    <span className={`font-bold ${chargeBalance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      {chargeBalance >= 0 ? "" : "-"}{formatNumber(chargeBalance)}
+                    </span>
                   </div>
-                  <p className="text-xs text-primary font-medium flex items-center gap-1 mt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">مالک</span>
+                    <span className={`font-bold ${extraBalance >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                      {extraBalance >= 0 ? "" : "-"}{formatNumber(extraBalance)}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-primary font-medium flex items-center gap-1 pt-1 border-t mt-1">
                     <CreditCard className="w-3 h-3" />
                     پرداخت آنلاین
                   </p>
@@ -264,7 +301,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground pt-1 border-t">
-                  توجه: بدهی‌های شارژ ماهانه ({formatNumber(totalCharges)} تومان) در کارت‌های جداگانه «بدهی (ساکن)» و «بدهی (مالک)» نمایش داده می‌شوند و در این مانده لحاظ نشده‌اند.
+                  توجه: بدهی‌های شارژ ماهانه ({formatNumber(totalCharges)} تومان) جداگانه نمایش داده می‌شوند و در این مانده لحاظ نشده‌اند.
                 </p>
               </div>
             </TooltipContent>
