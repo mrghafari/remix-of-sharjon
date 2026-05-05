@@ -121,7 +121,7 @@ const ResidentDashboard = () => {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         buildingName={currentBuilding?.name || "ساختمان"}
-        unitNumber={currentUnit?.unit_number || ""}
+        unitNumber={unitNumber}
         role={currentMatch?.role || "resident"}
         personName={personName}
         onSignOut={handleSignOut}
