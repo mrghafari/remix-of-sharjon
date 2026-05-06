@@ -84,10 +84,10 @@ const ResidentAuth = () => {
         return;
       }
 
-      setIsNewUser(!!data.is_new_user);
+      setIsNewUser(false);
       setSelectedMatchIndex(0);
       setStep("otp");
-      toast({ title: "کد تأیید ارسال شد", description: "کد ۱۲۳۴۵۶ را وارد کنید (حالت تست)" });
+      toast({ title: "کد تأیید ارسال شد", description: "کد ۶ رقمی را وارد کنید" });
     } catch (err: any) {
       toast({ title: "خطا", description: err.message, variant: "destructive" });
     } finally {
