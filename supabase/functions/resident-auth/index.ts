@@ -122,58 +122,10 @@ serve(async (req) => {
     }
 
     if (action === "request") {
-      const [units, managers] = await Promise.all([lookupUnits(), lookupManagers()]);
-
-      const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
-
-      // If no units AND no managers found — this is a NEW user, still allow them to proceed
-      if (units.length === 0 && managers.length === 0) {
-        return new Response(
-          JSON.stringify({ found: true, matches: [], is_new_user: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Collect all building IDs
-      const allBuildingIds = [...new Set([
-        ...units.map((u: any) => u.building_id),
-        ...managers.map((m: any) => m.building_id),
-      ])];
-      const buildingMap = await getBuildingMap(allBuildingIds);
-
-      // Build matches: separate manager and resident/owner roles
-      const matches: any[] = [];
-
-      // Add manager entries first
-      for (const mgr of managers) {
-        matches.push({
-          unit_id: null,
-          unit_number: null,
-          building_id: mgr.building_id,
-          building_name: buildingMap[mgr.building_id] || "",
-          owner_name: mgr.external_name || "",
-          resident_name: null,
-          role: "manager",
-          isManager: true,
-        });
-      }
-
-      // Add unit entries (as resident/owner, never as manager)
-      for (const u of units) {
-        matches.push({
-          unit_id: u.id,
-          unit_number: u.unit_number,
-          building_id: u.building_id,
-          building_name: buildingMap[u.building_id] || "",
-          owner_name: u.owner_name,
-          resident_name: u.resident_name,
-          role: u.phone === normalizedPhone ? "owner" : "resident",
-          isManager: false,
-        });
-      }
-
+      // Do NOT leak whether the phone is registered, nor any unit/building/name PII
+      // before OTP verification. Detailed match data is returned only after "verify".
       return new Response(
-        JSON.stringify({ found: true, matches, is_new_user: false, is_manager_only: units.length === 0 && managers.length > 0 }),
+        JSON.stringify({ found: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
