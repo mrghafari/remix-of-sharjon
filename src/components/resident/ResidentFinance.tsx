@@ -122,8 +122,23 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const extraBalance = extraPaid - extraExpenses;
 
   const openPay = (chargeIds?: string[]) => {
-    setBulkMode(null);
-    setPayChargeIds(chargeIds ?? charges.map((c) => c.id));
+    if (chargeIds && chargeIds.length > 0) {
+      // Pay only the selected rows: compute amounts split by fund_type
+      let charge = 0;
+      let extra = 0;
+      const idSet = new Set(chargeIds);
+      charges.forEach((c) => {
+        if (!idSet.has(c.id)) return;
+        const amt = Number(c.amount);
+        if (c.fund_type === "extra_charge") extra += amt;
+        else charge += amt;
+      });
+      setBulkMode({ charge: Math.round(charge), extra: Math.round(extra) });
+      setPayChargeIds(chargeIds);
+    } else {
+      setBulkMode(null);
+      setPayChargeIds(charges.map((c) => c.id));
+    }
     setPayOpen(true);
   };
 
