@@ -346,7 +346,8 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         defaultDescription={bulkMode ? "پرداخت تجمیعی بدهی‌های انتخاب‌شده" : undefined}
         ownerName={unitInfo?.owner_name}
         residentName={unitInfo?.resident_name}
-        chargeIdsToClear={payChargeIds}
+        chargeFundIdsToClear={charges.filter((c) => payChargeIds.includes(c.id) && c.fund_type === "charge").map((c) => c.id)}
+        extraFundIdsToClear={charges.filter((c) => payChargeIds.includes(c.id) && c.fund_type === "extra_charge").map((c) => c.id)}
       />
 
       {/* Tabbed Tables */}
