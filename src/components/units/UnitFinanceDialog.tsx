@@ -276,11 +276,18 @@ export function UnitFinanceDialog({ unit, open, onOpenChange }: UnitFinanceDialo
                           )}
                         </TableCell>
                         <TableCell className="text-sm max-w-[200px] truncate">{t.title}</TableCell>
-                        <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
-                          {t.ownerName || "-"}
-                          {t.residentName && t.residentName !== t.ownerName && (
-                            <span className="block text-[10px]">ساکن: {t.residentName}</span>
-                          )}
+                        <TableCell className="text-xs text-muted-foreground max-w-[140px] truncate">
+                          {(() => {
+                            const actor = t.type === "payment"
+                              ? (t.residentName || t.ownerName)
+                              : (t.ownerName || t.residentName);
+                            return (
+                              <>
+                                <div className="font-medium text-foreground">{actor || "-"}</div>
+                                <span className="block text-[10px] text-muted-foreground">انجام دهنده تراکنش</span>
+                              </>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-green-600 font-medium text-sm">
                           {t.type === "payment" ? formatNumber(t.amount) : ""}
