@@ -92,12 +92,6 @@ export function ResidentSidebar({
           )}
         </div>
 
-        {/* Role / building switcher */}
-        {showLabels && (
-          <div className="px-2 pt-2">
-            <RoleSwitcher variant="sidebar" compact />
-          </div>
-        )}
 
         {/* Navigation */}
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
