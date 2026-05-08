@@ -120,6 +120,7 @@ export function ResidentSidebar({
 
         {/* Sign out & Collapse */}
         <div className="p-2 border-t border-sidebar-border space-y-1">
+          <SwitchAccountButton showLabels={showLabels} />
           <button
             onClick={onSignOut}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
