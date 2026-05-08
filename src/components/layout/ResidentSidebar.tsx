@@ -1,4 +1,5 @@
-import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X } from "lucide-react";
+import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X, Repeat } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
