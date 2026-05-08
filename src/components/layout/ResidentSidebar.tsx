@@ -143,3 +143,23 @@ export function ResidentSidebar({
     </>
   );
 }
+
+function SwitchAccountButton({ showLabels }: { showLabels: boolean }) {
+  const navigate = useNavigate();
+  const hasMultiple = (() => {
+    try {
+      const all = JSON.parse(localStorage.getItem("resident_matches_all") || "[]");
+      return Array.isArray(all) && all.length > 1;
+    } catch { return false; }
+  })();
+  if (!hasMultiple) return null;
+  return (
+    <button
+      onClick={() => navigate("/resident-auth")}
+      className="w-full flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-sidebar-accent text-sidebar-foreground/80 hover:text-sidebar-foreground"
+    >
+      <Repeat className="w-4 h-4 shrink-0" />
+      {showLabels && <span className="text-xs font-medium flex-1 text-right">تغییر نقش / ساختمان</span>}
+    </button>
+  );
+}
