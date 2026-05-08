@@ -80,6 +80,9 @@ export function Header({ onTabChange, onMenuClick }: HeaderProps) {
           <div className="hidden md:block">
             <BuildingSelector />
           </div>
+          <div className="hidden md:block">
+            <RoleSwitcher />
+          </div>
           <NotificationBell buildingId={currentBuildingId || undefined} isManager={true} onNavigate={(t) => onTabChange?.(t)} />
 
           <DropdownMenu>
