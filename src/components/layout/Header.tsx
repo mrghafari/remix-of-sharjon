@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Search, User, LogOut, Menu } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, User, LogOut, Menu, ShieldCheck, Home, Check, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BuildingSelector } from "./BuildingSelector";
@@ -13,8 +13,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+interface UnitMatch {
+  unit_id: string | null;
+  unit_number: string | null;
+  building_id: string;
+  building_name: string;
+  role: "owner" | "resident" | "manager";
+  isManager: boolean;
+}
 
 interface HeaderProps {
   onTabChange?: (tab: string) => void;
