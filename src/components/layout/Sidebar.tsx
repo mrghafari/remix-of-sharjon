@@ -29,7 +29,6 @@ const menuItems = [
   { id: "phonebook", label: "دفترچه تلفن", icon: BookUser },
   { id: "meetings", label: "صورتجلسات", icon: ScrollText },
   { id: "tickets", label: "پشتیبانی", icon: LifeBuoy },
-  { id: "sms", label: "مدیریت پیامک", icon: Send },
   { id: "settings", label: "تنظیمات", icon: Settings },
 ];
 
