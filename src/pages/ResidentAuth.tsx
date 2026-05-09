@@ -427,6 +427,21 @@ const ResidentAuth = () => {
               >
                 ورود
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  const current = matches[selectedMatchIndex];
+                  if (current) {
+                    window.history.length > 1 ? navigate(-1) : navigate(current.isManager ? "/dashboard" : "/resident", { replace: true });
+                  } else {
+                    navigate("/", { replace: true });
+                  }
+                }}
+              >
+                انصراف
+              </Button>
             </CardContent>
           </Card>
         )}
