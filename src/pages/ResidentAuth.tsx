@@ -71,7 +71,6 @@ const ResidentAuth = () => {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const managerMatches = useMemo(
@@ -472,7 +471,11 @@ const ResidentAuth = () => {
                 onClick={() => {
                   const current = matches[selectedMatchIndex];
                   if (current) {
-                    window.history.length > 1 ? navigate(-1) : navigate(current.isManager ? "/dashboard" : "/resident", { replace: true });
+                    if (window.history.length > 1) {
+                      navigate(-1);
+                    } else {
+                      navigate(current.isManager ? "/dashboard" : "/resident", { replace: true });
+                    }
                   } else {
                     navigate("/", { replace: true });
                   }
