@@ -239,6 +239,20 @@ const ResidentAuth = () => {
     }
   };
 
+  const handleCancelSelection = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("currentBuildingId");
+      navigate("/", { replace: true });
+      return;
+    }
+
+    const saved = JSON.parse(localStorage.getItem("resident_matches") || "[]") as UnitMatch[];
+    const current = saved[0] || matches[selectedMatchIndex];
+    navigate(current ? (current.isManager ? "/dashboard" : "/resident") : "/", { replace: true });
+  };
+
   // Auto-submit OTP once 6 digits are entered
   const autoSubmittedRef = useRef(false);
   useEffect(() => {
@@ -468,18 +482,7 @@ const ResidentAuth = () => {
                 type="button"
                 variant="outline"
                 className="w-full"
-                onClick={() => {
-                  const current = matches[selectedMatchIndex];
-                  if (current) {
-                    if (window.history.length > 1) {
-                      navigate(-1);
-                    } else {
-                      navigate(current.isManager ? "/dashboard" : "/resident", { replace: true });
-                    }
-                  } else {
-                    navigate("/", { replace: true });
-                  }
-                }}
+                onClick={handleCancelSelection}
               >
                 انصراف
               </Button>
