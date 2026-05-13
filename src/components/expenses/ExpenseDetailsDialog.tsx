@@ -211,9 +211,18 @@ export function ExpenseDetailsDialog({
   // Get stored shares for this expense
   const expenseShares = shares.filter((s) => s.expense_id === expense.id);
 
+  const isExtraCharge = expense.fund_type === "extra_charge";
+
   const unitAllocations: UnitAllocation[] = units
     .map((unit) => {
       const share = expenseShares.find((s) => s.unit_id === unit.id);
+      // Extra charge fund -> owner; Charge fund -> resident
+      const preferred = isExtraCharge ? unit.owner_name : unit.resident_name;
+      const fallback = isExtraCharge ? unit.resident_name : unit.owner_name;
+      const personName = preferred || fallback || "-";
+      const personRole: "مالک" | "ساکن" = preferred
+        ? (isExtraCharge ? "مالک" : "ساکن")
+        : (isExtraCharge ? "ساکن" : "مالک");
       return {
         unitNumber: unit.unit_number,
         ownerName: unit.owner_name,
@@ -223,6 +232,8 @@ export function ExpenseDetailsDialog({
         isManager: false,
         isVacant: unit.is_occupied === false,
         allocatedAmount: share ? Number(share.allocated_amount) : 0,
+        personName,
+        personRole,
       };
     })
     .filter((ua) => ua.allocatedAmount > 0);
