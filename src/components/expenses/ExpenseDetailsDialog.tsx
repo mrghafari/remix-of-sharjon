@@ -332,8 +332,7 @@ export function ExpenseDetailsDialog({
                 <TableRow>
                   <TableHead className="text-right">ردیف</TableHead>
                   <TableHead className="text-right">شماره واحد</TableHead>
-                  <TableHead className="text-right">نام مالک</TableHead>
-                  <TableHead className="text-right">نام ساکن</TableHead>
+                  <TableHead className="text-right">شخص</TableHead>
                   <TableHead className="text-right">متراژ</TableHead>
                   <TableHead className="text-right">تعداد نفرات</TableHead>
                   <TableHead className="text-right">مبلغ تخصیص یافته</TableHead>
