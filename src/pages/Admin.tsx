@@ -89,6 +89,10 @@ export default function Admin() {
             <AdminCustomers />
           </TabsContent>
 
+          <TabsContent value="buildings">
+            <AdminBuildings />
+          </TabsContent>
+
           <TabsContent value="bank-accounts">
             <AdminBankAccounts />
           </TabsContent>
