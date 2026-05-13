@@ -98,7 +98,7 @@ serve(async (req) => {
       return units || [];
     }
 
-    // Helper: lookup active managers by phone
+    // Helper: lookup active managers by phone (managers table)
     async function lookupManagers() {
       const { data: managers, error } = await adminClient
         .from("managers")
@@ -107,6 +107,32 @@ serve(async (req) => {
         .eq("is_active", true);
       if (error) throw error;
       return managers || [];
+    }
+
+    // Helper: lookup admin-assigned managers via profiles.phone -> building_members
+    async function lookupAdminAssignedManagers() {
+      const { data: profiles } = await adminClient
+        .from("profiles")
+        .select("user_id, full_name")
+        .eq("phone", normalizedPhone);
+      if (!profiles || profiles.length === 0) return [];
+      const userIds = profiles.map((p: any) => p.user_id);
+      const { data: members } = await adminClient
+        .from("building_members")
+        .select("user_id, building_id, unit_id, role")
+        .in("user_id", userIds)
+        .eq("role", "manager");
+      const nameMap: Record<string, string> = {};
+      profiles.forEach((p: any) => { nameMap[p.user_id] = p.full_name || normalizedPhone; });
+      return (members || []).map((m: any) => ({
+        id: `bm-${m.building_id}-${m.user_id}`,
+        building_id: m.building_id,
+        unit_id: m.unit_id,
+        mobile: normalizedPhone,
+        external_name: nameMap[m.user_id] || normalizedPhone,
+        role_type: "manager",
+        _user_id: m.user_id,
+      }));
     }
 
     // Helper: get building names
@@ -138,7 +164,17 @@ serve(async (req) => {
         );
       }
 
-      const [units, managers] = await Promise.all([lookupUnits(), lookupManagers()]);
+      const [units, managersFromTable, adminAssignedManagers] = await Promise.all([
+        lookupUnits(),
+        lookupManagers(),
+        lookupAdminAssignedManagers(),
+      ]);
+
+      // Merge, dedupe by building_id (prefer managers table entry)
+      const managerByBuilding = new Map<string, any>();
+      for (const m of adminAssignedManagers) managerByBuilding.set(m.building_id, m);
+      for (const m of managersFromTable) managerByBuilding.set(m.building_id, m);
+      const managers = Array.from(managerByBuilding.values());
 
       const managerBuildingIds = new Set(managers.map((m: any) => m.building_id));
       const isManager = managerBuildingIds.size > 0;
