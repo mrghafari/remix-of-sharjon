@@ -16,6 +16,8 @@ export interface UnitAllocation {
   allocatedAmount: number;
   isManager?: boolean;
   isVacant?: boolean;
+  personName?: string;
+  personRole?: "مالک" | "ساکن";
 }
 
 export const exportToExcel = (
@@ -23,11 +25,11 @@ export const exportToExcel = (
   expenseTitle: string,
   totalAmount: number
 ) => {
-  const excelData = data.map((item, index) => ({
+  const excelData: any[] = data.map((item, index) => ({
     ردیف: index + 1,
     "شماره واحد": item.unitNumber,
-    "نام مالک": item.ownerName,
-    "نام ساکن": item.residentName || "-",
+    "شخص": item.personName || item.residentName || item.ownerName || "-",
+    "نقش": item.personRole || (item.residentName ? "ساکن" : "مالک"),
     "متراژ (متر مربع)": item.area || "-",
     "تعداد نفرات": item.residentCount || "-",
     "مبلغ تخصیص یافته (تومان)": Math.round(item.allocatedAmount),
@@ -35,23 +37,23 @@ export const exportToExcel = (
 
   // Add total row
   excelData.push({
-    ردیف: "" as any,
+    ردیف: "",
     "شماره واحد": "",
-    "نام مالک": "",
-    "نام ساکن": "",
-    "متراژ (متر مربع)": "" as any,
-    "تعداد نفرات": "" as any,
-    "مبلغ تخصیص یافته (تومان)": totalAmount,
+    "شخص": "",
+    "نقش": "",
+    "متراژ (متر مربع)": "",
+    "تعداد نفرات": "",
+    "مبلغ تخصیص یافته (تومان)": Math.round(totalAmount),
   });
 
   const worksheet = XLSX.utils.json_to_sheet(excelData);
-  
+
   // Set RTL direction
   worksheet["!cols"] = [
     { width: 8 },
     { width: 15 },
-    { width: 20 },
-    { width: 20 },
+    { width: 22 },
+    { width: 10 },
     { width: 18 },
     { width: 15 },
     { width: 25 },
