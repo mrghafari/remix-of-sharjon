@@ -109,21 +109,35 @@ serve(async (req) => {
       return managers || [];
     }
 
-    // Helper: lookup admin-assigned managers via profiles.phone -> building_members
+    // Helper: lookup admin-assigned managers via phone/email -> building_members
     async function lookupAdminAssignedManagers() {
+      const matchedUserIds = new Set<string>();
+      const nameMap: Record<string, string> = {};
+
+      const residentEmail = `${normalizedPhone}@resident.local`;
+      const authUser = await findAuthUserByEmail(adminClient, residentEmail);
+      if (authUser?.id) {
+        matchedUserIds.add(authUser.id);
+        nameMap[authUser.id] = authUser.user_metadata?.full_name || normalizedPhone;
+      }
+
       const { data: profiles } = await adminClient
         .from("profiles")
         .select("user_id, full_name")
-        .eq("phone", normalizedPhone);
-      if (!profiles || profiles.length === 0) return [];
-      const userIds = profiles.map((p: any) => p.user_id);
+        .or(`phone.eq.${normalizedPhone},full_name.eq.${normalizedPhone}`);
+      (profiles || []).forEach((p: any) => {
+        matchedUserIds.add(p.user_id);
+        nameMap[p.user_id] = p.full_name || normalizedPhone;
+      });
+
+      const userIds = Array.from(matchedUserIds);
+      if (userIds.length === 0) return [];
+
       const { data: members } = await adminClient
         .from("building_members")
         .select("user_id, building_id, unit_id, role")
         .in("user_id", userIds)
         .eq("role", "manager");
-      const nameMap: Record<string, string> = {};
-      profiles.forEach((p: any) => { nameMap[p.user_id] = p.full_name || normalizedPhone; });
       return (members || []).map((m: any) => ({
         id: `bm-${m.building_id}-${m.user_id}`,
         building_id: m.building_id,
