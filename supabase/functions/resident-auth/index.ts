@@ -99,11 +99,17 @@ serve(async (req) => {
     }
 
     // Helper: lookup active managers by phone (managers table)
-    async function lookupManagers() {
+    // Internal managers (role_type owner/resident) may have no mobile in managers row —
+    // their phone lives on units.phone / units.resident_phone, so look those up too.
+    async function lookupManagers(matchedUnitIds: string[]) {
+      const filters: string[] = [`mobile.eq.${normalizedPhone}`];
+      if (matchedUnitIds.length > 0) {
+        filters.push(`unit_id.in.(${matchedUnitIds.join(",")})`);
+      }
       const { data: managers, error } = await adminClient
         .from("managers")
         .select("id, building_id, unit_id, mobile, external_name, role_type")
-        .eq("mobile", normalizedPhone)
+        .or(filters.join(","))
         .eq("is_active", true);
       if (error) throw error;
       return managers || [];
@@ -178,9 +184,9 @@ serve(async (req) => {
         );
       }
 
-      const [units, managersFromTable, adminAssignedManagers] = await Promise.all([
-        lookupUnits(),
-        lookupManagers(),
+      const units = await lookupUnits();
+      const [managersFromTable, adminAssignedManagers] = await Promise.all([
+        lookupManagers(units.map((u: any) => u.id)),
         lookupAdminAssignedManagers(),
       ]);
 
