@@ -7,8 +7,10 @@ import { FundBalance } from "./FundBalance";
 import { useUnits } from "@/hooks/useUnits";
 import { useExpenses } from "@/hooks/useExpenses";
 import { usePayments } from "@/hooks/usePayments";
+import { useManagers } from "@/hooks/useManagers";
 import { useBackfillExpenseShares } from "@/hooks/useBackfillExpenseShares";
 import { useAutoLatePenalty } from "@/hooks/useAutoLatePenalty";
+import { formatJalaliDate } from "@/lib/jalaliDate";
 
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
@@ -22,6 +24,7 @@ export function Dashboard({ onTabChange }: DashboardProps) {
   const { data: units = [], isLoading: unitsLoading } = useUnits();
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const { data: payments = [], isLoading: paymentsLoading } = usePayments();
+  const { data: managers = [] } = useManagers();
   
   // Auto-backfill expense shares for existing expenses
   useBackfillExpenseShares();
@@ -29,10 +32,36 @@ export function Dashboard({ onTabChange }: DashboardProps) {
   useAutoLatePenalty();
 
   const isLoading = unitsLoading || expensesLoading || paymentsLoading;
-  
-  const totalPayments = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+
+  // Find current active main manager (or fallback to any active manager with earliest start)
+  const activeManagers = managers.filter((m) => m.is_active);
+  const mainManager =
+    activeManagers.find((m) => m.role?.name === "main") ??
+    [...activeManagers].sort((a, b) => a.start_date.localeCompare(b.start_date))[0];
+
+  const managerStartDate = mainManager?.start_date ?? null;
+  const managerName = mainManager
+    ? mainManager.role_type === "external"
+      ? mainManager.external_name ?? "—"
+      : mainManager.role_type === "resident"
+        ? mainManager.unit?.resident_name ?? mainManager.unit?.owner_name ?? "—"
+        : mainManager.unit?.owner_name ?? "—"
+    : null;
+
+  const filteredPayments = managerStartDate
+    ? payments.filter((p) => p.payment_date >= managerStartDate)
+    : payments;
+  const filteredExpenses = managerStartDate
+    ? expenses.filter((e) => e.expense_date >= managerStartDate)
+    : expenses;
+
+  const totalPayments = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const occupiedUnits = units.filter(u => u.is_occupied).length;
+
+  const periodTooltip = mainManager && managerStartDate
+    ? `از زمان مدیریت ${managerName} (${formatJalaliDate(managerStartDate)} تاکنون)`
+    : undefined;
 
   return (
     <div className="space-y-6">
