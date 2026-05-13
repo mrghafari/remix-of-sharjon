@@ -155,7 +155,7 @@ export function ProjectReport() {
       {/* Projects Overview */}
       <Card variant="elevated">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center justify-end gap-2 text-right" dir="rtl">
             <FolderKanban className="w-5 h-5 text-primary" />
             خلاصه پروژه‌ها
           </CardTitle>
@@ -217,11 +217,11 @@ export function ProjectReport() {
       {/* Detailed Project Report */}
       {selectedProjectId && selectedProject && (
         <Card variant="elevated">
-          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
-            <div>
-              <CardTitle>گزارش تفصیلی: {selectedProject.name}</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4" dir="rtl">
+            <div className="text-right">
+              <CardTitle className="text-right">گزارش تفصیلی: {selectedProject.name}</CardTitle>
               {selectedProject.description && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 text-right">
                   {selectedProject.description}
                 </p>
               )}
