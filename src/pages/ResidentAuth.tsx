@@ -406,6 +406,11 @@ const ResidentAuth = () => {
                         key={`mgr-${match.building_id}-${match.unit_id ?? "manager"}`}
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200 ${isSelected ? "bg-primary/10 ring-1 ring-primary/40" : "bg-muted/50 hover:bg-muted"}`}
                         onClick={() => setSelectedMatchIndex(matchIndex)}
+                        onDoubleClick={async () => {
+                          setSelectedMatchIndex(matchIndex);
+                          setIsLoading(true);
+                          try { await navigateForMatch(match); } finally { setIsLoading(false); }
+                        }}
                       >
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                           <ShieldCheck className="w-4 h-4 text-primary" />
