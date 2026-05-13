@@ -163,22 +163,3 @@ export function useAdminLookupUser(query: string) {
   });
 }
 
-export function useReassignBuildingManager() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ buildingId, newUserId }: { buildingId: string; newUserId: string }) => {
-      const { error } = await supabase.rpc("admin_reassign_building", {
-        _building_id: buildingId,
-        _new_user_id: newUserId,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin_buildings"] });
-      toast({ title: "موفق", description: "مدیر ساختمان با موفقیت تغییر کرد" });
-    },
-    onError: (err: Error) => {
-      toast({ title: "خطا", description: err.message || "خطا در انتساب مدیر", variant: "destructive" });
-    },
-  });
-}
