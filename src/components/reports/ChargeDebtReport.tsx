@@ -208,7 +208,7 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center justify-end gap-2 text-right" dir="rtl">
             <CreditCard className="w-5 h-5" />
             {selectedUnitId === "all" ? "خلاصه بدهی شارژ واحدها" : `ریز بدهی شارژ واحد ${selectedUnit?.unit.unit_number}`}
           </CardTitle>
