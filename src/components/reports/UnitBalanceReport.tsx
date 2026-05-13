@@ -200,7 +200,7 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
       {/* Balance Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center justify-end gap-2 text-right" dir="rtl">
             <Scale className="w-5 h-5" />
             {debtorsOnly ? "لیست بدهکاران" : "بیلان واحدها"}
           </CardTitle>
