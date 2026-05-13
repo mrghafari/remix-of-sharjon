@@ -332,8 +332,7 @@ export function ExpenseDetailsDialog({
                 <TableRow>
                   <TableHead className="text-right">ردیف</TableHead>
                   <TableHead className="text-right">شماره واحد</TableHead>
-                  <TableHead className="text-right">نام مالک</TableHead>
-                  <TableHead className="text-right">نام ساکن</TableHead>
+                  <TableHead className="text-right">شخص</TableHead>
                   <TableHead className="text-right">متراژ</TableHead>
                   <TableHead className="text-right">تعداد نفرات</TableHead>
                   <TableHead className="text-right">مبلغ تخصیص یافته</TableHead>
@@ -344,8 +343,14 @@ export function ExpenseDetailsDialog({
                   <TableRow key={ua.unitNumber}>
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="font-medium">{ua.unitNumber}</TableCell>
-                    <TableCell>{ua.ownerName}</TableCell>
-                    <TableCell>{ua.residentName || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>{ua.residentName || ua.ownerName || "-"}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {ua.residentName ? "ساکن" : "مالک"}
+                        </Badge>
+                      </div>
+                    </TableCell>
                     <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                     <TableCell>{ua.residentCount || "-"}</TableCell>
                     <TableCell className="font-bold text-primary">
@@ -354,7 +359,7 @@ export function ExpenseDetailsDialog({
                   </TableRow>
                 ))}
                 <TableRow className="bg-muted/50 font-bold">
-                  <TableCell colSpan={6} className="text-left">
+                  <TableCell colSpan={5} className="text-left">
                     جمع کل
                   </TableCell>
                   <TableCell className="text-primary">
