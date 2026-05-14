@@ -174,6 +174,7 @@ export function PaymentForm() {
           }
 
           setOpen(false);
+          setDuplicateInfo({ open: false, message: "" });
           setFormData({
             unit_id: "",
             amount: "",
