@@ -7,10 +7,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2, Info } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2, Info, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { PaymentDialog } from "./PaymentDialog";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
+import {
+  exportPaymentsExcel,
+  exportPaymentsPdf,
+  exportExpensesExcel,
+  exportExpensesPdf,
+  inDateRange,
+} from "@/lib/residentExport";
 
 interface Props {
   buildingId: string;
@@ -28,12 +36,16 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const [selectedChargeIds, setSelectedChargeIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState<{ charge: number; extra: number } | null>(null);
   const [payChargeIds, setPayChargeIds] = useState<string[]>([]);
+  const [paymentsFrom, setPaymentsFrom] = useState<Date | undefined>();
+  const [paymentsTo, setPaymentsTo] = useState<Date | undefined>();
+  const [expensesFrom, setExpensesFrom] = useState<Date | undefined>();
+  const [expensesTo, setExpensesTo] = useState<Date | undefined>();
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
     queryKey: ["resident_unit_info", unitId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("units").select("owner_name, resident_name").eq("id", unitId).maybeSingle();
+      const { data, error } = await supabase.from("units").select("unit_number, owner_name, resident_name").eq("id", unitId).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -373,7 +385,22 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         {/* Payments Tab */}
         <TabsContent value="payments">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 space-y-3">
+              <ExportToolbar
+                from={paymentsFrom}
+                to={paymentsTo}
+                onFromChange={setPaymentsFrom}
+                onToChange={setPaymentsTo}
+                onExportExcel={() => {
+                  const rows = payments.filter((p: any) => inDateRange(p.payment_date, paymentsFrom, paymentsTo));
+                  exportPaymentsExcel(rows as any, unitInfo?.unit_number || "", paymentsFrom, paymentsTo);
+                }}
+                onExportPdf={async () => {
+                  const rows = payments.filter((p: any) => inDateRange(p.payment_date, paymentsFrom, paymentsTo));
+                  await exportPaymentsPdf(rows as any, unitInfo?.unit_number || "", paymentsFrom, paymentsTo);
+                }}
+                disabled={payments.length === 0}
+              />
               {payments.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">پرداختی ثبت نشده است</p>
               ) : (
@@ -390,7 +417,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {payments.map((p: any) => {
+                    {payments
+                      .filter((p: any) => inDateRange(p.payment_date, paymentsFrom, paymentsTo))
+                      .map((p: any) => {
                       const personName = p.resident_name || p.owner_name || "-";
                       const roleLabel = p.resident_name ? "ساکن" : (p.owner_name ? "مالک" : "-");
                       return (
@@ -423,7 +452,22 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         {/* Allocated Expenses Tab */}
         <TabsContent value="expenses">
           <Card>
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 space-y-3">
+              <ExportToolbar
+                from={expensesFrom}
+                to={expensesTo}
+                onFromChange={setExpensesFrom}
+                onToChange={setExpensesTo}
+                onExportExcel={() => {
+                  const rows = expenseShares.filter((e: any) => inDateRange(e.expenses?.expense_date, expensesFrom, expensesTo));
+                  exportExpensesExcel(rows as any, unitInfo?.unit_number || "", expensesFrom, expensesTo);
+                }}
+                onExportPdf={async () => {
+                  const rows = expenseShares.filter((e: any) => inDateRange(e.expenses?.expense_date, expensesFrom, expensesTo));
+                  await exportExpensesPdf(rows as any, unitInfo?.unit_number || "", expensesFrom, expensesTo);
+                }}
+                disabled={expenseShares.length === 0}
+              />
               {expenseShares.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">هزینه‌ای تسهیم نشده است</p>
               ) : (
@@ -440,7 +484,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {expenseShares.map((e: any) => {
+                    {expenseShares
+                      .filter((e: any) => inDateRange(e.expenses?.expense_date, expensesFrom, expensesTo))
+                      .map((e: any) => {
                       const expense = e.expenses as any;
                       const fundType = expense?.fund_type ?? "charge";
                       const isExtra = fundType === "extra_charge";
@@ -555,3 +601,48 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     </div>
   );
 }
+
+interface ExportToolbarProps {
+  from?: Date;
+  to?: Date;
+  onFromChange: (d: Date | undefined) => void;
+  onToChange: (d: Date | undefined) => void;
+  onExportExcel: () => void;
+  onExportPdf: () => void | Promise<void>;
+  disabled?: boolean;
+}
+
+function ExportToolbar({ from, to, onFromChange, onToChange, onExportExcel, onExportPdf, disabled }: ExportToolbarProps) {
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const handlePdf = async () => {
+    setPdfLoading(true);
+    try {
+      await onExportPdf();
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2 p-2 rounded-lg bg-muted/40 border">
+      <span className="text-xs text-muted-foreground">از</span>
+      <JalaliDatePicker value={from} onChange={onFromChange} placeholder="از تاریخ" buttonClassName="h-8 text-xs px-2 min-w-[110px]" />
+      <span className="text-xs text-muted-foreground">تا</span>
+      <JalaliDatePicker value={to} onChange={onToChange} placeholder="تا تاریخ" buttonClassName="h-8 text-xs px-2 min-w-[110px]" />
+      {(from || to) && (
+        <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { onFromChange(undefined); onToChange(undefined); }}>
+          پاک کردن
+        </Button>
+      )}
+      <div className="flex-1" />
+      <Button variant="outline" size="sm" className="h-8 gap-1" onClick={onExportExcel} disabled={disabled}>
+        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+        خروجی Excel
+      </Button>
+      <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handlePdf} disabled={disabled || pdfLoading}>
+        {pdfLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5 text-red-600" />}
+        خروجی PDF
+      </Button>
+    </div>
+  );
+}
+
