@@ -55,7 +55,17 @@ export function AdminBuildings() {
                     <TableCell className="text-xs ltr">{b.manager_email || "—"}</TableCell>
                     <TableCell>{formatDate(b.created_at)}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="default" className="gap-1" onClick={() => navigate(`/admin/building/${b.id}`)}>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="gap-1"
+                        disabled={!b.manager_user_id}
+                        onClick={() => {
+                          if (!b.manager_user_id) return;
+                          localStorage.setItem("currentBuildingId", b.id);
+                          navigate(`/admin/customer/${b.manager_user_id}`);
+                        }}
+                      >
                         <LogIn className="h-4 w-4" />
                         ورود
                       </Button>
