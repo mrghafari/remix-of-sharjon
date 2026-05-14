@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, BarChart3, X, Loader2, CheckCircle2 } from "lucide-react";
 import { formatJalaliDate } from "@/lib/jalaliDate";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 
 interface Poll {
   id: string;
