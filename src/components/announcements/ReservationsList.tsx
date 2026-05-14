@@ -503,12 +503,9 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
                 value={reqName}
                 onChange={e => setReqName(e.target.value)}
                 placeholder="نام شما"
-                readOnly={residentMode}
-                disabled={residentMode}
-                className={residentMode ? "bg-muted cursor-not-allowed" : ""}
               />
               {residentMode && (
-                <p className="text-xs text-muted-foreground mt-1">نام شما به‌صورت خودکار از حساب کاربری شما ثبت می‌شود</p>
+                <p className="text-xs text-muted-foreground mt-1">در صورت نیاز می‌توانید نام را ویرایش کنید</p>
               )}
             </div>
             <div>
