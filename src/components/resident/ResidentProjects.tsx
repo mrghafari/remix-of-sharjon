@@ -166,8 +166,13 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                   <TableBody>
                     {selectedExpenses.map((e: any) => {
                       const sh = shareMap.get(e.id);
-                      const personName = sh?.resident_name || sh?.owner_name || "-";
-                      const roleLabel = sh?.resident_name ? "ساکن" : (sh?.owner_name ? "مالک" : "-");
+                      const isExtra = e.fund_type === "extra_charge";
+                      const personName = isExtra
+                        ? (sh?.owner_name || sh?.resident_name || "-")
+                        : (sh?.resident_name || sh?.owner_name || "-");
+                      const roleLabel = isExtra
+                        ? (sh?.owner_name ? "مالک" : (sh?.resident_name ? "ساکن" : "-"))
+                        : (sh?.resident_name ? "ساکن" : (sh?.owner_name ? "مالک" : "-"));
                       return (
                         <TableRow key={e.id}>
                           <TableCell className="font-medium">{e.title}</TableCell>
