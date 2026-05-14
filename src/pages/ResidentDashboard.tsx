@@ -35,6 +35,13 @@ const ResidentDashboard = () => {
     matches,
   } = useResidentUnit();
 
+  const activeRole: "owner" | "resident" = matches[0]?.role === "owner" ? "owner" : "resident";
+  const { data: grantedModules = [] } = useMyUnitModules(
+    currentBuildingId || "",
+    currentUnitId || "",
+    activeRole
+  );
+
   const handleSignOut = async () => {
     try {
       localStorage.removeItem("resident_matches");
@@ -77,8 +84,6 @@ const ResidentDashboard = () => {
     ? ownerName
     : (residentName || ownerName);
 
-  const activeRole: "owner" | "resident" = currentMatch?.role === "owner" ? "owner" : "resident";
-  const { data: grantedModules = [] } = useMyUnitModules(currentBuildingId, currentUnitId, activeRole);
 
   const renderContent = () => {
     switch (activeTab) {
