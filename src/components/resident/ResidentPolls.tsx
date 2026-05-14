@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, CheckCircle2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -121,49 +120,41 @@ export function ResidentPolls({ buildingId }: Props) {
     <div className="space-y-4">
       {polls.map((poll) => {
         const options = (poll.options as any[]) || [];
-        const pollVotes = votes.filter((v) => v.poll_id === poll.id);
-        const totalVotes = pollVotes.length;
         const myVote = myVoteFor(poll.id);
 
         return (
           <Card key={poll.id}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">{poll.question}</CardTitle>
-              <p className="text-xs text-muted-foreground">
-                {totalVotes} رأی
-                {(poll as any).ends_at && ` — پایان: ${new Date((poll as any).ends_at).toLocaleDateString("fa-IR")}`}
-              </p>
+              {(poll as any).ends_at && (
+                <p className="text-xs text-muted-foreground">
+                  پایان: {new Date((poll as any).ends_at).toLocaleDateString("fa-IR")}
+                </p>
+              )}
             </CardHeader>
             <CardContent className="space-y-2">
               {options.map((opt: any, i: number) => {
-                const optVotes = pollVotes.filter((v) => v.selected_option === i).length;
-                const pct = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
                 const isMine = myVote === i;
-
                 return (
-                  <div key={i} className="space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <Button
-                        variant={isMine ? "default" : "outline"}
-                        size="sm"
-                        className={`text-sm h-auto py-1.5 px-3 flex-1 justify-start ${
-                          isMine ? "" : "bg-primary/10 hover:bg-primary/20 border-primary/30"
-                        }`}
-                        onClick={() => voteMutation.mutate({ pollId: poll.id, optionIndex: i })}
-                        disabled={voteMutation.isPending || isMine}
-                      >
-                        {isMine && <CheckCircle2 className="w-3 h-3 ml-1" />}
-                        {typeof opt === "string" ? opt : opt.text || `گزینه ${i + 1}`}
-                      </Button>
-                      <span className="text-xs text-muted-foreground">{pct}%</span>
-                    </div>
-                    <Progress value={pct} className="h-1.5" />
+                  <div key={i}>
+                    <Button
+                      variant={isMine ? "default" : "outline"}
+                      size="sm"
+                      className={`text-sm h-auto py-1.5 px-3 w-full justify-start ${
+                        isMine ? "" : "bg-primary/10 hover:bg-primary/20 border-primary/30"
+                      }`}
+                      onClick={() => voteMutation.mutate({ pollId: poll.id, optionIndex: i })}
+                      disabled={voteMutation.isPending || isMine}
+                    >
+                      {isMine && <CheckCircle2 className="w-3 h-3 ml-1" />}
+                      {typeof opt === "string" ? opt : opt.text || `گزینه ${i + 1}`}
+                    </Button>
                   </div>
                 );
               })}
               {myVote !== null && (
                 <p className="text-xs text-muted-foreground pt-1">
-                  می‌توانید تا پایان نظرسنجی رأی خود را تغییر دهید.
+                  رأی شما ثبت شده است — تا پایان نظرسنجی قابل تغییر است.
                 </p>
               )}
             </CardContent>
