@@ -60,11 +60,26 @@ export function PaymentForm() {
     description: "",
   });
 
+  const [duplicateInfo, setDuplicateInfo] = useState<{
+    open: boolean;
+    message: string;
+  }>({ open: false, message: "" });
+
   const createPayment = useCreatePayment();
   const { data: units } = useUnits();
   const { data: policy } = usePaymentPolicy();
   const { currentBuildingId } = useBuilding();
   const qc = useQueryClient();
+
+  const submitPayment = () => {
+    const selectedUnit = units?.find((u) => u.id === formData.unit_id);
+    const paymentDate = new Date();
+    const paymentAmount = Number(formData.amount);
+    const monthNum = Number(formData.month);
+    const yearNum = Number(formData.year);
+    const fundType = formData.fund_type as "charge" | "extra_charge";
+    doCreate(selectedUnit, paymentDate, paymentAmount, monthNum, yearNum, fundType);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,12 +105,25 @@ export function PaymentForm() {
       if (existing && existing.length > 0) {
         const fundLabel = fundType === "charge" ? "شارژ" : "فوق‌شارژ";
         const monthLabel = persianMonths.find((m) => m.value === monthNum)?.label || "";
-        const ok = window.confirm(
-          `برای واحد ${selectedUnit?.unit_number} قبلاً ${existing.length} پرداخت ${fundLabel} برای ${monthLabel} ${yearNum} ثبت شده است.\nآیا می‌خواهید پرداخت جدید را نیز ثبت کنید؟`
-        );
-        if (!ok) return;
+        setDuplicateInfo({
+          open: true,
+          message: `برای واحد ${selectedUnit?.unit_number} قبلاً ${existing.length} پرداخت ${fundLabel} برای ${monthLabel} ${yearNum} ثبت شده است. در صورت ادامه، پرداخت تکراری ثبت خواهد شد.`,
+        });
+        return;
       }
     }
+
+    doCreate(selectedUnit, paymentDate, paymentAmount, monthNum, yearNum, fundType);
+  };
+
+  const doCreate = (
+    selectedUnit: any,
+    paymentDate: Date,
+    paymentAmount: number,
+    monthNum: number,
+    yearNum: number,
+    fundType: "charge" | "extra_charge"
+  ) => {
 
     createPayment.mutate(
       {
