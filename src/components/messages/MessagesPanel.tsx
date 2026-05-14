@@ -7,6 +7,7 @@ import { Send, Trash2, MessageSquare, Loader2, CornerUpLeft, Check, CheckCheck, 
 import { useMessages, useSendMessage, useMarkMessageRead, useDeleteMessage, type BuildingMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
@@ -45,6 +46,7 @@ const formatDay = (iso: string) => {
 
 export function MessagesPanel({ buildingId, residentMode = false, unitId, senderName, senderRole }: MessagesPanelProps) {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: messages = [], isLoading } = useMessages(buildingId);
   const sendMessage = useSendMessage();
   const markRead = useMarkMessageRead();
@@ -97,6 +99,31 @@ export function MessagesPanel({ buildingId, residentMode = false, unitId, sender
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [filtered.length]);
+
+  // Auto-mark all visible unread messages as read once the panel is open
+  useEffect(() => {
+    if (!user?.id || !buildingId || messages.length === 0) return;
+    const unreadIds = messages
+      .filter(
+        (m) =>
+          !m.is_read &&
+          m.sender_user_id !== user.id &&
+          (m.recipient_user_id === user.id || m.recipient_user_id === null)
+      )
+      .map((m) => m.id);
+    if (unreadIds.length === 0) return;
+    (async () => {
+      const { error } = await supabase
+        .from("building_messages")
+        .update({ is_read: true })
+        .in("id", unreadIds);
+      if (!error) {
+        qc.invalidateQueries({ queryKey: ["building_messages"] });
+        qc.invalidateQueries({ queryKey: ["unread_messages_count"] });
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, user?.id, buildingId]);
 
   // Find parent message helper for reply preview inside a bubble
   const findParent = (id: string | null) => (id ? messages.find((m) => m.id === id) : null);
