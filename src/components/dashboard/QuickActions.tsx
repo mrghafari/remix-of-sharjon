@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Receipt, CreditCard, FileText, Settings, Building2, Wallet, PiggyBank } from "lucide-react";
+import { Receipt, CreditCard, FileText, Settings, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface QuickActionsProps {
@@ -20,8 +20,6 @@ const actions: Action[] = [
   { id: "expenses", label: "ثبت هزینه", icon: Receipt, color: "bg-primary", shortcut: "E" },
   { id: "payments", label: "ثبت پرداخت", icon: CreditCard, color: "bg-accent", shortcut: "P" },
   { id: "units", label: "واحدها", icon: Building2, color: "bg-warning", shortcut: "U" },
-  { id: "fund-charge", label: "صندوق شارژ", icon: Wallet, color: "bg-success", href: "/fund/charge" },
-  { id: "fund-extra", label: "صندوق فوق‌العاده", icon: PiggyBank, color: "bg-primary", href: "/fund/extra_charge" },
   { id: "reports", label: "گزارش‌ها", icon: FileText, color: "bg-success", shortcut: "R" },
   { id: "settings", label: "تنظیمات", icon: Settings, color: "bg-muted-foreground", shortcut: "S" },
 ];
