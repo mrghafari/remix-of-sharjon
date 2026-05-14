@@ -48,30 +48,6 @@ const stats = [
   { value: "∞", label: "تعداد ساختمان" },
 ];
 
-const pricingPlans = [
-  {
-    name: "رایگان",
-    price: "۰",
-    description: "مناسب برای یک ساختمان کوچک",
-    features: ["۱ ساختمان", "حداکثر ۱۰ واحد", "گزارش‌های پایه", "پشتیبانی ایمیلی"],
-    highlighted: false,
-  },
-  {
-    name: "حرفه‌ای",
-    price: "۱۴۹",
-    description: "برای مدیران حرفه‌ای ساختمان",
-    features: ["تا ۵ ساختمان", "واحدهای نامحدود", "گزارش‌های پیشرفته", "اطلاع‌رسانی خودکار", "پشتیبانی اولویت‌دار"],
-    highlighted: true,
-  },
-  {
-    name: "سازمانی",
-    price: "تماس",
-    description: "برای شرکت‌های مدیریت ساختمان",
-    features: ["ساختمان‌های نامحدود", "API اختصاصی", "داشبورد مدیریتی", "SLA اختصاصی", "پشتیبانی ۲۴/۷"],
-    highlighted: false,
-  },
-];
-
 export default function Landing() {
   const navigate = useNavigate();
   const [pricingPlans, setPricingPlans] = useState<PricingPlanConfig[]>(DEFAULT_PRICING);
@@ -217,7 +193,7 @@ export default function Landing() {
                   <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
                   <div className="mt-6 mb-6">
-                    {plan.price === "تماس" ? (
+                    {plan.contact || plan.price === "تماس" ? (
                       <span className="text-3xl font-extrabold text-foreground">تماس بگیرید</span>
                     ) : (
                       <div className="flex items-baseline gap-1">
