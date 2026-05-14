@@ -440,8 +440,13 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     {expenseShares.map((e: any) => {
                       const expense = e.expenses as any;
                       const fundType = expense?.fund_type ?? "charge";
-                      const personName = e.resident_name || e.owner_name || "-";
-                      const roleLabel = e.resident_name ? "ساکن" : (e.owner_name ? "مالک" : "-");
+                      const isExtra = fundType === "extra_charge";
+                      const preferred = isExtra ? e.owner_name : e.resident_name;
+                      const fallback = isExtra ? e.resident_name : e.owner_name;
+                      const personName = preferred || fallback || "-";
+                      const roleLabel = preferred
+                        ? (isExtra ? "مالک" : "ساکن")
+                        : (fallback ? (isExtra ? "ساکن" : "مالک") : "-");
                       return (
                         <TableRow key={e.id}>
                           <TableCell className="text-xs whitespace-nowrap">{expense ? formatJalaliDate(expense.expense_date) : "-"}</TableCell>
