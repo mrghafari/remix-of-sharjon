@@ -144,9 +144,11 @@ export function ResidentPolls({ buildingId }: Props) {
                   <div key={i} className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
                       <Button
-                        variant={isMine ? "default" : "ghost"}
+                        variant={isMine ? "default" : "outline"}
                         size="sm"
-                        className="text-sm h-auto py-1 px-2 flex-1 justify-start"
+                        className={`text-sm h-auto py-1.5 px-3 flex-1 justify-start ${
+                          isMine ? "" : "bg-primary/10 hover:bg-primary/20 border-primary/30"
+                        }`}
                         onClick={() => voteMutation.mutate({ pollId: poll.id, optionIndex: i })}
                         disabled={voteMutation.isPending || isMine}
                       >

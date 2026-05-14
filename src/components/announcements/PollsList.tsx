@@ -301,7 +301,7 @@ export function PollsList() {
                         ) : (
                           <Button
                             variant="outline"
-                            className="w-full justify-start"
+                            className="w-full justify-start bg-primary/10 hover:bg-primary/20 border-primary/30 text-foreground"
                             onClick={() => voteMutation.mutate({ pollId: poll.id, optionIndex: idx })}
                             disabled={voteMutation.isPending}
                           >
