@@ -710,6 +710,7 @@ export type Database = {
           created_at: string
           expense_id: string
           id: string
+          manager_name: string | null
           owner_name: string | null
           resident_name: string | null
           unit_id: string
@@ -720,6 +721,7 @@ export type Database = {
           created_at?: string
           expense_id: string
           id?: string
+          manager_name?: string | null
           owner_name?: string | null
           resident_name?: string | null
           unit_id: string
@@ -730,6 +732,7 @@ export type Database = {
           created_at?: string
           expense_id?: string
           id?: string
+          manager_name?: string | null
           owner_name?: string | null
           resident_name?: string | null
           unit_id?: string
@@ -978,6 +981,7 @@ export type Database = {
           description: string | null
           fund_type: Database["public"]["Enums"]["fund_type"]
           id: string
+          manager_name: string | null
           month: number
           owner_name: string | null
           payment_date: string
@@ -992,6 +996,7 @@ export type Database = {
           description?: string | null
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
+          manager_name?: string | null
           month: number
           owner_name?: string | null
           payment_date?: string
@@ -1006,6 +1011,7 @@ export type Database = {
           description?: string | null
           fund_type?: Database["public"]["Enums"]["fund_type"]
           id?: string
+          manager_name?: string | null
           month?: number
           owner_name?: string | null
           payment_date?: string
@@ -1947,6 +1953,10 @@ export type Database = {
           total_units: number
           total_users: number
         }[]
+      }
+      get_manager_name_at: {
+        Args: { _building_id: string; _on_date: string }
+        Returns: string
       }
       get_voter_hash: { Args: { _poll_id: string }; Returns: string }
       has_role: {
