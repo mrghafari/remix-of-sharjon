@@ -170,10 +170,15 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     if (overlapInfo) return;
     if (exclusiveLockOnDate) return;
     if (residentMode) {
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const picked = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate());
       if (picked < todayStart) return;
+      if (picked.getTime() === todayStart.getTime()) {
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const [sh, sm] = reqStart.split(":").map(Number);
+        if (sh * 60 + sm < nowMin) return;
+      }
     }
     const gregDate = reqDate.toISOString().split("T")[0];
     const targetUnitId = !residentMode && reqOnBehalfUnitId ? reqOnBehalfUnitId : (unitId || null);
