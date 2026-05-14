@@ -83,7 +83,7 @@ export function ResidentAllExpenses({ buildingId }: Props) {
                           {e.fund_type === "extra_charge" ? "فوق شارژ" : "شارژ"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-mono">{fmt(Number(e.amount))}</TableCell>
+                      <TableCell>{fmt(Number(e.amount))}</TableCell>
                       <TableCell className="text-xs text-muted-foreground max-w-[260px] truncate">
                         {e.description || "—"}
                       </TableCell>
