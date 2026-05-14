@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FolderKanban, Loader2, ChevronRight } from "lucide-react";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 
@@ -50,7 +50,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("expense_unit_shares")
-        .select("expense_id, allocated_amount")
+        .select("expense_id, allocated_amount, owner_name, resident_name")
         .eq("building_id", buildingId)
         .eq("unit_id", unitId);
       if (error) throw error;
@@ -59,8 +59,14 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
   });
 
   const shareMap = useMemo(() => {
-    const m = new Map<string, number>();
-    shares.forEach((s: any) => m.set(s.expense_id, Number(s.allocated_amount) || 0));
+    const m = new Map<string, { amount: number; owner_name: string | null; resident_name: string | null }>();
+    shares.forEach((s: any) =>
+      m.set(s.expense_id, {
+        amount: Number(s.allocated_amount) || 0,
+        owner_name: s.owner_name,
+        resident_name: s.resident_name,
+      })
+    );
     return m;
   }, [shares]);
 
@@ -68,7 +74,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
     return projects.map((p: any) => {
       const projExp = expenses.filter((e: any) => e.project_id === p.id);
       const total = projExp.reduce((s, e: any) => s + Number(e.amount), 0);
-      const myShare = projExp.reduce((s, e: any) => s + (shareMap.get(e.id) || 0), 0);
+      const myShare = projExp.reduce((s, e: any) => s + (shareMap.get(e.id)?.amount || 0), 0);
       return { ...p, totalExpenses: total, expenseCount: projExp.length, myShare };
     });
   }, [projects, expenses, shareMap]);
@@ -151,27 +157,44 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                       <TableHead className="text-right">عنوان</TableHead>
                       <TableHead className="text-right">تاریخ</TableHead>
                       <TableHead className="text-right">صندوق</TableHead>
+                      <TableHead className="text-right">شخص (در زمان هزینه)</TableHead>
                       <TableHead className="text-right">مبلغ کل</TableHead>
                       <TableHead className="text-right">سهم شما</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {selectedExpenses.map((e: any) => (
-                      <TableRow key={e.id}>
-                        <TableCell className="font-medium">{e.title}</TableCell>
-                        <TableCell>{formatJalaliDate(e.expense_date)}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {e.fund_type === "extra_charge" ? "فوق‌العاده" : "شارژ"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-bold">{fmt(Number(e.amount))} تومان</TableCell>
-                        <TableCell className="font-bold text-primary">
-                          {fmt(shareMap.get(e.id) || 0)} تومان
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {selectedExpenses.map((e: any) => {
+                      const sh = shareMap.get(e.id);
+                      const personName = sh?.resident_name || sh?.owner_name || "-";
+                      return (
+                        <TableRow key={e.id}>
+                          <TableCell className="font-medium">{e.title}</TableCell>
+                          <TableCell>{formatJalaliDate(e.expense_date)}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs">
+                              {e.fund_type === "extra_charge" ? "فوق‌العاده" : "شارژ"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{personName}</TableCell>
+                          <TableCell className="font-bold">{fmt(Number(e.amount))} تومان</TableCell>
+                          <TableCell className="font-bold text-primary">
+                            {fmt(sh?.amount || 0)} تومان
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell colSpan={4} className="font-bold text-right">جمع کل</TableCell>
+                      <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
+                        {fmt(selectedExpenses.reduce((s, e: any) => s + Number(e.amount), 0))} تومان
+                      </TableCell>
+                      <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
+                        {fmt(selectedExpenses.reduce((s, e: any) => s + (shareMap.get(e.id)?.amount || 0), 0))} تومان
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
                 </Table>
               </div>
             )}
@@ -226,6 +249,24 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="font-bold text-right">جمع کل</TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + (Number(p.budget) || 0), 0))} تومان
+                  </TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.totalExpenses, 0))} تومان
+                  </TableCell>
+                  <TableCell className="font-bold text-right">
+                    {projectSummaries.reduce((s, p: any) => s + p.expenseCount, 0)} مورد
+                  </TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.myShare, 0))} تومان
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
             </Table>
           </div>
         </CardContent>
