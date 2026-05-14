@@ -240,23 +240,95 @@ serve(async (req) => {
         await ensureProfile(adminClient, userId, normalizedPhone, normalizedPhone);
 
       } else if (isManager) {
-        // Find the manager's user account via building_members
-        const managerBuildingId = [...managerBuildingIds][0];
-        const { data: memberData } = await adminClient
-          .from("building_members")
-          .select("user_id")
-          .eq("building_id", managerBuildingId)
-          .eq("role", "manager")
-          .limit(1)
-          .single();
+        // Find or create the manager's user account.
+        // Internal managers (linked to a unit) may not have a building_members row yet
+        // — create one so RLS-bound queries (is_building_manager) work.
+        userEmail = `${normalizedPhone}@resident.local`;
 
-        if (memberData) {
-          userId = memberData.user_id;
-          const { data: userData } = await adminClient.auth.admin.getUserById(userId);
-          if (!userData?.user) throw new Error("حساب مدیر یافت نشد");
-          userEmail = userData.user.email!;
+        // Derive display name from managers row or matched unit
+        const firstManager = managers[0];
+        const matchedUnit =
+          units.find((u: any) =>
+            u.phone === normalizedPhone || u.resident_phone === normalizedPhone
+          ) || units.find((u: any) => u.id === firstManager?.unit_id);
+
+        const displayName =
+          firstManager?.external_name ||
+          (matchedUnit
+            ? (matchedUnit.phone === normalizedPhone
+                ? (matchedUnit.owner_name || matchedUnit.resident_name)
+                : (matchedUnit.resident_name || matchedUnit.owner_name))
+            : null) ||
+          normalizedPhone;
+
+        let existingUser = await findAuthUserByEmail(adminClient, userEmail);
+        if (existingUser) {
+          userId = existingUser.id;
         } else {
-          throw new Error("اطلاعات مدیر یافت نشد");
+          const { data: newUser, error: createErr } = await adminClient.auth.admin.createUser({
+            email: userEmail,
+            email_confirm: true,
+            user_metadata: {
+              phone: normalizedPhone,
+              full_name: displayName,
+            },
+          });
+          if (createErr) {
+            const isEmailExistsError =
+              createErr.message?.includes("already been registered") ||
+              createErr.message?.includes("email address") ||
+              (createErr as any)?.status === 422;
+            if (!isEmailExistsError) throw createErr;
+            existingUser = await findAuthUserByEmail(adminClient, userEmail);
+            if (!existingUser) throw createErr;
+            userId = existingUser.id;
+          } else {
+            userId = newUser.user.id;
+          }
+        }
+
+        await ensureProfile(adminClient, userId, displayName, normalizedPhone);
+
+        // Ensure building_members manager rows exist for every manager building
+        for (const mgrBuildingId of managerBuildingIds) {
+          const { data: existing } = await adminClient
+            .from("building_members")
+            .select("id, role")
+            .eq("user_id", userId)
+            .eq("building_id", mgrBuildingId)
+            .maybeSingle();
+          const mgrEntry = managers.find((m: any) => m.building_id === mgrBuildingId);
+          if (!existing) {
+            await adminClient.from("building_members").insert({
+              user_id: userId,
+              building_id: mgrBuildingId,
+              role: "manager",
+              unit_id: mgrEntry?.unit_id || null,
+            });
+          } else if (existing.role !== "manager") {
+            await adminClient
+              .from("building_members")
+              .update({ role: "manager", unit_id: mgrEntry?.unit_id || null })
+              .eq("id", existing.id);
+          }
+        }
+
+        // Also add resident/owner memberships for any matched units
+        for (const unit of units) {
+          const { data: existingMember } = await adminClient
+            .from("building_members")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("building_id", unit.building_id)
+            .maybeSingle();
+          if (!existingMember) {
+            await adminClient.from("building_members").insert({
+              user_id: userId,
+              building_id: unit.building_id,
+              role: "resident",
+              unit_id: unit.id,
+            });
+          }
         }
       } else {
         // Create or find resident/owner user
