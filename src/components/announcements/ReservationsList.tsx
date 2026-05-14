@@ -170,10 +170,15 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
     if (overlapInfo) return;
     if (exclusiveLockOnDate) return;
     if (residentMode) {
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const picked = new Date(reqDate.getFullYear(), reqDate.getMonth(), reqDate.getDate());
       if (picked < todayStart) return;
+      if (picked.getTime() === todayStart.getTime()) {
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const [sh, sm] = reqStart.split(":").map(Number);
+        if (sh * 60 + sm < nowMin) return;
+      }
     }
     const gregDate = reqDate.toISOString().split("T")[0];
     const targetUnitId = !residentMode && reqOnBehalfUnitId ? reqOnBehalfUnitId : (unitId || null);
@@ -518,16 +523,25 @@ export function ReservationsList({ residentMode = false, buildingId, unitId, req
               <label className="text-sm font-medium mb-1 block">تاریخ رزرو</label>
               <JalaliDatePicker value={reqDate} onChange={setReqDate} minDate={residentMode ? new Date() : undefined} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium mb-1 block">از ساعت</label>
-                <Input type="time" value={reqStart} onChange={e => setReqStart(normalizeTime(e.target.value))} dir="ltr" />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">تا ساعت</label>
-                <Input type="time" value={reqEnd} onChange={e => setReqEnd(normalizeTime(e.target.value))} dir="ltr" />
-              </div>
-            </div>
+            {(() => {
+              const now = new Date();
+              const isToday = !!reqDate && reqDate.toDateString() === now.toDateString();
+              const minTime = residentMode && isToday
+                ? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
+                : undefined;
+              return (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">از ساعت</label>
+                    <Input type="time" value={reqStart} min={minTime} onChange={e => setReqStart(normalizeTime(e.target.value))} dir="ltr" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">تا ساعت</label>
+                    <Input type="time" value={reqEnd} min={minTime || reqStart} onChange={e => setReqEnd(normalizeTime(e.target.value))} dir="ltr" />
+                  </div>
+                </div>
+              );
+            })()}
             <div>
               <label className="text-sm font-medium mb-1 block">توضیحات</label>
               <Textarea value={reqDesc} onChange={e => setReqDesc(e.target.value)} placeholder="مناسبت، تعداد مهمان و..." />
