@@ -7,10 +7,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2, Info } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, TrendingUp, TrendingDown, Wallet, CreditCard, Loader2, Info, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { PaymentDialog } from "./PaymentDialog";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
+import {
+  exportPaymentsExcel,
+  exportPaymentsPdf,
+  exportExpensesExcel,
+  exportExpensesPdf,
+  inDateRange,
+} from "@/lib/residentExport";
 
 interface Props {
   buildingId: string;
@@ -28,12 +36,16 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
   const [selectedChargeIds, setSelectedChargeIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState<{ charge: number; extra: number } | null>(null);
   const [payChargeIds, setPayChargeIds] = useState<string[]>([]);
+  const [paymentsFrom, setPaymentsFrom] = useState<Date | undefined>();
+  const [paymentsTo, setPaymentsTo] = useState<Date | undefined>();
+  const [expensesFrom, setExpensesFrom] = useState<Date | undefined>();
+  const [expensesTo, setExpensesTo] = useState<Date | undefined>();
 
   // Fetch unit info for owner/resident snapshot
   const { data: unitInfo } = useQuery({
     queryKey: ["resident_unit_info", unitId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("units").select("owner_name, resident_name").eq("id", unitId).maybeSingle();
+      const { data, error } = await supabase.from("units").select("unit_number, owner_name, resident_name").eq("id", unitId).maybeSingle();
       if (error) throw error;
       return data;
     },
