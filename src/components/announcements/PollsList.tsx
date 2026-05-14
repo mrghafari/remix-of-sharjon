@@ -311,12 +311,6 @@ export function PollsList() {
                       </div>
                     );
                   })}
-                  {voted && (
-                    <div className="flex items-center gap-1 text-xs text-primary mt-2">
-                      <CheckCircle2 className="w-3 h-3" />
-                      {isOpen ? "رأی شما ثبت شده است — تا پایان نظرسنجی قابل تغییر است" : "رأی شما ثبت شده است (بدون نام)"}
-                    </div>
-                  )}
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
                     <span>{total} رأی</span>
                     <span>
