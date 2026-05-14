@@ -177,7 +177,23 @@ export function PaymentsList() {
                   )}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {payment.unit_id ? (payment.units?.owner_name || "-") : "—"}
+                  {payment.unit_id ? (
+                    <div className="flex flex-col gap-0.5">
+                      {payment.owner_name && (
+                        <div className="flex items-center gap-1">
+                          <span>{payment.owner_name}</span>
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">مالک</Badge>
+                        </div>
+                      )}
+                      {payment.resident_name && payment.resident_name !== payment.owner_name && (
+                        <div className="flex items-center gap-1">
+                          <span>{payment.resident_name}</span>
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">ساکن</Badge>
+                        </div>
+                      )}
+                      {!payment.owner_name && !payment.resident_name && "-"}
+                    </div>
+                  ) : "—"}
                 </TableCell>
                 <TableCell>
                   <span className="text-primary font-semibold">
