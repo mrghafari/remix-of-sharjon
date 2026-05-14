@@ -65,20 +65,44 @@ export function PaymentForm() {
   const { currentBuildingId } = useBuilding();
   const qc = useQueryClient();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const selectedUnit = units?.find((u) => u.id === formData.unit_id);
     const paymentDate = new Date();
     const paymentAmount = Number(formData.amount);
+    const monthNum = Number(formData.month);
+    const yearNum = Number(formData.year);
+    const fundType = formData.fund_type as "charge" | "extra_charge";
+
+    // بررسی پرداخت تکراری برای همان واحد/ماه/سال/صندوق
+    if (currentBuildingId && formData.unit_id) {
+      const { data: existing } = await supabase
+        .from("payments")
+        .select("id, amount")
+        .eq("building_id", currentBuildingId)
+        .eq("unit_id", formData.unit_id)
+        .eq("month", monthNum)
+        .eq("year", yearNum)
+        .eq("fund_type", fundType);
+
+      if (existing && existing.length > 0) {
+        const fundLabel = fundType === "charge" ? "شارژ" : "فوق‌شارژ";
+        const monthLabel = persianMonths.find((m) => m.value === monthNum)?.label || "";
+        const ok = window.confirm(
+          `برای واحد ${selectedUnit?.unit_number} قبلاً ${existing.length} پرداخت ${fundLabel} برای ${monthLabel} ${yearNum} ثبت شده است.\nآیا می‌خواهید پرداخت جدید را نیز ثبت کنید؟`
+        );
+        if (!ok) return;
+      }
+    }
 
     createPayment.mutate(
       {
         unit_id: formData.unit_id,
         amount: paymentAmount,
-        month: Number(formData.month),
-        year: Number(formData.year),
-        fund_type: formData.fund_type as "charge" | "extra_charge",
+        month: monthNum,
+        year: yearNum,
+        fund_type: fundType,
         payment_date: paymentDate.toISOString().split("T")[0],
         description: formData.description || null,
         owner_name: selectedUnit?.owner_name || null,
@@ -102,10 +126,10 @@ export function PaymentForm() {
                   building_id: currentBuildingId,
                   unit_id: selectedUnit.id,
                   amount: -discount,
-                  fund_type: formData.fund_type as "charge" | "extra_charge",
-                  month: Number(formData.month),
-                  year: Number(formData.year),
-                  description: `خوش‌حسابی ${persianMonths.find(m => m.value === Number(formData.month))?.label} ${formData.year}`,
+                  fund_type: fundType,
+                  month: monthNum,
+                  year: yearNum,
+                  description: `خوش‌حسابی ${persianMonths.find(m => m.value === monthNum)?.label} ${yearNum}`,
                   owner_name: selectedUnit.owner_name || null,
                   resident_name: selectedUnit.resident_name || null,
                 });
