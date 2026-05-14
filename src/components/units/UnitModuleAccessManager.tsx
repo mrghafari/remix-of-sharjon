@@ -82,10 +82,10 @@ export function UnitModuleAccessManager() {
               </tr>
               <tr>
                 {MODULES.map(m => (
-                  <>
-                    <th key={`${m.key}-o`} className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">مالک</th>
-                    <th key={`${m.key}-r`} className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">ساکن</th>
-                  </>
+                  <Fragment key={m.key}>
+                    <th className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">مالک</th>
+                    <th className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">ساکن</th>
+                  </Fragment>
                 ))}
               </tr>
             </thead>
