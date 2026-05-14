@@ -153,7 +153,7 @@ export function PaymentsList() {
           <TableHeader>
             <TableRow>
               <TableHead className="text-right">واحد</TableHead>
-              <TableHead className="text-right">مالک</TableHead>
+              <TableHead className="text-right">شخص</TableHead>
               <TableHead className="text-right">مبلغ</TableHead>
               <TableHead className="text-right">صندوق</TableHead>
               <TableHead className="text-right">ماه/سال</TableHead>
