@@ -249,6 +249,24 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                   </TableRow>
                 ))}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="font-bold text-right">جمع کل</TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + (Number(p.budget) || 0), 0))} تومان
+                  </TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.totalExpenses, 0))} تومان
+                  </TableCell>
+                  <TableCell className="font-bold text-right">
+                    {projectSummaries.reduce((s, p: any) => s + p.expenseCount, 0)} مورد
+                  </TableCell>
+                  <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.myShare, 0))} تومان
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
             </Table>
           </div>
         </CardContent>
