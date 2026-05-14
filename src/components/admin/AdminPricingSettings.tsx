@@ -98,7 +98,7 @@ export function AdminPricingSettings() {
   return (
     <div className="space-y-4">
       <div className="bg-muted/50 border rounded-lg p-4 text-sm text-muted-foreground">
-        قیمت پلن‌ها (به <strong className="text-foreground">هزار تومان در ماه</strong>) را اینجا تنظیم کنید. اگر می‌خواهید به‌جای قیمت عبارت «تماس بگیرید» نمایش داده شود، گزینه «تماس بگیرید» را فعال کنید.
+        قیمت پلن‌ها (به <strong className="text-foreground">هزار تومان به ازای هر واحد در سال</strong>) را اینجا تنظیم کنید. اگر می‌خواهید به‌جای قیمت عبارت «تماس بگیرید» نمایش داده شود، گزینه «تماس بگیرید» را فعال کنید.
       </div>
 
       {plans.map((plan, idx) => (
@@ -109,7 +109,7 @@ export function AdminPricingSettings() {
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>قیمت (هزار تومان / ماه)</Label>
+                <Label>قیمت (هزار تومان به ازای هر واحد در سال)</Label>
                 <Input
                   value={plan.price}
                   onChange={(e) => updatePlan(idx, { price: e.target.value })}
