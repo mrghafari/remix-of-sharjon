@@ -20,6 +20,7 @@ interface ResidentSidebarProps {
 
 const menuItems = [
   { id: "finance", label: "وضعیت مالی", icon: Wallet },
+  { id: "projects", label: "هزینه‌های پروژه‌ای", icon: FolderKanban },
   { id: "messages", label: "پیام به مدیر", icon: MessageSquare },
   { id: "announcements", label: "اطلاعیه‌ها", icon: Bell },
   { id: "polls", label: "نظرسنجی", icon: BarChart3 },
