@@ -2,6 +2,9 @@ import { Building2, Shield, BarChart3, Users, CreditCard, Bell, ArrowLeft, Check
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { DEFAULT_PRICING, type PricingPlanConfig } from "@/components/admin/AdminPricingSettings";
 import blueTehran from "@/assets/blue-tehran.png";
 import sharjanLogo from "@/assets/sharjan-logo.png";
 
@@ -71,6 +74,19 @@ const pricingPlans = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [pricingPlans, setPricingPlans] = useState<PricingPlanConfig[]>(DEFAULT_PRICING);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("platform_settings")
+        .select("setting_value")
+        .eq("setting_key", "pricing_plans")
+        .maybeSingle();
+      const plans = (data?.setting_value as any)?.plans;
+      if (Array.isArray(plans) && plans.length > 0) setPricingPlans(plans);
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
