@@ -105,6 +105,7 @@ export function PollsList() {
         question: trimmedQ,
         options: trimmedOpts,
         created_by: user.id,
+        ends_at: endsAt ? new Date(endsAt.getFullYear(), endsAt.getMonth(), endsAt.getDate(), 23, 59, 59).toISOString() : null,
       });
       if (error) throw error;
     },
@@ -114,6 +115,7 @@ export function PollsList() {
       setCreateOpen(false);
       setQuestion("");
       setOptions(["", ""]);
+      setEndsAt(undefined);
     },
     onError: (err: any) => {
       toast({ title: "خطا", description: err.message, variant: "destructive" });
