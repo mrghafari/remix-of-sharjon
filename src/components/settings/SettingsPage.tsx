@@ -35,7 +35,7 @@ export function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="categories" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Tags className="w-4 h-4 shrink-0" />
-            <span className="truncate">دسته‌بندی</span>
+            <span className="truncate">دسته‌بندی هزینه‌ها</span>
           </TabsTrigger>
           <TabsTrigger value="sms" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Send className="w-4 h-4 shrink-0" />
