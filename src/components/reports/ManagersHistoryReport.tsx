@@ -116,7 +116,7 @@ function ManagerRow({ manager, isPast }: { manager: Manager; isPast: boolean }) 
   );
 }
 
-export function ManagersHistoryReport({ buildingId }: { buildingId?: string } = {}) {
+export function ManagersHistoryReport({ buildingId, hideEmpty = false }: { buildingId?: string; hideEmpty?: boolean } = {}) {
   const { data: managers = [], isLoading } = useManagers(buildingId);
   const { data: roles = [], isLoading: rolesLoading } = useManagerRoles(buildingId);
 
