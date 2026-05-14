@@ -289,7 +289,10 @@ export function PollsList() {
                   )}
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
                     <span>{total} رأی</span>
-                    <span>{formatJalaliDate(poll.created_at)}</span>
+                    <span>
+                      {formatJalaliDate(poll.created_at)}
+                      {poll.ends_at && ` — پایان: ${formatJalaliDate(poll.ends_at)}`}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
