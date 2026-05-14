@@ -69,7 +69,7 @@ export function ChargeSettings() {
     });
   };
 
-  const handleApply = () => {
+  const handleApply = async () => {
     const monthLabel = `${JALALI_MONTHS[Number(selectedMonth) - 1]} ${selectedYear}`;
     const baseDesc = applyDescription || "";
     const chargeDesc = baseDesc
@@ -78,6 +78,36 @@ export function ChargeSettings() {
     const extraDesc = baseDesc
       ? `فوق‌شارژ ${monthLabel} - ${baseDesc}`
       : `فوق‌شارژ ${monthLabel}`;
+
+    // بررسی تکراری بودن شارژ برای این ماه/سال
+    if (currentBuildingId) {
+      const fundTypesToCheck: ("charge" | "extra_charge")[] = [];
+      if ((Number(chargeAmount) || 0) > 0) fundTypesToCheck.push("charge");
+      if ((Number(extraChargeAmount) || 0) > 0) fundTypesToCheck.push("extra_charge");
+
+      if (fundTypesToCheck.length > 0) {
+        const { data: existing } = await supabase
+          .from("unit_charges")
+          .select("id, fund_type")
+          .eq("building_id", currentBuildingId)
+          .eq("month", Number(selectedMonth))
+          .eq("year", Number(selectedYear))
+          .in("fund_type", fundTypesToCheck);
+
+        if (existing && existing.length > 0) {
+          const chargeCount = existing.filter((r) => r.fund_type === "charge").length;
+          const extraCount = existing.filter((r) => r.fund_type === "extra_charge").length;
+          const parts: string[] = [];
+          if (chargeCount > 0) parts.push(`${chargeCount} رکورد شارژ`);
+          if (extraCount > 0) parts.push(`${extraCount} رکورد فوق‌شارژ`);
+          const ok = window.confirm(
+            `برای ${monthLabel} قبلاً ${parts.join(" و ")} ثبت شده است.\nآیا می‌خواهید مجدداً اعمال کنید؟ (ممکن است رکوردهای تکراری ایجاد شود)`
+          );
+          if (!ok) return;
+        }
+      }
+    }
+
     applyCharges.mutate(
       {
         chargeAmount: Number(chargeAmount) || 0,
