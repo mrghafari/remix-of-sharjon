@@ -381,15 +381,24 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-right">تاریخ</TableHead>
+                      <TableHead className="text-right">شخص</TableHead>
+                      <TableHead className="text-right">نقش</TableHead>
                       <TableHead className="text-right">توضیحات</TableHead>
                       <TableHead className="text-right">نوع</TableHead>
                       <TableHead className="text-left">مبلغ</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {payments.map((p) => (
+                    {payments.map((p: any) => {
+                      const personName = p.resident_name || p.owner_name || "-";
+                      const roleLabel = p.resident_name ? "ساکن" : (p.owner_name ? "مالک" : "-");
+                      return (
                       <TableRow key={p.id}>
                         <TableCell className="text-xs whitespace-nowrap">{formatJalaliDate(p.payment_date)}</TableCell>
+                        <TableCell className="text-xs">{personName}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="text-xs">{roleLabel}</Badge>
+                        </TableCell>
                         <TableCell className="text-xs">{p.description || "-"}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
@@ -400,7 +409,8 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                           {formatNumber(Number(p.amount))} تومان
                         </TableCell>
                       </TableRow>
-                    ))}
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
@@ -420,18 +430,26 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     <TableRow>
                       <TableHead className="text-right">تاریخ</TableHead>
                       <TableHead className="text-right">عنوان</TableHead>
+                      <TableHead className="text-right">شخص</TableHead>
+                      <TableHead className="text-right">نقش</TableHead>
                       <TableHead className="text-right">نوع</TableHead>
                       <TableHead className="text-left">سهم شما</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {expenseShares.map((e) => {
+                    {expenseShares.map((e: any) => {
                       const expense = e.expenses as any;
                       const fundType = expense?.fund_type ?? "charge";
+                      const personName = e.resident_name || e.owner_name || "-";
+                      const roleLabel = e.resident_name ? "ساکن" : (e.owner_name ? "مالک" : "-");
                       return (
                         <TableRow key={e.id}>
                           <TableCell className="text-xs whitespace-nowrap">{expense ? formatJalaliDate(expense.expense_date) : "-"}</TableCell>
                           <TableCell className="text-xs">{expense?.title || "-"}</TableCell>
+                          <TableCell className="text-xs">{personName}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs">{roleLabel}</Badge>
+                          </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
                               {fundType === "charge" ? "شارژ" : "فوق‌شارژ"}
