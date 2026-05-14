@@ -31,21 +31,27 @@ export function ResidentDocuments({ buildingId }: Props) {
     }
   }, [buildingId]);
 
-  const { data: isBlocked, isLoading: checkingAccess } = useQuery({
+  // Fetch all access blocks for this unit (unit-wide + per-folder)
+  const { data: accessBlocks = [], isLoading: checkingAccess } = useQuery({
     queryKey: ["unit_doc_access_check", buildingId, currentUnitId, activeRole],
     queryFn: async () => {
-      if (!currentUnitId) return false;
+      if (!currentUnitId) return [];
       const { data, error } = await supabase
         .from("unit_document_access_blocks" as any)
-        .select("id, person_type")
+        .select("person_type, folder")
         .eq("building_id", buildingId)
         .eq("unit_id", currentUnitId)
         .in("person_type", [activeRole, "both"]);
       if (error) throw error;
-      return (data || []).length > 0;
+      return (data || []) as unknown as Array<{ person_type: string; folder: string | null }>;
     },
     enabled: !!buildingId && !!currentUnitId,
   });
+
+  const isUnitWideBlocked = accessBlocks.some((b) => b.folder === null);
+  const blockedFolders = new Set(
+    accessBlocks.filter((b) => b.folder !== null).map((b) => b.folder as string)
+  );
 
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["resident_documents", buildingId],
@@ -58,7 +64,7 @@ export function ResidentDocuments({ buildingId }: Props) {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!buildingId && !isBlocked,
+    enabled: !!buildingId && !isUnitWideBlocked,
   });
 
   const handleDownload = async (filePath: string) => {
@@ -76,7 +82,7 @@ export function ResidentDocuments({ buildingId }: Props) {
     );
   }
 
-  if (isBlocked) {
+  if (isUnitWideBlocked) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -88,13 +94,13 @@ export function ResidentDocuments({ buildingId }: Props) {
     );
   }
 
-  // Build folder list: defaults + custom (manager localStorage) + folders inferred from docs
+  // Build folder list (defaults + custom + folders inferred from docs), excluding blocked folders
   const folders = Array.from(
     new Set([...DEFAULT_FOLDERS, ...customFolders, ...documents.map((d: any) => d.folder)])
-  );
+  ).filter((f) => !blockedFolders.has(f));
 
   // Folder detail view
-  if (activeFolder) {
+  if (activeFolder && !blockedFolders.has(activeFolder)) {
     const folderDocs = documents.filter((d: any) => d.folder === activeFolder);
     return (
       <Card>

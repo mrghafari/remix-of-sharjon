@@ -9,6 +9,8 @@ export interface UnitDocAccessBlock {
   building_id: string;
   unit_id: string;
   person_type: DocAccessPersonType;
+  /** null = applies to ALL folders (whole-unit block). Otherwise applies only to that folder. */
+  folder: string | null;
   blocked_at: string;
   blocked_by: string | null;
 }
@@ -37,13 +39,17 @@ export function useToggleUnitDocumentAccess() {
       buildingId,
       unitId,
       personType,
+      folder,
       blocked,
     }: {
       buildingId: string;
       unitId: string;
       personType: DocAccessPersonType;
+      /** null = whole-unit block, otherwise specific folder */
+      folder?: string | null;
       blocked: boolean;
     }) => {
+      const f = folder ?? null;
       if (blocked) {
         const { data: { user } } = await supabase.auth.getUser();
         const { error } = await supabase
@@ -52,31 +58,31 @@ export function useToggleUnitDocumentAccess() {
             building_id: buildingId,
             unit_id: unitId,
             person_type: personType,
+            folder: f,
             blocked_by: user?.id || null,
           } as any);
         if (error && !error.message.includes("duplicate")) throw error;
       } else {
-        const { error } = await supabase
+        let q = supabase
           .from("unit_document_access_blocks" as any)
           .delete()
           .eq("building_id", buildingId)
           .eq("unit_id", unitId)
           .eq("person_type", personType);
+        if (f === null) {
+          q = q.is("folder", null);
+        } else {
+          q = q.eq("folder", f);
+        }
+        const { error } = await q;
         if (error) throw error;
       }
     },
-    onSuccess: (_, vars) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["unit_document_access_blocks"] });
       qc.invalidateQueries({ queryKey: ["unit_doc_access_check"] });
-      const who =
-        vars.personType === "owner" ? "مالک" :
-        vars.personType === "resident" ? "ساکن" : "کل واحد";
-      toast({
-        title: "موفق",
-        description: vars.blocked
-          ? `دسترسی ${who} به اسناد قطع شد`
-          : `دسترسی ${who} به اسناد فعال شد`,
-      });
+      qc.invalidateQueries({ queryKey: ["unit_doc_folder_blocks"] });
+      toast({ title: "موفق", description: "تنظیمات دسترسی بروزرسانی شد" });
     },
     onError: (e: any) => toast({ title: "خطا", description: e.message, variant: "destructive" }),
   });

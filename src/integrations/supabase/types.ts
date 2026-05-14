@@ -1685,6 +1685,7 @@ export type Database = {
           blocked_at: string
           blocked_by: string | null
           building_id: string
+          folder: string | null
           id: string
           person_type: string
           unit_id: string
@@ -1693,6 +1694,7 @@ export type Database = {
           blocked_at?: string
           blocked_by?: string | null
           building_id: string
+          folder?: string | null
           id?: string
           person_type?: string
           unit_id: string
@@ -1701,6 +1703,7 @@ export type Database = {
           blocked_at?: string
           blocked_by?: string | null
           building_id?: string
+          folder?: string | null
           id?: string
           person_type?: string
           unit_id?: string
