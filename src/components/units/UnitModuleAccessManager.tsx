@@ -67,46 +67,70 @@ export function UnitModuleAccessManager() {
             className="pr-9"
           />
         </div>
-        <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-          {filtered.map(u => (
-            <div key={u.id} className="p-3 rounded-lg border bg-card space-y-3">
-              <div className="font-medium">واحد {u.unit_number}</div>
-
-              {(["owner", "resident"] as ModulePersonType[]).map(person => (
-                <div key={person} className="border rounded-md p-2 bg-muted/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-xs text-muted-foreground">
-                      {person === "owner" ? "مالک" : "ساکن"}
+        <div className="border rounded-lg max-h-[600px] overflow-auto">
+          <table className="w-full text-xs border-collapse">
+            <thead className="sticky top-0 z-10 bg-muted">
+              <tr>
+                <th rowSpan={2} className="sticky right-0 z-20 bg-muted border-b border-l p-2 text-right font-medium min-w-[110px]">
+                  واحد
+                </th>
+                {MODULES.map(m => (
+                  <th key={m.key} colSpan={2} className="border-b border-l p-1.5 text-center font-medium whitespace-nowrap">
+                    {m.label}
+                  </th>
+                ))}
+              </tr>
+              <tr>
+                {MODULES.map(m => (
+                  <>
+                    <th key={`${m.key}-o`} className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">مالک</th>
+                    <th key={`${m.key}-r`} className="border-b border-l p-1 text-center font-normal text-[10px] text-muted-foreground bg-muted/70">ساکن</th>
+                  </>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(u => (
+                <tr key={u.id} className="hover:bg-muted/40">
+                  <td className="sticky right-0 z-10 bg-card border-b border-l p-2 font-medium whitespace-nowrap">
+                    <div>واحد {u.unit_number}</div>
+                    <div className="text-[10px] text-muted-foreground truncate max-w-[100px]">
+                      {u.owner_name || "—"}
                     </div>
-                    <div className="text-xs truncate max-w-[60%] text-left">
-                      {(person === "owner" ? u.owner_name : u.resident_name) || "—"}
-                    </div>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    {MODULES.map(m => {
-                      const granted = isGranted(u.id, person, m.key);
-                      return (
-                        <div
-                          key={m.key}
-                          className="flex items-center justify-between gap-2 p-2 rounded border bg-background"
-                        >
-                          <span className="text-xs">{m.label}</span>
+                  </td>
+                  {MODULES.map(m => {
+                    const ownerGranted = isGranted(u.id, "owner", m.key);
+                    const residentGranted = isGranted(u.id, "resident", m.key);
+                    return (
+                      <>
+                        <td key={`${u.id}-${m.key}-o`} className="border-b border-l p-1 text-center">
                           <Switch
-                            checked={granted}
-                            onCheckedChange={() => handleToggle(u.id, person, m.key, granted)}
+                            checked={ownerGranted}
+                            onCheckedChange={() => handleToggle(u.id, "owner", m.key, ownerGranted)}
                             disabled={toggle.isPending}
                           />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                        </td>
+                        <td key={`${u.id}-${m.key}-r`} className="border-b border-l p-1 text-center">
+                          <Switch
+                            checked={residentGranted}
+                            onCheckedChange={() => handleToggle(u.id, "resident", m.key, residentGranted)}
+                            disabled={toggle.isPending}
+                          />
+                        </td>
+                      </>
+                    );
+                  })}
+                </tr>
               ))}
-            </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground py-6">واحدی یافت نشد</div>
-          )}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={1 + MODULES.length * 2} className="text-center text-sm text-muted-foreground py-6">
+                    واحدی یافت نشد
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
