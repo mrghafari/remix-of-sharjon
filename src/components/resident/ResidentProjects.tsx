@@ -74,7 +74,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
     return projects.map((p: any) => {
       const projExp = expenses.filter((e: any) => e.project_id === p.id);
       const total = projExp.reduce((s, e: any) => s + Number(e.amount), 0);
-      const myShare = projExp.reduce((s, e: any) => s + (shareMap.get(e.id) || 0), 0);
+      const myShare = projExp.reduce((s, e: any) => s + (shareMap.get(e.id)?.amount || 0), 0);
       return { ...p, totalExpenses: total, expenseCount: projExp.length, myShare };
     });
   }, [projects, expenses, shareMap]);
