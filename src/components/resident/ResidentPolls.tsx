@@ -26,7 +26,8 @@ export function ResidentPolls({ buildingId }: Props) {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data || [];
+      const now = Date.now();
+      return (data || []).filter((p: any) => !p.ends_at || new Date(p.ends_at).getTime() >= now);
     },
   });
 
@@ -105,7 +106,10 @@ export function ResidentPolls({ buildingId }: Props) {
           <Card key={poll.id}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">{poll.question}</CardTitle>
-              <p className="text-xs text-muted-foreground">{totalVotes} رأی</p>
+              <p className="text-xs text-muted-foreground">
+                {totalVotes} رأی
+                {(poll as any).ends_at && ` — پایان: ${new Date((poll as any).ends_at).toLocaleDateString("fa-IR")}`}
+              </p>
             </CardHeader>
             <CardContent className="space-y-2">
               {options.map((opt: any, i: number) => {

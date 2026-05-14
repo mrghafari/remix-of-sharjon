@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2, BarChart3, X, Loader2, CheckCircle2 } from "lucide-react";
 import { formatJalaliDate } from "@/lib/jalaliDate";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 
 interface Poll {
   id: string;
@@ -45,6 +46,7 @@ export function PollsList() {
   const [createOpen, setCreateOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [endsAt, setEndsAt] = useState<Date | undefined>(undefined);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: polls = [], isLoading } = useQuery({
@@ -103,6 +105,7 @@ export function PollsList() {
         question: trimmedQ,
         options: trimmedOpts,
         created_by: user.id,
+        ends_at: endsAt ? new Date(endsAt.getFullYear(), endsAt.getMonth(), endsAt.getDate(), 23, 59, 59).toISOString() : null,
       });
       if (error) throw error;
     },
@@ -112,6 +115,7 @@ export function PollsList() {
       setCreateOpen(false);
       setQuestion("");
       setOptions(["", ""]);
+      setEndsAt(undefined);
     },
     onError: (err: any) => {
       toast({ title: "خطا", description: err.message, variant: "destructive" });
@@ -225,7 +229,9 @@ export function PollsList() {
           {polls.map((poll) => {
             const voted = hasVoted(poll.id);
             const { counts, total } = getVoteCounts(poll.id, (poll.options as string[]).length);
-            const showResults = voted || !poll.is_active;
+            const expired = !!poll.ends_at && new Date(poll.ends_at).getTime() < Date.now();
+            const isOpen = poll.is_active && !expired;
+            const showResults = voted || !isOpen;
 
             return (
               <Card key={poll.id}>
@@ -233,8 +239,8 @@ export function PollsList() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base">{poll.question}</CardTitle>
-                      <Badge variant={poll.is_active ? "default" : "secondary"}>
-                        {poll.is_active ? "فعال" : "بسته شده"}
+                      <Badge variant={isOpen ? "default" : "secondary"}>
+                        {isOpen ? "فعال" : (expired ? "منقضی شده" : "بسته شده")}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-1">
@@ -283,7 +289,10 @@ export function PollsList() {
                   )}
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
                     <span>{total} رأی</span>
-                    <span>{formatJalaliDate(poll.created_at)}</span>
+                    <span>
+                      {formatJalaliDate(poll.created_at)}
+                      {poll.ends_at && ` — پایان: ${formatJalaliDate(poll.ends_at)}`}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -324,6 +333,15 @@ export function PollsList() {
                 <Button variant="outline" size="sm" onClick={addOption} className="gap-1">
                   <Plus className="w-3 h-3" />
                   افزودن گزینه
+                </Button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>تاریخ پایان (اختیاری)</Label>
+              <JalaliDatePicker value={endsAt} onChange={setEndsAt} placeholder="بدون تاریخ پایان" />
+              {endsAt && (
+                <Button variant="ghost" size="sm" onClick={() => setEndsAt(undefined)} className="h-7 text-xs">
+                  حذف تاریخ پایان
                 </Button>
               )}
             </div>
