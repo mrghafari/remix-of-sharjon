@@ -215,7 +215,7 @@ export default function Landing() {
                     variant={plan.highlighted ? "default" : "outline"}
                     onClick={() => navigate("/resident-auth")}
                   >
-                    {plan.price === "تماس" ? "تماس با ما" : "شروع کنید"}
+                    {plan.contact || plan.price === "تماس" ? "تماس با ما" : "شروع کنید"}
                   </Button>
                 </CardContent>
               </Card>
