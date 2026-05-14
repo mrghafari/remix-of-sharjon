@@ -43,7 +43,7 @@ export function ResidentDocuments({ buildingId }: Props) {
         .eq("unit_id", currentUnitId)
         .in("person_type", [activeRole, "both"]);
       if (error) throw error;
-      return (data || []) as Array<{ person_type: string; folder: string | null }>;
+      return (data || []) as unknown as Array<{ person_type: string; folder: string | null }>;
     },
     enabled: !!buildingId && !!currentUnitId,
   });
