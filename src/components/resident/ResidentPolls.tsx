@@ -43,28 +43,42 @@ export function ResidentPolls({ buildingId }: Props) {
     },
   });
 
-  const { data: voterHash } = useQuery({
-    queryKey: ["voter_hash_resident"],
+  const { data: myHashes = [] } = useQuery({
+    queryKey: ["resident_voter_hashes", buildingId, polls.map((p: any) => p.id).join(",")],
     queryFn: async () => {
-      // We'll compute per poll
-      return null;
+      const results: { pollId: string; hash: string }[] = [];
+      for (const poll of polls as any[]) {
+        const { data } = await supabase.rpc("get_voter_hash", { _poll_id: poll.id });
+        if (data) results.push({ pollId: poll.id, hash: data });
+      }
+      return results;
     },
-    enabled: false,
+    enabled: polls.length > 0,
   });
 
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, optionIndex }: { pollId: string; optionIndex: number }) => {
       const { data: hash } = await supabase.rpc("get_voter_hash", { _poll_id: pollId });
       if (!hash) throw new Error("خطا");
-      const { error } = await supabase.from("building_poll_votes").insert({
-        poll_id: pollId,
-        building_id: buildingId,
-        selected_option: optionIndex,
-        voter_hash: hash,
-      });
-      if (error) {
-        if (error.code === "23505") throw new Error("شما قبلاً رأی داده‌اید");
-        throw error;
+      // Check if vote exists for this hash
+      const existing = votes.find((v: any) => v.poll_id === pollId && v.voter_hash === hash);
+      if (existing) {
+        const { error } = await supabase
+          .from("building_poll_votes")
+          .update({ selected_option: optionIndex })
+          .eq("id", (existing as any).id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("building_poll_votes").insert({
+          poll_id: pollId,
+          building_id: buildingId,
+          selected_option: optionIndex,
+          voter_hash: hash,
+        });
+        if (error) {
+          if (error.code === "23505") throw new Error("شما قبلاً رأی داده‌اید");
+          throw error;
+        }
       }
     },
     onSuccess: () => {
@@ -75,6 +89,14 @@ export function ResidentPolls({ buildingId }: Props) {
       toast({ title: "خطا", description: err.message, variant: "destructive" });
     },
   });
+
+  const myVoteFor = (pollId: string): number | null => {
+    const myHash = myHashes.find((h) => h.pollId === pollId)?.hash;
+    if (!myHash) return null;
+    const v = votes.find((v: any) => v.poll_id === pollId && v.voter_hash === myHash);
+    return v ? (v as any).selected_option : null;
+  };
+
 
   if (isLoading) {
     return (
