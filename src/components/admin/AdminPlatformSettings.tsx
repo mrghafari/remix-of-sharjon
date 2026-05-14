@@ -1,7 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, MessageSquare } from "lucide-react";
+import { CreditCard, MessageSquare, Tag } from "lucide-react";
 import { PaymentGatewaySettings } from "./PaymentGatewaySettings";
 import { SmsSettings } from "./SmsSettings";
+import { AdminPricingSettings } from "./AdminPricingSettings";
 
 interface Props {
   /** When provided, shows per-customer settings; otherwise platform-wide */
@@ -31,6 +32,12 @@ export function AdminPlatformSettings({ userId }: Props) {
             <MessageSquare className="h-4 w-4" />
             سرویس پیامک
           </TabsTrigger>
+          {!userId && (
+            <TabsTrigger value="pricing" className="gap-2">
+              <Tag className="h-4 w-4" />
+              تعرفه‌ها
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="payment" className="mt-4">
@@ -40,6 +47,12 @@ export function AdminPlatformSettings({ userId }: Props) {
         <TabsContent value="sms" className="mt-4">
           <SmsSettings userId={userId} />
         </TabsContent>
+
+        {!userId && (
+          <TabsContent value="pricing" className="mt-4">
+            <AdminPricingSettings />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
