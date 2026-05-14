@@ -35,13 +35,11 @@ const ResidentDashboard = () => {
     matches,
   } = useResidentUnit();
 
-  const currentMatchEarly = (typeof window !== "undefined" ? null : null);
-  const activeRoleHook: "owner" | "resident" =
-    (useResidentUnit().matches[0]?.role === "owner" ? "owner" : "resident");
+  const activeRole: "owner" | "resident" = matches[0]?.role === "owner" ? "owner" : "resident";
   const { data: grantedModules = [] } = useMyUnitModules(
     currentBuildingId || "",
     currentUnitId || "",
-    activeRoleHook
+    activeRole
   );
 
   const handleSignOut = async () => {
