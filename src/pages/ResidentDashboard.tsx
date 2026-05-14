@@ -111,7 +111,7 @@ const ResidentDashboard = () => {
           />
         );
       case "managers":
-        return <ManagersHistoryReport buildingId={currentBuildingId} />;
+        return <ManagersHistoryReport buildingId={currentBuildingId} hideEmpty />;
       case "meetings":
         return <MeetingMinutesPage buildingId={currentBuildingId} canEdit={false} />;
       default:
