@@ -281,20 +281,7 @@ export function PollsList() {
                                 {isMine && <CheckCircle2 className="w-3 h-3 text-primary" />}
                                 <span className={isMine ? "font-medium text-primary" : ""}>{opt}</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground">{counts[idx]} رأی ({pct}%)</span>
-                                {isOpen && !isMine && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-6 text-xs"
-                                    onClick={() => voteMutation.mutate({ pollId: poll.id, optionIndex: idx })}
-                                    disabled={voteMutation.isPending}
-                                  >
-                                    تغییر به این
-                                  </Button>
-                                )}
-                              </div>
+                              <span className="text-muted-foreground">{counts[idx]} رأی ({pct}%)</span>
                             </div>
                             <Progress value={pct} className="h-2" />
                           </div>
