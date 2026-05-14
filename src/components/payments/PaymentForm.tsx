@@ -15,8 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, CreditCard } from "lucide-react";
+import { Plus, CreditCard, AlertTriangle, Loader2 } from "lucide-react";
 import { useCreatePayment } from "@/hooks/usePayments";
 import { useUnits } from "@/hooks/useUnits";
 import { NumericInput } from "@/components/ui/numeric-input";
