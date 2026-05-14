@@ -128,15 +128,24 @@ export function PollsList() {
       const { data: hash } = await supabase.rpc("get_voter_hash", { _poll_id: pollId });
       if (!hash) throw new Error("خطا در دریافت هش");
 
-      const { error } = await (supabase as any).from("building_poll_votes").insert({
-        poll_id: pollId,
-        building_id: currentBuildingId,
-        voter_hash: hash,
-        selected_option: optionIndex,
-      });
-      if (error) {
-        if (error.code === "23505") throw new Error("شما قبلاً رأی داده‌اید");
-        throw error;
+      const existing = allVotes.find((v) => v.poll_id === pollId && v.voter_hash === hash);
+      if (existing) {
+        const { error } = await (supabase as any)
+          .from("building_poll_votes")
+          .update({ selected_option: optionIndex })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await (supabase as any).from("building_poll_votes").insert({
+          poll_id: pollId,
+          building_id: currentBuildingId,
+          voter_hash: hash,
+          selected_option: optionIndex,
+        });
+        if (error) {
+          if (error.code === "23505") throw new Error("شما قبلاً رأی داده‌اید");
+          throw error;
+        }
       }
     },
     onSuccess: () => {
