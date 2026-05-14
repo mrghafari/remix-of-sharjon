@@ -109,7 +109,7 @@ export function AdminPricingSettings() {
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>قیمت (هزار تومان / ماه)</Label>
+                <Label>قیمت (هزار تومان به ازای هر واحد در سال)</Label>
                 <Input
                   value={plan.price}
                   onChange={(e) => updatePlan(idx, { price: e.target.value })}
