@@ -157,7 +157,8 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                       <TableHead className="text-right">عنوان</TableHead>
                       <TableHead className="text-right">تاریخ</TableHead>
                       <TableHead className="text-right">صندوق</TableHead>
-                      <TableHead className="text-right">شخص (در زمان هزینه)</TableHead>
+                      <TableHead className="text-right">شخص</TableHead>
+                      <TableHead className="text-right">نقش</TableHead>
                       <TableHead className="text-right">مبلغ کل</TableHead>
                       <TableHead className="text-right">سهم شما</TableHead>
                     </TableRow>
@@ -166,6 +167,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                     {selectedExpenses.map((e: any) => {
                       const sh = shareMap.get(e.id);
                       const personName = sh?.resident_name || sh?.owner_name || "-";
+                      const roleLabel = sh?.resident_name ? "ساکن" : (sh?.owner_name ? "مالک" : "-");
                       return (
                         <TableRow key={e.id}>
                           <TableCell className="font-medium">{e.title}</TableCell>
@@ -176,6 +178,9 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                             </Badge>
                           </TableCell>
                           <TableCell>{personName}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-xs">{roleLabel}</Badge>
+                          </TableCell>
                           <TableCell className="font-bold">{fmt(Number(e.amount))} تومان</TableCell>
                           <TableCell className="font-bold text-primary">
                             {fmt(sh?.amount || 0)} تومان
@@ -186,7 +191,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={4} className="font-bold text-right">جمع کل</TableCell>
+                      <TableCell colSpan={5} className="font-bold text-right">جمع کل</TableCell>
                       <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
                         {fmt(selectedExpenses.reduce((s, e: any) => s + Number(e.amount), 0))} تومان
                       </TableCell>
