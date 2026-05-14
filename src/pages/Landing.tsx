@@ -198,7 +198,7 @@ export default function Landing() {
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-extrabold text-foreground">{plan.price}</span>
-                        <span className="text-muted-foreground text-sm">هزار تومان / ماه</span>
+                        <span className="text-muted-foreground text-sm">هزار تومان / واحد / سال</span>
                       </div>
                     )}
                   </div>
