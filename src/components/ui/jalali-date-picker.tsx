@@ -63,7 +63,17 @@ export function JalaliDatePicker({
       format(day, "yyyy", { locale: faIR }) === format(viewDate, "yyyy", { locale: faIR });
   };
 
+  const getDayStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const isDateDisabled = (day: Date) => {
+    const dayStart = getDayStart(day);
+    const minStart = minDate ? getDayStart(minDate) : null;
+    const maxStart = maxDate ? getDayStart(maxDate) : null;
+    return (minStart && dayStart < minStart) || (maxStart && dayStart > maxStart);
+  };
+
   const handleSelect = (day: Date) => {
+    if (isDateDisabled(day)) return;
     onChange?.(day);
     setOpen(false);
   };
@@ -127,10 +137,7 @@ export function JalaliDatePicker({
               const selected = value && isSameDay(day, value);
               const today = isToday(day);
               const dayNum = format(day, "d", { locale: faIR });
-              const dayStart = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-              const minStart = minDate ? new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate()) : null;
-              const maxStart = maxDate ? new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate()) : null;
-              const isDisabled = (minStart && dayStart < minStart) || (maxStart && dayStart > maxStart);
+              const isDisabled = isDateDisabled(day);
 
               return (
                 <button
@@ -159,6 +166,7 @@ export function JalaliDatePicker({
               variant="ghost"
               size="sm"
               className="w-full text-xs"
+              disabled={isDateDisabled(new Date())}
               onClick={() => {
                 const today = new Date();
                 setViewDate(today);
