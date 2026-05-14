@@ -35,6 +35,15 @@ const ResidentDashboard = () => {
     matches,
   } = useResidentUnit();
 
+  const currentMatchEarly = (typeof window !== "undefined" ? null : null);
+  const activeRoleHook: "owner" | "resident" =
+    (useResidentUnit().matches[0]?.role === "owner" ? "owner" : "resident");
+  const { data: grantedModules = [] } = useMyUnitModules(
+    currentBuildingId || "",
+    currentUnitId || "",
+    activeRoleHook
+  );
+
   const handleSignOut = async () => {
     try {
       localStorage.removeItem("resident_matches");
