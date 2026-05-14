@@ -116,7 +116,7 @@ function ManagerRow({ manager, isPast }: { manager: Manager; isPast: boolean }) 
   );
 }
 
-export function ManagersHistoryReport({ buildingId }: { buildingId?: string } = {}) {
+export function ManagersHistoryReport({ buildingId, hideEmpty = false }: { buildingId?: string; hideEmpty?: boolean } = {}) {
   const { data: managers = [], isLoading } = useManagers(buildingId);
   const { data: roles = [], isLoading: rolesLoading } = useManagerRoles(buildingId);
 
@@ -146,6 +146,8 @@ export function ManagersHistoryReport({ buildingId }: { buildingId?: string } = 
             const bEnd = b.end_date || b.start_date;
             return bEnd.localeCompare(aEnd);
           });
+
+        if (hideEmpty && !active && past.length === 0) return null;
 
         return (
           <Card key={role.id}>
