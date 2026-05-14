@@ -7,6 +7,7 @@ import { Send, Trash2, MessageSquare, Loader2, CornerUpLeft, Check, CheckCheck, 
 import { useMessages, useSendMessage, useMarkMessageRead, useDeleteMessage, type BuildingMessage } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format, parseISO, isToday, isYesterday } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
