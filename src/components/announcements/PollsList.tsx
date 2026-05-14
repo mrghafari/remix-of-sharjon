@@ -336,6 +336,15 @@ export function PollsList() {
                 </Button>
               )}
             </div>
+            <div className="space-y-2">
+              <Label>تاریخ پایان (اختیاری)</Label>
+              <JalaliDatePicker value={endsAt} onChange={setEndsAt} placeholder="بدون تاریخ پایان" />
+              {endsAt && (
+                <Button variant="ghost" size="sm" onClick={() => setEndsAt(undefined)} className="h-7 text-xs">
+                  حذف تاریخ پایان
+                </Button>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">رأی‌گیری به صورت بدون نام انجام می‌شود و هویت رأی‌دهندگان مشخص نخواهد شد.</p>
           </div>
           <DialogFooter>
