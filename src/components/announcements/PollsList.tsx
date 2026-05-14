@@ -239,8 +239,8 @@ export function PollsList() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <CardTitle className="text-base">{poll.question}</CardTitle>
-                      <Badge variant={poll.is_active ? "default" : "secondary"}>
-                        {poll.is_active ? "فعال" : "بسته شده"}
+                      <Badge variant={isOpen ? "default" : "secondary"}>
+                        {isOpen ? "فعال" : (expired ? "منقضی شده" : "بسته شده")}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-1">
