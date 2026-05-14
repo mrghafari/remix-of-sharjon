@@ -6,7 +6,7 @@ import { Loader2, Receipt } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { toJalaliDateString } from "@/lib/jalaliDate";
+import { toJalaliString } from "@/lib/jalaliDate";
 
 const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
 
@@ -75,7 +75,7 @@ export function ResidentAllExpenses({ buildingId }: Props) {
                   {expenses.map((e: any) => (
                     <TableRow key={e.id}>
                       <TableCell className="text-xs whitespace-nowrap">
-                        {toJalaliDateString(e.expense_date)}
+                        {toJalaliString(e.expense_date)}
                       </TableCell>
                       <TableCell className="font-medium">{e.title}</TableCell>
                       <TableCell>
