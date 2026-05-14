@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, History, List } from "lucide-react";
+import { Plus, Building2, History, List, KeyRound } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UnitForm } from "./UnitForm";
 import { UnitsList } from "./UnitsList";
 import { UnitsStats } from "./UnitsStats";
 import { OccupancyHistoryPage } from "./OccupancyHistoryPage";
+import { UnitModuleAccessManager } from "./UnitModuleAccessManager";
 import type { Unit } from "@/hooks/useUnits";
 
 export function UnitsPage() {
@@ -45,7 +46,7 @@ export function UnitsPage() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} dir="rtl">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-xl">
           <TabsTrigger value="list" className="gap-2">
             <List className="w-4 h-4" />
             لیست واحدها
@@ -53,6 +54,10 @@ export function UnitsPage() {
           <TabsTrigger value="history" className="gap-2">
             <History className="w-4 h-4" />
             تاریخچه افراد
+          </TabsTrigger>
+          <TabsTrigger value="access" className="gap-2">
+            <KeyRound className="w-4 h-4" />
+            دسترسی‌ها
           </TabsTrigger>
         </TabsList>
 
@@ -64,6 +69,10 @@ export function UnitsPage() {
 
         <TabsContent value="history" className="mt-6">
           <OccupancyHistoryPage embedded />
+        </TabsContent>
+
+        <TabsContent value="access" className="mt-6">
+          <UnitModuleAccessManager />
         </TabsContent>
       </Tabs>
     </div>

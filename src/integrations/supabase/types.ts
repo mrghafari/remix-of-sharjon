@@ -1710,6 +1710,36 @@ export type Database = {
         }
         Relationships: []
       }
+      unit_module_access: {
+        Row: {
+          building_id: string
+          granted_at: string
+          granted_by: string | null
+          id: string
+          module_key: string
+          person_type: string
+          unit_id: string
+        }
+        Insert: {
+          building_id: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module_key: string
+          person_type: string
+          unit_id: string
+        }
+        Update: {
+          building_id?: string
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module_key?: string
+          person_type?: string
+          unit_id?: string
+        }
+        Relationships: []
+      }
       unit_occupancy_history: {
         Row: {
           building_id: string

@@ -1,9 +1,10 @@
-import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X, Repeat, FolderKanban } from "lucide-react";
+import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X, Repeat, FolderKanban, Receipt, PiggyBank } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { ModuleKey } from "@/hooks/useUnitModuleAccess";
 
 
 interface ResidentSidebarProps {
@@ -16,9 +17,10 @@ interface ResidentSidebarProps {
   onSignOut: () => void;
   mobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
+  grantedModules?: ModuleKey[];
 }
 
-const menuItems = [
+const baseMenuItems = [
   { id: "finance", label: "وضعیت مالی", icon: Wallet },
   { id: "projects", label: "هزینه‌های پروژه‌ای", icon: FolderKanban },
   { id: "messages", label: "پیام به مدیر", icon: MessageSquare },
@@ -31,6 +33,11 @@ const menuItems = [
   { id: "meetings", label: "صورتجلسات", icon: ScrollText },
 ];
 
+const optionalItems: { id: string; label: string; icon: any; module: ModuleKey }[] = [
+  { id: "all_expenses", label: "همه هزینه‌های ساختمان", icon: Receipt, module: "all_expenses" },
+  { id: "fund_balances", label: "موجودی صندوق‌ها", icon: PiggyBank, module: "fund_balances" },
+];
+
 export function ResidentSidebar({
   activeTab,
   onTabChange,
@@ -41,10 +48,15 @@ export function ResidentSidebar({
   onSignOut,
   mobileOpen = false,
   onMobileOpenChange,
+  grantedModules = [],
 }: ResidentSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const isMobile = useIsMobile();
   const showLabels = isMobile ? true : !collapsed;
+  const menuItems = [
+    ...baseMenuItems,
+    ...optionalItems.filter(i => grantedModules.includes(i.module)),
+  ];
 
   const handleItemClick = (id: string) => {
     onTabChange(id);
