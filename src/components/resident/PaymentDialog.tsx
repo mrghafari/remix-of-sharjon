@@ -143,6 +143,10 @@ export function PaymentDialog({
     qc.invalidateQueries({ queryKey: ["resident_charges", unitId] });
     qc.invalidateQueries({ queryKey: ["resident_expense_shares", unitId] });
     setStep("success");
+    // بسته شدن خودکار فرم پس از نمایش پیام موفقیت
+    setTimeout(() => {
+      handleClose(false);
+    }, 2500);
   };
 
   const handleClose = (next: boolean) => {
