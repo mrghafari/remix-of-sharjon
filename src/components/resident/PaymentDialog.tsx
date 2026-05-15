@@ -119,15 +119,21 @@ export function PaymentDialog({
       });
     }
 
-    // استفاده از RPC امن تا پرداخت + پاک‌سازی بدهی‌ها در یک تراکنش انجام شود
-    // (ساکن نمی‌تواند مستقیم unit_charges را حذف کند به دلیل RLS)
+    // فقط در صورتی بدهی‌ها (unit_charges) پاک شوند که مبلغ پرداختی کامل باشد.
+    // در پرداخت جزئی، رکوردهای بدهی دست‌نخورده باقی می‌مانند و پرداخت به‌صورت
+    // اعتبار ثبت می‌شود تا مانده‌ی واقعی همچنان نمایش داده شود.
+    const payChargeFull =
+      chargeChecked && r(chargeAmount) > 0 && r(chargeAmount) >= r(chargeDebt);
+    const payExtraFull =
+      extraChecked && r(extraAmount) > 0 && r(extraAmount) >= r(extraDebt);
+
     const { error } = await supabase.rpc("resident_pay_and_clear", {
       _building_id: buildingId,
       _unit_id: unitId,
       _payments: records as any,
       _charge_ids_to_clear: [
-        ...((chargeChecked && r(chargeAmount) > 0) ? (chargeFundIdsToClear ?? []) : []),
-        ...((extraChecked && r(extraAmount) > 0) ? (extraFundIdsToClear ?? []) : []),
+        ...(payChargeFull ? (chargeFundIdsToClear ?? []) : []),
+        ...(payExtraFull ? (extraFundIdsToClear ?? []) : []),
       ],
     });
 
