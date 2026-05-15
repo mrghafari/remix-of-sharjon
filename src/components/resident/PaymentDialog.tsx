@@ -119,22 +119,16 @@ export function PaymentDialog({
       });
     }
 
-    // فقط در صورتی بدهی‌ها (unit_charges) پاک شوند که مبلغ پرداختی کامل باشد.
-    // در پرداخت جزئی، رکوردهای بدهی دست‌نخورده باقی می‌مانند و پرداخت به‌صورت
-    // اعتبار ثبت می‌شود تا مانده‌ی واقعی همچنان نمایش داده شود.
-    const payChargeFull =
-      chargeChecked && r(chargeAmount) > 0 && r(chargeAmount) >= r(chargeDebt);
-    const payExtraFull =
-      extraChecked && r(extraAmount) > 0 && r(extraAmount) >= r(extraDebt);
+    // ردیف‌های انتخاب‌شده همیشه برای تسویه ارسال می‌شوند؛ تابع دیتابیس
+    // در پرداخت کامل آن‌ها را حذف و در پرداخت جزئی مبلغ باقی‌مانده را نگه می‌دارد.
+    const selectedChargeIds = chargeChecked && r(chargeAmount) > 0 ? (chargeFundIdsToClear ?? []) : [];
+    const selectedExtraIds = extraChecked && r(extraAmount) > 0 ? (extraFundIdsToClear ?? []) : [];
 
     const { error } = await supabase.rpc("resident_pay_and_clear", {
       _building_id: buildingId,
       _unit_id: unitId,
       _payments: records as any,
-      _charge_ids_to_clear: [
-        ...(payChargeFull ? (chargeFundIdsToClear ?? []) : []),
-        ...(payExtraFull ? (extraFundIdsToClear ?? []) : []),
-      ],
+      _charge_ids_to_clear: [...selectedChargeIds, ...selectedExtraIds],
     });
 
     if (error) {
