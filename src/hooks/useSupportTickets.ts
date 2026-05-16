@@ -192,12 +192,17 @@ export function useSendTicketMessage() {
       if (error) throw error;
       // update ticket meta
       const newStatus = payload.sender_role === "super_admin" ? "answered" : "in_progress";
+      const nowIso = new Date().toISOString();
+      const readField = payload.sender_role === "super_admin"
+        ? { admin_read_at: nowIso }
+        : { manager_read_at: nowIso };
       await supabase
         .from("support_tickets")
         .update({
-          last_reply_at: new Date().toISOString(),
+          last_reply_at: nowIso,
           last_reply_by_role: payload.sender_role,
           status: newStatus,
+          ...readField,
         })
         .eq("id", payload.ticket_id);
     },
@@ -207,5 +212,20 @@ export function useSendTicketMessage() {
       qc.invalidateQueries({ queryKey: ["unread_tickets_count"] });
     },
     onError: (e: any) => toast.error("ارسال نشد: " + e.message),
+  });
+}
+
+export function useMarkTicketRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ticketId, isAdmin }: { ticketId: string; isAdmin: boolean }) => {
+      const field = isAdmin ? { admin_read_at: new Date().toISOString() } : { manager_read_at: new Date().toISOString() };
+      const { error } = await supabase.from("support_tickets").update(field).eq("id", ticketId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["support_tickets"] });
+      qc.invalidateQueries({ queryKey: ["unread_tickets_count"] });
+    },
   });
 }

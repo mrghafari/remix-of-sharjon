@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useTicketMessages, useSendTicketMessage, PRIORITY_LABELS, STATUS_LABELS, CATEGORY_LABELS, type SupportTicket } from "@/hooks/useSupportTickets";
+import { useTicketMessages, useSendTicketMessage, useMarkTicketRead, PRIORITY_LABELS, STATUS_LABELS, CATEGORY_LABELS, type SupportTicket } from "@/hooks/useSupportTickets";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ export function TicketConversation({ ticket, isAdmin, onClose }: Props) {
   const { user } = useAuth();
   const { data: messages = [], isLoading } = useTicketMessages(ticket.id);
   const send = useSendTicketMessage();
+  const markRead = useMarkTicketRead();
 
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -34,6 +35,11 @@ export function TicketConversation({ ticket, isAdmin, onClose }: Props) {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages.length]);
+
+  useEffect(() => {
+    markRead.mutate({ ticketId: ticket.id, isAdmin });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticket.id, isAdmin, messages.length]);
 
   const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
