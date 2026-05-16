@@ -19,6 +19,8 @@ export interface SupportTicket {
   status: TicketStatus;
   last_reply_at: string;
   last_reply_by_role: string;
+  manager_read_at: string | null;
+  admin_read_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -98,14 +100,18 @@ export function useUnreadTicketsCount(opts: { buildingId?: string; isSuperAdmin?
     queryKey: ["unread_tickets_count", opts.buildingId, opts.isSuperAdmin, user?.id],
     queryFn: async () => {
       if (!user) return 0;
-      let q = supabase.from("support_tickets").select("id, last_reply_by_role, status, building_id");
+      let q = supabase.from("support_tickets").select("id, last_reply_by_role, last_reply_at, manager_read_at, admin_read_at, status, building_id");
       if (!opts.isSuperAdmin && opts.buildingId) q = q.eq("building_id", opts.buildingId);
       const { data, error } = await q;
       if (error) throw error;
       const otherRole = opts.isSuperAdmin ? "manager" : "super_admin";
-      return (data || []).filter(
-        (t) => t.last_reply_by_role === otherRole && t.status !== "closed"
-      ).length;
+      return (data || []).filter((t: any) => {
+        if (t.status === "closed") return false;
+        if (t.last_reply_by_role !== otherRole) return false;
+        const readAt = opts.isSuperAdmin ? t.admin_read_at : t.manager_read_at;
+        if (!readAt) return true;
+        return new Date(t.last_reply_at).getTime() > new Date(readAt).getTime();
+      }).length;
     },
     enabled: !!user,
     refetchInterval: 30000,
