@@ -96,8 +96,9 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
       });
     });
 
-    // Add expenses (هزینه - debit)
+    // Add expenses (هزینه - debit) — exclude charge/extra_charge categories (they are tracked via unit_charges)
     selectedBalance.expenseBreakdown.forEach(({ expense, allocatedAmount, ownerName, residentName }) => {
+      if ((expense.category as string) === "charge" || (expense.category as string) === "extra_charge") return;
       const responsibleName = residentName || ownerName || selectedBalance.unit.resident_name || selectedBalance.unit.owner_name || "-";
       const responsibleRole = residentName ? "ساکن" : "مالک";
       allTransactions.push({
