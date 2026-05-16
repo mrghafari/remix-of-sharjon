@@ -275,7 +275,11 @@ function TicketRow({
   onChangeStatus: (s: TicketStatus) => void;
 }) {
   const otherSideRole = isAdmin ? "manager" : "super_admin";
-  const hasNewReply = ticket.last_reply_by_role === otherSideRole && ticket.status !== "closed";
+  const myReadAt = isAdmin ? ticket.admin_read_at : ticket.manager_read_at;
+  const hasNewReply =
+    ticket.last_reply_by_role === otherSideRole &&
+    ticket.status !== "closed" &&
+    (!myReadAt || new Date(ticket.last_reply_at).getTime() > new Date(myReadAt).getTime());
 
   return (
     <Card
