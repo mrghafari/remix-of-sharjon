@@ -24,7 +24,6 @@ import { useApplyCharges } from "@/hooks/useUnitCharges";
 import { useUnits } from "@/hooks/useUnits";
 import { useActiveManager } from "@/hooks/useManagers";
 import { supabase } from "@/integrations/supabase/client";
-import { startOfJalaliMonth, endOfJalaliMonth } from "@/lib/jalaliMonthRange";
 import { format } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
 
@@ -32,13 +31,6 @@ const JALALI_MONTHS = [
   "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
   "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
 ];
-
-const toIsoDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 
 export function ChargeSettings() {
   const { currentBuilding, currentBuildingId } = useBuilding();
@@ -124,10 +116,8 @@ export function ChargeSettings() {
       if (fundTypesToCheck.length > 0) {
         const selectedMonthNumber = Number(selectedMonth);
         const selectedYearNumber = Number(selectedYear);
-        const periodStart = toIsoDate(startOfJalaliMonth(selectedYearNumber, selectedMonthNumber));
-        const periodEnd = toIsoDate(endOfJalaliMonth(selectedYearNumber, selectedMonthNumber));
 
-        const [{ data: existing }, { data: paidExisting }, { data: legacyPaidExisting }] = await Promise.all([
+        const [{ data: existing }, { data: paidExisting }] = await Promise.all([
           supabase
             .from("unit_charges")
             .select("id, fund_type")
@@ -142,18 +132,10 @@ export function ChargeSettings() {
             .eq("month", selectedMonthNumber)
             .eq("year", selectedYearNumber)
             .in("fund_type", fundTypesToCheck),
-          supabase
-            .from("payments")
-            .select("id, fund_type")
-            .eq("building_id", currentBuildingId)
-            .gte("year", 1900)
-            .gte("payment_date", periodStart)
-            .lte("payment_date", periodEnd)
-            .in("fund_type", fundTypesToCheck),
         ]);
 
         const paidRowsById = new Map(
-          [...(paidExisting || []), ...(legacyPaidExisting || [])].map((row) => [row.id, row])
+          (paidExisting || []).map((row) => [row.id, row])
         );
         const paidRows = Array.from(paidRowsById.values());
         const allRows = [...(existing || []), ...paidRows];
