@@ -137,8 +137,9 @@ export function UnitAssetsManager({ unitId }: Props) {
           <div className="space-y-2">
             <Label>پلاک خودرو (الگوی ایران)</Label>
             {/* Plate visual: city | part2 | letter | part1  (right-to-left reading) */}
-            <div dir="ltr" className="flex items-stretch gap-1 justify-center bg-background border-2 border-foreground/30 rounded-md p-2 max-w-md mx-auto">
+            <div dir="ltr" style={{ unicodeBidi: "isolate", flexDirection: "row" }} className="flex items-stretch gap-1 justify-center bg-background border-2 border-foreground/30 rounded-md p-2 max-w-md mx-auto">
               <Input
+                dir="ltr"
                 value={p1}
                 onChange={(e) => setP1(normalizeDigits(e.target.value).slice(0, 2))}
                 placeholder="12"
@@ -156,6 +157,7 @@ export function UnitAssetsManager({ unitId }: Props) {
                 </SelectContent>
               </Select>
               <Input
+                dir="ltr"
                 value={p2}
                 onChange={(e) => setP2(normalizeDigits(e.target.value).slice(0, 3))}
                 placeholder="345"
@@ -165,6 +167,7 @@ export function UnitAssetsManager({ unitId }: Props) {
               <div className="flex flex-col items-center justify-center px-2 bg-primary text-primary-foreground rounded">
                 <span className="text-[10px]">ایران</span>
                 <Input
+                  dir="ltr"
                   value={city}
                   onChange={(e) => setCity(normalizeDigits(e.target.value).slice(0, 2))}
                   placeholder="67"
