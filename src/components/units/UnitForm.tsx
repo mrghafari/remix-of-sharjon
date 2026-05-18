@@ -226,7 +226,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
           </div>
 
           {/* Status */}
-          <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
               <Switch
                 id="isOccupied"
