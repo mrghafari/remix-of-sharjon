@@ -509,6 +509,8 @@ export type Database = {
       buildings: {
         Row: {
           address: string | null
+          auto_charge_day: number
+          auto_charge_enabled: boolean
           created_at: string
           default_charge_amount: number
           default_extra_charge_amount: number
@@ -521,6 +523,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          auto_charge_day?: number
+          auto_charge_enabled?: boolean
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number
@@ -533,6 +537,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          auto_charge_day?: number
+          auto_charge_enabled?: boolean
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number

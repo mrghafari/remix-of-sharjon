@@ -13,6 +13,8 @@ export interface Building {
   vacant_extra_charge_discount_percent: number;
   default_charge_amount: number;
   default_extra_charge_amount: number;
+  auto_charge_enabled?: boolean;
+  auto_charge_day?: number;
   created_at: string;
   updated_at: string;
 }
@@ -101,7 +103,7 @@ export function useCreateBuilding() {
 export function useUpdateBuilding() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name?: string; address?: string; total_units?: number; vacant_charge_discount_percent?: number; vacant_extra_charge_discount_percent?: number; default_charge_amount?: number; default_extra_charge_amount?: number }) => {
+    mutationFn: async ({ id, ...data }: { id: string; name?: string; address?: string; total_units?: number; vacant_charge_discount_percent?: number; vacant_extra_charge_discount_percent?: number; default_charge_amount?: number; default_extra_charge_amount?: number; auto_charge_enabled?: boolean; auto_charge_day?: number }) => {
       const { data: result, error } = await supabase
         .from("buildings")
         .update(data)

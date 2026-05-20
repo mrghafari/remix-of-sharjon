@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NumericInput } from "@/components/ui/numeric-input";
-import { Loader2, Zap, CalendarDays, Info, AlertTriangle } from "lucide-react";
+import { Loader2, Zap, CalendarDays, Info, AlertTriangle, Clock } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -41,14 +42,18 @@ export function ChargeSettings() {
 
   const [chargeAmount, setChargeAmount] = useState("0");
   const [extraChargeAmount, setExtraChargeAmount] = useState("0");
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [autoDay, setAutoDay] = useState("1");
 
   // Sync with building defaults when loaded/changed
   useEffect(() => {
     if (currentBuilding) {
       setChargeAmount(String(currentBuilding.default_charge_amount || 0));
       setExtraChargeAmount(String(currentBuilding.default_extra_charge_amount || 0));
+      setAutoEnabled(Boolean(currentBuilding.auto_charge_enabled));
+      setAutoDay(String(currentBuilding.auto_charge_day || 1));
     }
-  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount]);
+  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount, currentBuilding?.auto_charge_enabled, currentBuilding?.auto_charge_day]);
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
   // Current Jalali month/year
@@ -67,10 +72,13 @@ export function ChargeSettings() {
   if (!currentBuilding || !currentBuildingId) return null;
 
   const handleSaveDefaults = () => {
+    const dayNum = Math.max(1, Math.min(31, Number(autoDay) || 1));
     updateBuilding.mutate({
       id: currentBuildingId,
       default_charge_amount: Number(chargeAmount) || 0,
       default_extra_charge_amount: Number(extraChargeAmount) || 0,
+      auto_charge_enabled: autoEnabled,
+      auto_charge_day: dayNum,
     });
   };
 
@@ -222,6 +230,38 @@ export function ChargeSettings() {
             </div>
           )}
 
+          {/* Automatic application */}
+          <div className="rounded-lg border p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <div>
+                  <div className="font-medium text-sm">اعمال خودکار ماهانه</div>
+                  <div className="text-xs text-muted-foreground">
+                    در روز مشخص هر ماه شمسی، مبلغ پیش‌فرض شارژ و فوق‌شارژ برای همه واحدها اعمال می‌شود.
+                  </div>
+                </div>
+              </div>
+              <Switch checked={autoEnabled} onCheckedChange={setAutoEnabled} />
+            </div>
+            {autoEnabled && (
+              <div className="flex items-center gap-2">
+                <Label className="text-sm">روز ماه:</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={autoDay}
+                  onChange={(e) => setAutoDay(e.target.value)}
+                  className="w-24"
+                />
+                <span className="text-xs text-muted-foreground">
+                  (۱ تا ۳۱ — برای ماه‌های کوتاه‌تر، در آخرین روز ماه اعمال می‌شود)
+                </span>
+              </div>
+            )}
+          </div>
+
           <div className="flex gap-2 flex-wrap">
             <Button
               onClick={handleSaveDefaults}
@@ -241,7 +281,7 @@ export function ChargeSettings() {
               }
             >
               <CalendarDays className="w-4 h-4 ml-2" />
-              اعمال برای واحدها
+              اعمال دستی
             </Button>
           </div>
         </CardContent>
