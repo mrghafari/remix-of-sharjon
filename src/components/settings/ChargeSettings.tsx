@@ -72,10 +72,13 @@ export function ChargeSettings() {
   if (!currentBuilding || !currentBuildingId) return null;
 
   const handleSaveDefaults = () => {
+    const dayNum = Math.max(1, Math.min(31, Number(autoDay) || 1));
     updateBuilding.mutate({
       id: currentBuildingId,
       default_charge_amount: Number(chargeAmount) || 0,
       default_extra_charge_amount: Number(extraChargeAmount) || 0,
+      auto_charge_enabled: autoEnabled,
+      auto_charge_day: dayNum,
     });
   };
 
