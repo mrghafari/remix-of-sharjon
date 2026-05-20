@@ -13,6 +13,8 @@ export interface Building {
   vacant_extra_charge_discount_percent: number;
   default_charge_amount: number;
   default_extra_charge_amount: number;
+  auto_charge_enabled?: boolean;
+  auto_charge_day?: number;
   created_at: string;
   updated_at: string;
 }
