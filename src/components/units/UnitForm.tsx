@@ -220,9 +220,11 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Label htmlFor="residentName">نام ساکن</Label>
                 <Input
                   id="residentName"
-                  value={residentName}
+                  value={sameAsOwner ? ownerName : residentName}
                   onChange={(e) => setResidentName(e.target.value)}
                   maxLength={100}
+                  disabled={sameAsOwner}
+                  className={sameAsOwner ? "bg-muted cursor-not-allowed" : ""}
                 />
               </div>
 
@@ -231,10 +233,12 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 <Input
                   id="residentPhone"
                   type="tel"
-                  value={residentPhone}
+                  value={sameAsOwner ? ownerPhone : residentPhone}
                   onChange={(e) => setResidentPhone(e.target.value)}
                   maxLength={15}
                   dir="ltr"
+                  disabled={sameAsOwner}
+                  className={sameAsOwner ? "bg-muted cursor-not-allowed" : ""}
                 />
               </div>
 
