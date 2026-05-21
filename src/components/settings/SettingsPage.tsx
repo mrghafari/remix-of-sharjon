@@ -68,6 +68,10 @@ export function SettingsPage() {
           <CategorySettings />
         </TabsContent>
 
+        <TabsContent value="opening" className="mt-6">
+          <OpeningBalancesSettings />
+        </TabsContent>
+
         <TabsContent value="sms" className="mt-6">
           <SmsManagementPage />
         </TabsContent>
