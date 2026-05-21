@@ -202,7 +202,19 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
 
           {/* Resident Info */}
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">اطلاعات ساکن</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-muted-foreground">اطلاعات ساکن</h3>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="sameAsOwner"
+                  checked={sameAsOwner}
+                  onCheckedChange={(c) => handleSameAsOwnerChange(!!c)}
+                />
+                <Label htmlFor="sameAsOwner" className="cursor-pointer text-sm">
+                  مالک و ساکن یکی هستند
+                </Label>
+              </div>
+            </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="residentName">نام ساکن</Label>
