@@ -31,7 +31,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useUnits, useDeleteUnit, type Unit } from "@/hooks/useUnits";
-import { UnitFinanceDialog } from "./UnitFinanceDialog";
 interface UnitsListProps {
   onEdit: (unit: Unit) => void;
 }
