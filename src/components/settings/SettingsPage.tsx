@@ -1,10 +1,11 @@
-import { Building2, Users, CreditCard, Tags, Landmark, Send } from "lucide-react";
+import { Building2, Users, CreditCard, Tags, Landmark, Send, Wallet } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategorySettings } from "./CategorySettings";
 import { ManagerSettings } from "./ManagerSettings";
 import { BuildingSettings } from "./BuildingSettings";
 import { PaymentPolicySettings } from "./PaymentPolicySettings";
 import { BankAccountSettings } from "./BankAccountSettings";
+import { OpeningBalancesSettings } from "./OpeningBalancesSettings";
 import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
 
 export function SettingsPage() {
@@ -16,7 +17,7 @@ export function SettingsPage() {
       </div>
 
       <Tabs defaultValue="building" className="w-full" dir="rtl">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto gap-1 bg-muted p-1">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 h-auto gap-1 bg-muted p-1">
           <TabsTrigger value="building" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Building2 className="w-4 h-4 shrink-0" />
             <span className="truncate">ساختمان</span>
@@ -36,6 +37,10 @@ export function SettingsPage() {
           <TabsTrigger value="categories" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Tags className="w-4 h-4 shrink-0" />
             <span className="truncate">دسته‌بندی هزینه‌ها</span>
+          </TabsTrigger>
+          <TabsTrigger value="opening" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
+            <Wallet className="w-4 h-4 shrink-0" />
+            <span className="truncate">موجودی اولیه</span>
           </TabsTrigger>
           <TabsTrigger value="sms" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Send className="w-4 h-4 shrink-0" />
@@ -61,6 +66,10 @@ export function SettingsPage() {
 
         <TabsContent value="categories" className="mt-6">
           <CategorySettings />
+        </TabsContent>
+
+        <TabsContent value="opening" className="mt-6">
+          <OpeningBalancesSettings />
         </TabsContent>
 
         <TabsContent value="sms" className="mt-6">
