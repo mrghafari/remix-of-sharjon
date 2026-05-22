@@ -40,7 +40,7 @@ export function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="opening" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Wallet className="w-4 h-4 shrink-0" />
-            <span className="truncate">موجودی اولیه</span>
+            <span className="truncate">مبالغ اولیه</span>
           </TabsTrigger>
           <TabsTrigger value="sms" className="flex items-center justify-center gap-1.5 py-2.5 px-2 min-w-0 text-xs whitespace-normal text-center leading-tight">
             <Send className="w-4 h-4 shrink-0" />
