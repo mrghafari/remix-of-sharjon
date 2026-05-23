@@ -16,6 +16,7 @@ import Landing from "./pages/Landing";
 import ResetPassword from "./pages/ResetPassword";
 import FundTransactions from "./pages/FundTransactions";
 import NotFound from "./pages/NotFound";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <InstallPrompt />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
