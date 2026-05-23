@@ -84,6 +84,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <InstallPrompt />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
