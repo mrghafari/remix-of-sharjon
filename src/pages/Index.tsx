@@ -20,6 +20,7 @@ import { TicketsPage } from "@/components/tickets/TicketsPage";
 import { MeetingMinutesPage } from "@/components/meetings/MeetingMinutesPage";
 import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
+import { useAutoApplyCharges } from "@/hooks/useAutoApplyCharges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
