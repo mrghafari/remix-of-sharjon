@@ -61,6 +61,7 @@ export function LatePenaltyApplier() {
   const [month, setMonth] = useState(String(currentJalaliMonth));
   const [year, setYear] = useState(String(currentJalaliYear));
   const [submitting, setSubmitting] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   const balanceLoading = !units || !payments || !shares || !existingCharges;
 
@@ -278,30 +279,48 @@ export function LatePenaltyApplier() {
           </div>
         )}
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
+        {!dismissed && newOnes.length > 0 && (
+          <div className="flex items-center justify-end gap-2">
             <Button
-              disabled={newOnes.length === 0 || submitting}
-              variant="destructive"
-              className="w-full gap-2"
+              variant="outline"
+              size="sm"
+              onClick={() => setDismissed(true)}
+              disabled={submitting}
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
-              اعمال جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد
+              حذف
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent dir="rtl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
-              <AlertDialogDescription>
-                مجموع {formatNumber(totalPenalty)} تومان جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>انصراف</AlertDialogCancel>
-              <AlertDialogAction onClick={handleApply}>تأیید و ثبت</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={submitting}
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                  اعمال جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent dir="rtl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    مجموع {formatNumber(totalPenalty)} تومان جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>انصراف</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleApply}>تأیید و ثبت</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )}
+        {dismissed && (
+          <p className="text-xs text-muted-foreground text-center">
+            پیشنهاد جریمه نادیده گرفته شد.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
