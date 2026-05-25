@@ -250,7 +250,7 @@ export function LatePenaltyApplier() {
           </div>
         </div>
 
-        {newOnes.length > 0 && (
+        {!dismissed && newOnes.length > 0 && (
           <div className="border rounded-lg overflow-hidden">
             <div className="max-h-60 overflow-y-auto">
               <table className="w-full text-sm">
