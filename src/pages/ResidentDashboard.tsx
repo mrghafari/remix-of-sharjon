@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useResidentUnit } from "@/hooks/useResidentUnit";
 import { ResidentSidebar } from "@/components/layout/ResidentSidebar";
+import { ResidentBottomNav } from "@/components/layout/ResidentBottomNav";
 import { ResidentFinance } from "@/components/resident/ResidentFinance";
 import { ResidentAnnouncements } from "@/components/resident/ResidentAnnouncements";
 import { ResidentPolls } from "@/components/resident/ResidentPolls";
