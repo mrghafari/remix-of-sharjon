@@ -326,7 +326,7 @@ export function LatePenaltyApplier() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  disabled={submitting}
+                  disabled={submitting || withinGrace}
                   variant="destructive"
                   size="sm"
                   className="gap-2"
