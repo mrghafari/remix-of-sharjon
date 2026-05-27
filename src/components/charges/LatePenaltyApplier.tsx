@@ -296,7 +296,10 @@ export function LatePenaltyApplier() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setDismissed(true)}
+              onClick={() => {
+                setDismissed(true);
+                try { window.localStorage.setItem(dismissKey, "1"); } catch {}
+              }}
               disabled={submitting}
             >
               حذف
