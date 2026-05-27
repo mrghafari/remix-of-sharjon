@@ -155,7 +155,7 @@ const ResidentDashboard = () => {
         onMobileOpenChange={setMobileSidebarOpen}
         grantedModules={grantedModules}
       />
-      <main className="md:mr-64 transition-all duration-300">
+      <main className="md:mr-64 transition-all duration-300 pb-20 md:pb-0">
         <div className="flex items-center justify-between gap-2 p-3 md:p-4 border-b">
           <Button
             variant="ghost"
@@ -173,6 +173,11 @@ const ResidentDashboard = () => {
           {renderContent()}
         </div>
       </main>
+      <ResidentBottomNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onMenuClick={() => setMobileSidebarOpen(true)}
+      />
     </div>
   );
 };
