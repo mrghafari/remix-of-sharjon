@@ -10,7 +10,7 @@ import { usePayments } from "@/hooks/usePayments";
 import { useExpenseShares } from "@/hooks/useExpenseShares";
 import { useExpenses } from "@/hooks/useExpenses";
 import { useUnitCharges } from "@/hooks/useUnitCharges";
-import { endOfJalaliMonthIso } from "@/lib/jalaliMonthRange";
+import { endOfJalaliMonth, endOfJalaliMonthIso } from "@/lib/jalaliMonthRange";
 import { toast } from "@/hooks/use-toast";
 
 const persianMonths = [
