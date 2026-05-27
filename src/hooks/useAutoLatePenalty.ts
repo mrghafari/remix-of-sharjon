@@ -63,10 +63,26 @@ export function useAutoLatePenalty() {
       periods.push({ y, m });
     }
 
+    const graceDays = Math.max(0, policy.late_grace_days || 0);
+    const nowMs = now.getTime();
+
     (async () => {
       for (const { y, m } of periods) {
         const key = `${currentBuildingId}:${y}-${m}`;
         if (ranRef.current.has(key)) continue;
+
+        // Respect grace days: only apply once we are past end-of-month + grace
+        const eom = endOfJalaliMonth(y, m).getTime();
+        if (nowMs < eom + graceDays * 86400000) continue;
+
+        // Respect manual dismissal persisted by LatePenaltyApplier
+        try {
+          if (typeof window !== "undefined" &&
+              window.localStorage.getItem(`penalty_dismissed:${key}`) === "1") {
+            continue;
+          }
+        } catch {}
+
         ranRef.current.add(key);
 
         const cutoffIso = endOfJalaliMonthIso(y, m);
