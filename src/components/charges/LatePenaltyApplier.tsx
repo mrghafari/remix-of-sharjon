@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
-import { endOfJalaliMonthIso } from "@/lib/jalaliMonthRange";
+import { endOfJalaliMonth, endOfJalaliMonthIso } from "@/lib/jalaliMonthRange";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,7 +61,19 @@ export function LatePenaltyApplier() {
   const [month, setMonth] = useState(String(currentJalaliMonth));
   const [year, setYear] = useState(String(currentJalaliYear));
   const [submitting, setSubmitting] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+
+  const dismissKey = `penalty_dismissed:${currentBuildingId}:${year}-${month}`;
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    try { return typeof window !== "undefined" && window.localStorage.getItem(dismissKey) === "1"; }
+    catch { return false; }
+  });
+
+  // Re-read persistence whenever period or building changes
+  useMemo(() => {
+    try {
+      setDismissed(typeof window !== "undefined" && window.localStorage.getItem(dismissKey) === "1");
+    } catch { setDismissed(false); }
+  }, [dismissKey]);
 
   const balanceLoading = !units || !payments || !shares || !existingCharges;
 
@@ -129,6 +141,14 @@ export function LatePenaltyApplier() {
 
   const newOnes = candidates.filter((c) => !c.alreadyApplied);
   const totalPenalty = newOnes.reduce((s, c) => s + c.penalty, 0);
+
+  // Grace period: how many days remain after end-of-period before penalty can apply
+  const graceDays = Math.max(0, policy?.late_grace_days || 0);
+  const eomMs = endOfJalaliMonth(Number(year), Number(month)).getTime();
+  const graceEndMs = eomMs + graceDays * 86400000;
+  const nowMs = Date.now();
+  const graceRemainingDays = Math.max(0, Math.ceil((graceEndMs - nowMs) / 86400000));
+  const withinGrace = nowMs < graceEndMs;
 
   const handleApply = async () => {
     if (!currentBuildingId || newOnes.length === 0) return;
@@ -203,6 +223,9 @@ export function LatePenaltyApplier() {
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
           فرمول: مانده بدهی هر واحد در پایان ماه انتخاب‌شده × {policy.late_penalty_percent_per_month}٪ — جریمه‌های قبلی در محاسبه لحاظ نمی‌شوند.
+          {policy.late_grace_days > 0 && (
+            <> مهلت آوانس: <strong>{policy.late_grace_days.toLocaleString("fa-IR")} روز</strong> پس از پایان ماه.</>
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -250,6 +273,14 @@ export function LatePenaltyApplier() {
           </div>
         </div>
 
+        {withinGrace && newOnes.length > 0 && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-900 dark:text-amber-200">
+            هنوز در دوره آوانس هستیم — تا <strong>{graceRemainingDays.toLocaleString("fa-IR")} روز</strong> دیگر جریمه قابل اعمال نیست.
+            {policy.late_penalty_auto_apply ? " اعمال خودکار پس از پایان آوانس انجام می‌شود." : ""}
+          </div>
+        )}
+
+
         {!dismissed && newOnes.length > 0 && (
           <div className="border rounded-lg overflow-hidden">
             <div className="max-h-60 overflow-y-auto">
@@ -284,7 +315,10 @@ export function LatePenaltyApplier() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setDismissed(true)}
+              onClick={() => {
+                setDismissed(true);
+                try { window.localStorage.setItem(dismissKey, "1"); } catch {}
+              }}
               disabled={submitting}
             >
               حذف
@@ -292,7 +326,7 @@ export function LatePenaltyApplier() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  disabled={submitting}
+                  disabled={submitting || withinGrace}
                   variant="destructive"
                   size="sm"
                   className="gap-2"
@@ -317,9 +351,21 @@ export function LatePenaltyApplier() {
           </div>
         )}
         {dismissed && (
-          <p className="text-xs text-muted-foreground text-center">
-            پیشنهاد جریمه نادیده گرفته شد.
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">
+              پیشنهاد جریمه برای این دوره نادیده گرفته شده است.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDismissed(false);
+                try { window.localStorage.removeItem(dismissKey); } catch {}
+              }}
+            >
+              نمایش مجدد
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>
