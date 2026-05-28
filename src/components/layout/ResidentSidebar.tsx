@@ -77,7 +77,7 @@ export function ResidentSidebar({
 
       <aside
         className={cn(
-          "fixed right-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-transform duration-300 z-50 flex flex-col",
+          "fixed right-0 top-0 h-[100dvh] bg-sidebar text-sidebar-foreground transition-transform duration-300 z-50 flex flex-col",
           !isMobile && (collapsed ? "w-20" : "w-64"),
           isMobile && "w-64",
           isMobile && !mobileOpen && "translate-x-full",
@@ -135,7 +135,10 @@ export function ResidentSidebar({
         </nav>
 
         {/* Sign out & Collapse */}
-        <div className="p-2 border-t border-sidebar-border space-y-1">
+        <div
+          className="p-2 border-t border-sidebar-border space-y-1 shrink-0"
+          style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+        >
           <SwitchAccountButton showLabels={showLabels} />
           <button
             onClick={onSignOut}
