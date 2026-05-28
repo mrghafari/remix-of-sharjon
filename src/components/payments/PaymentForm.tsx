@@ -166,7 +166,7 @@ export function PaymentForm() {
                   qc.invalidateQueries({ queryKey: ["unit-charges"] });
                   toast({
                     title: "تخفیف خوش‌حسابی اعمال شد",
-                    description: `${discount.toLocaleString("fa-IR")} تومان به‌عنوان بستانکاری ثبت شد.`,
+                    description: `${discount.toLocaleString("fa-IR")} ریال به‌عنوان بستانکاری ثبت شد.`,
                   });
                 }
               }
@@ -232,7 +232,7 @@ export function PaymentForm() {
 
           {/* Amount */}
           <div className="space-y-2">
-            <Label htmlFor="amount">مبلغ (تومان)</Label>
+            <Label htmlFor="amount">مبلغ (ریال)</Label>
             <NumericInput
               id="amount"
               value={formData.amount}

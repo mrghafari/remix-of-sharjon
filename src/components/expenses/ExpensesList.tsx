@@ -220,7 +220,7 @@ export function ExpensesList() {
         <div>
           <CardTitle>لیست هزینه‌ها</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            مجموع: <span className="font-bold text-foreground">{formatAmount(totalAmount)}</span> تومان
+            مجموع: <span className="font-bold text-foreground">{formatAmount(totalAmount)}</span> ریال
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -323,7 +323,7 @@ export function ExpensesList() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-bold">
-                        {formatAmount(Number(expense.amount))} تومان
+                        {formatAmount(Number(expense.amount))} ریال
                       </TableCell>
                       <TableCell>
                         <Badge variant={expense.fund_type === "charge" ? "default" : "secondary"}>

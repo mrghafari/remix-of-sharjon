@@ -101,7 +101,7 @@ export function ResidentFundBalances({ buildingId }: Props) {
         <CardContent className="flex items-center justify-between py-4">
           <span className="font-medium">موجودی کل</span>
           <span className={`text-lg font-bold ${chargeBalance + extraBalance >= 0 ? "text-green-700" : "text-red-700"}`}>
-            {fmt(chargeBalance + extraBalance)} تومان
+            {fmt(chargeBalance + extraBalance)} ریال
           </span>
         </CardContent>
       </Card>

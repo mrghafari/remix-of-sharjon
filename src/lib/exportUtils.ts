@@ -32,7 +32,7 @@ export const exportToExcel = (
     "نقش": item.personRole || (item.residentName ? "ساکن" : "مالک"),
     "متراژ (متر مربع)": item.area || "-",
     "تعداد نفرات": item.residentCount || "-",
-    "مبلغ تخصیص یافته (تومان)": Math.round(item.allocatedAmount),
+    "مبلغ تخصیص یافته (ریال)": Math.round(item.allocatedAmount),
   }));
 
   // Add total row
@@ -43,7 +43,7 @@ export const exportToExcel = (
     "نقش": "",
     "متراژ (متر مربع)": "",
     "تعداد نفرات": "",
-    "مبلغ تخصیص یافته (تومان)": Math.round(totalAmount),
+    "مبلغ تخصیص یافته (ریال)": Math.round(totalAmount),
   });
 
   const worksheet = XLSX.utils.json_to_sheet(excelData);

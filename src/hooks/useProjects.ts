@@ -15,6 +15,7 @@ export interface Project {
   apply_manager_discount: boolean;
   manager_charge_discount_percent: number;
   manager_extra_charge_discount_percent: number;
+  is_visible_to_residents: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +30,7 @@ export interface ProjectInsert {
   apply_manager_discount?: boolean;
   manager_charge_discount_percent?: number;
   manager_extra_charge_discount_percent?: number;
+  is_visible_to_residents?: boolean;
 }
 
 export function useProjects() {

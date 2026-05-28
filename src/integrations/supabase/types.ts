@@ -1127,6 +1127,7 @@ export type Database = {
           end_date: string | null
           id: string
           is_active: boolean
+          is_visible_to_residents: boolean
           manager_charge_discount_percent: number
           manager_extra_charge_discount_percent: number
           name: string
@@ -1142,6 +1143,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          is_visible_to_residents?: boolean
           manager_charge_discount_percent?: number
           manager_extra_charge_discount_percent?: number
           name: string
@@ -1157,6 +1159,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           is_active?: boolean
+          is_visible_to_residents?: boolean
           manager_charge_discount_percent?: number
           manager_extra_charge_discount_percent?: number
           name?: string

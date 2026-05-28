@@ -44,7 +44,7 @@ export function ResidentAllExpenses({ buildingId }: Props) {
         </div>
         <Card className="px-4 py-2">
           <div className="text-xs text-muted-foreground">جمع کل</div>
-          <div className="text-lg font-bold text-primary">{fmt(total)} تومان</div>
+          <div className="text-lg font-bold text-primary">{fmt(total)} ریال</div>
         </Card>
       </div>
 

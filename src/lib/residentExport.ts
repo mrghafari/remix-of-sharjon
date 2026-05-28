@@ -52,7 +52,7 @@ export const exportPaymentsExcel = (
     مدیر: p.manager_name || "-",
     توضیحات: p.description || "-",
     نوع: fundLabel(p.fund_type),
-    "مبلغ (تومان)": Math.round(Number(p.amount)),
+    "مبلغ (ریال)": Math.round(Number(p.amount)),
   }));
   const total = rows.reduce((s, p) => s + Number(p.amount), 0);
   data.push({
@@ -63,7 +63,7 @@ export const exportPaymentsExcel = (
     مدیر: "",
     توضیحات: "جمع کل",
     نوع: "",
-    "مبلغ (تومان)": Math.round(total),
+    "مبلغ (ریال)": Math.round(total),
   });
   const ws = XLSX.utils.json_to_sheet(data);
   ws["!cols"] = [{ width: 6 }, { width: 14 }, { width: 18 }, { width: 8 }, { width: 18 }, { width: 28 }, { width: 12 }, { width: 16 }];
@@ -93,7 +93,7 @@ export const exportExpensesExcel = (
       نقش: role,
       مدیر: e.manager_name || "-",
       نوع: fundLabel(e.expenses?.fund_type),
-      "سهم شما (تومان)": Math.round(Number(e.allocated_amount)),
+      "سهم شما (ریال)": Math.round(Number(e.allocated_amount)),
     };
   });
   const total = rows.reduce((s, e) => s + Number(e.allocated_amount), 0);
@@ -105,7 +105,7 @@ export const exportExpensesExcel = (
     نقش: "",
     مدیر: "",
     نوع: "",
-    "سهم شما (تومان)": Math.round(total),
+    "سهم شما (ریال)": Math.round(total),
   });
   const ws = XLSX.utils.json_to_sheet(data);
   ws["!cols"] = [{ width: 6 }, { width: 14 }, { width: 24 }, { width: 18 }, { width: 8 }, { width: 18 }, { width: 12 }, { width: 16 }];
@@ -177,7 +177,7 @@ export const exportPaymentsPdf = async (
   from?: Date,
   to?: Date
 ) => {
-  const headers = ["ردیف", "تاریخ", "شخص", "نقش", "مدیر", "توضیحات", "نوع", "مبلغ (تومان)"];
+  const headers = ["ردیف", "تاریخ", "شخص", "نقش", "مدیر", "توضیحات", "نوع", "مبلغ (ریال)"];
   const body = rows.map((p, i) => [
     String(i + 1),
     formatJalaliDate(p.payment_date),
@@ -195,7 +195,7 @@ export const exportPaymentsPdf = async (
     headers,
     body,
     "جمع کل",
-    `${fmt(total)} تومان`
+    `${fmt(total)} ریال`
   );
   await renderHtmlToPdf(html, `پرداختی‌ها-واحد${unitNumber}-${dateStamp()}.pdf`);
 };
@@ -206,7 +206,7 @@ export const exportExpensesPdf = async (
   from?: Date,
   to?: Date
 ) => {
-  const headers = ["ردیف", "تاریخ", "عنوان", "شخص", "نقش", "مدیر", "نوع", "سهم شما (تومان)"];
+  const headers = ["ردیف", "تاریخ", "عنوان", "شخص", "نقش", "مدیر", "نوع", "سهم شما (ریال)"];
   const body = rows.map((e, i) => {
     const isExtra = (e.expenses?.fund_type ?? "charge") === "extra_charge";
     const preferred = isExtra ? e.owner_name : e.resident_name;
@@ -231,7 +231,7 @@ export const exportExpensesPdf = async (
     headers,
     body,
     "جمع کل",
-    `${fmt(total)} تومان`
+    `${fmt(total)} ریال`
   );
   await renderHtmlToPdf(html, `هزینه‌های-تسهیم‌شده-واحد${unitNumber}-${dateStamp()}.pdf`);
 };

@@ -184,7 +184,7 @@ export function CustomDebtForm() {
 
         {amountMode === "same" && (
           <div className="space-y-1.5">
-            <Label>مبلغ بدهی هر واحد (تومان)</Label>
+            <Label>مبلغ بدهی هر واحد (ریال)</Label>
             <NumericInput
               value={sharedAmount}
               onChange={(v) => setSharedAmount(v)}
@@ -254,7 +254,7 @@ export function CustomDebtForm() {
           <div className="text-sm">
             <span className="text-muted-foreground">جمع کل بدهی: </span>
             <span className="font-bold text-primary">
-              {new Intl.NumberFormat("fa-IR").format(totalPreview)} تومان
+              {new Intl.NumberFormat("fa-IR").format(totalPreview)} ریال
             </span>
           </div>
           <Button onClick={handleSubmit} disabled={submitting || selectedUnitIds.length === 0}>

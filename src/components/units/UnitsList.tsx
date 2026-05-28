@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   Building2,
   Ruler,
   PhoneCall,
+  ArrowUpDown,
 } from "lucide-react";
 import {
   Table,
@@ -20,6 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,10 +49,39 @@ const getFloorLabel = (floor: number | null) => {
   return `طبقه ${floor}`;
 };
 
+type SortKey = "unit_number_asc" | "unit_number_desc" | "floor_asc" | "floor_desc" | "area_asc" | "area_desc" | "owner_asc";
+
 export function UnitsList({ onEdit }: UnitsListProps) {
   const { data: units = [], isLoading } = useUnits();
   const deleteUnit = useDeleteUnit();
   const [unitToDelete, setUnitToDelete] = useState<Unit | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("unit_number_asc");
+
+  const sortedUnits = useMemo(() => {
+    const arr = [...units];
+    const numOr = (v: any, d: number) => {
+      const n = parseFloat(String(v ?? ""));
+      return isNaN(n) ? d : n;
+    };
+    switch (sortKey) {
+      case "unit_number_asc":
+        return arr.sort((a, b) => numOr(a.unit_number, Infinity) - numOr(b.unit_number, Infinity));
+      case "unit_number_desc":
+        return arr.sort((a, b) => numOr(b.unit_number, -Infinity) - numOr(a.unit_number, -Infinity));
+      case "floor_asc":
+        return arr.sort((a, b) => (a.floor ?? Infinity) - (b.floor ?? Infinity));
+      case "floor_desc":
+        return arr.sort((a, b) => (b.floor ?? -Infinity) - (a.floor ?? -Infinity));
+      case "area_asc":
+        return arr.sort((a, b) => numOr(a.area, Infinity) - numOr(b.area, Infinity));
+      case "area_desc":
+        return arr.sort((a, b) => numOr(b.area, -Infinity) - numOr(a.area, -Infinity));
+      case "owner_asc":
+        return arr.sort((a, b) => (a.owner_name || "").localeCompare(b.owner_name || "", "fa"));
+      default:
+        return arr;
+    }
+  }, [units, sortKey]);
 
   const handleDelete = () => {
     if (unitToDelete) {
@@ -66,11 +103,28 @@ export function UnitsList({ onEdit }: UnitsListProps) {
   return (
     <>
       <Card variant="elevated" className="animate-fade-in">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
           <CardTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-primary" />
             لیست واحدها ({units.length})
           </CardTitle>
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+              <SelectTrigger className="w-[200px] h-9">
+                <SelectValue placeholder="مرتب‌سازی" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unit_number_asc">پلاک (صعودی)</SelectItem>
+                <SelectItem value="unit_number_desc">پلاک (نزولی)</SelectItem>
+                <SelectItem value="floor_asc">طبقه (صعودی)</SelectItem>
+                <SelectItem value="floor_desc">طبقه (نزولی)</SelectItem>
+                <SelectItem value="area_asc">متراژ (صعودی)</SelectItem>
+                <SelectItem value="area_desc">متراژ (نزولی)</SelectItem>
+                <SelectItem value="owner_asc">نام مالک</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {units.length === 0 ? (
@@ -98,7 +152,7 @@ export function UnitsList({ onEdit }: UnitsListProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {units.map((unit) => (
+                  {sortedUnits.map((unit) => (
                     <TableRow key={unit.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-bold text-primary">
                         {unit.unit_number}

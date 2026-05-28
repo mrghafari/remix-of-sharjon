@@ -25,6 +25,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
         .from("projects")
         .select("*")
         .eq("building_id", buildingId)
+        .eq("is_visible_to_residents", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
@@ -128,12 +129,12 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <div className="p-3 bg-muted/50 rounded-lg text-center">
                 <p className="text-xs text-muted-foreground">مجموع هزینه‌ها</p>
-                <p className="text-lg font-bold text-primary mt-1">{fmt(selected.totalExpenses)} تومان</p>
+                <p className="text-lg font-bold text-primary mt-1">{fmt(selected.totalExpenses)} ریال</p>
               </div>
               <div className="p-3 bg-muted/50 rounded-lg text-center">
                 <p className="text-xs text-muted-foreground">بودجه</p>
                 <p className="text-lg font-bold mt-1">
-                  {selected.budget ? `${fmt(selected.budget)} تومان` : "-"}
+                  {selected.budget ? `${fmt(selected.budget)} ریال` : "-"}
                 </p>
               </div>
               <div className="p-3 bg-muted/50 rounded-lg text-center">
@@ -142,7 +143,7 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
               </div>
               <div className="p-3 bg-primary/10 rounded-lg text-center">
                 <p className="text-xs text-muted-foreground">سهم واحد شما</p>
-                <p className="text-lg font-bold text-primary mt-1">{fmt(selected.myShare)} تومان</p>
+                <p className="text-lg font-bold text-primary mt-1">{fmt(selected.myShare)} ریال</p>
               </div>
             </div>
 
@@ -186,9 +187,9 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                           <TableCell>
                             <Badge variant="outline" className="text-xs">{roleLabel}</Badge>
                           </TableCell>
-                          <TableCell className="font-bold">{fmt(Number(e.amount))} تومان</TableCell>
+                          <TableCell className="font-bold">{fmt(Number(e.amount))} ریال</TableCell>
                           <TableCell className="font-bold text-primary">
-                            {fmt(sh?.amount || 0)} تومان
+                            {fmt(sh?.amount || 0)} ریال
                           </TableCell>
                         </TableRow>
                       );
@@ -198,10 +199,10 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                     <TableRow>
                       <TableCell colSpan={5} className="font-bold text-right">جمع کل</TableCell>
                       <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
-                        {fmt(selectedExpenses.reduce((s, e: any) => s + Number(e.amount), 0))} تومان
+                        {fmt(selectedExpenses.reduce((s, e: any) => s + Number(e.amount), 0))} ریال
                       </TableCell>
                       <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
-                        {fmt(selectedExpenses.reduce((s, e: any) => s + (shareMap.get(e.id)?.amount || 0), 0))} تومان
+                        {fmt(selectedExpenses.reduce((s, e: any) => s + (shareMap.get(e.id)?.amount || 0), 0))} ریال
                       </TableCell>
                     </TableRow>
                   </TableFooter>
@@ -247,10 +248,10 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                     onClick={() => setSelectedId(p.id)}
                   >
                     <TableCell className="font-medium">{p.name}</TableCell>
-                    <TableCell>{p.budget ? `${fmt(p.budget)} تومان` : "-"}</TableCell>
-                    <TableCell className="font-bold text-primary">{fmt(p.totalExpenses)} تومان</TableCell>
+                    <TableCell>{p.budget ? `${fmt(p.budget)} ریال` : "-"}</TableCell>
+                    <TableCell className="font-bold text-primary">{fmt(p.totalExpenses)} ریال</TableCell>
                     <TableCell>{p.expenseCount} مورد</TableCell>
-                    <TableCell className="font-bold text-primary">{fmt(p.myShare)} تومان</TableCell>
+                    <TableCell className="font-bold text-primary">{fmt(p.myShare)} ریال</TableCell>
                     <TableCell>
                       <Badge variant={p.is_active ? "default" : "secondary"}>
                         {p.is_active ? "فعال" : "پایان‌یافته"}
@@ -263,16 +264,16 @@ export function ResidentProjects({ buildingId, unitId }: Props) {
                 <TableRow>
                   <TableCell className="font-bold text-right">جمع کل</TableCell>
                   <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-right">
-                    {fmt(projectSummaries.reduce((s, p: any) => s + (Number(p.budget) || 0), 0))} تومان
+                    {fmt(projectSummaries.reduce((s, p: any) => s + (Number(p.budget) || 0), 0))} ریال
                   </TableCell>
                   <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
-                    {fmt(projectSummaries.reduce((s, p: any) => s + p.totalExpenses, 0))} تومان
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.totalExpenses, 0))} ریال
                   </TableCell>
                   <TableCell className="font-bold text-right">
                     {projectSummaries.reduce((s, p: any) => s + p.expenseCount, 0)} مورد
                   </TableCell>
                   <TableCell className="font-bold bg-amber-100 dark:bg-amber-900/40 text-primary text-right">
-                    {fmt(projectSummaries.reduce((s, p: any) => s + p.myShare, 0))} تومان
+                    {fmt(projectSummaries.reduce((s, p: any) => s + p.myShare, 0))} ریال
                   </TableCell>
                   <TableCell />
                 </TableRow>

@@ -302,7 +302,7 @@ export function ExpenseDetailsDialog({
             <div>
               <p className="text-sm text-muted-foreground">مبلغ کل</p>
               <p className="font-bold text-primary">
-                {formatNumber(expense.amount)} تومان
+                {formatNumber(expense.amount)} ریال
               </p>
             </div>
             <div>
@@ -364,7 +364,7 @@ export function ExpenseDetailsDialog({
                     <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                     <TableCell>{ua.residentCount || "-"}</TableCell>
                     <TableCell className="font-bold text-primary">
-                      {formatNumber(ua.allocatedAmount)} تومان
+                      {formatNumber(ua.allocatedAmount)} ریال
                     </TableCell>
                   </TableRow>
                 ))}
@@ -373,7 +373,7 @@ export function ExpenseDetailsDialog({
                     جمع کل
                   </TableCell>
                   <TableCell className="text-primary">
-                    {formatNumber(totalAllocated)} تومان
+                    {formatNumber(totalAllocated)} ریال
                   </TableCell>
                 </TableRow>
               </TableBody>

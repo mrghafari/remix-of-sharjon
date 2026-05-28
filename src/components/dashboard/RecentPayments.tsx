@@ -73,7 +73,7 @@ export function RecentPayments({ onViewAll }: RecentPaymentsProps = {}) {
                   </div>
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-success">{formatAmount(Number(payment.amount))} تومان</p>
+                  <p className="font-bold text-success">{formatAmount(Number(payment.amount))} ریال</p>
                   <p className="text-sm text-muted-foreground">{formatDate(payment.payment_date)}</p>
                 </div>
               </div>

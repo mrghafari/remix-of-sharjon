@@ -14,6 +14,7 @@ interface ResidentSidebarProps {
   unitNumber: string;
   role: string;
   personName: string;
+  personPhone?: string;
   onSignOut: () => void;
   mobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
@@ -45,6 +46,7 @@ export function ResidentSidebar({
   unitNumber,
   role,
   personName,
+  personPhone,
   onSignOut,
   mobileOpen = false,
   onMobileOpenChange,
@@ -77,7 +79,7 @@ export function ResidentSidebar({
 
       <aside
         className={cn(
-          "fixed right-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-transform duration-300 z-50 flex flex-col",
+          "fixed right-0 top-0 h-[100dvh] bg-sidebar text-sidebar-foreground transition-transform duration-300 z-50 flex flex-col",
           !isMobile && (collapsed ? "w-20" : "w-64"),
           isMobile && "w-64",
           isMobile && !mobileOpen && "translate-x-full",
@@ -95,6 +97,11 @@ export function ResidentSidebar({
               <p className="text-[10px] text-sidebar-foreground/60 truncate">
                 واحد {unitNumber} • {role === "owner" ? "مالک" : "ساکن"}: {personName}
               </p>
+              {personPhone && (
+                <p className="text-[10px] text-sidebar-foreground/50 truncate" dir="ltr">
+                  {personPhone}
+                </p>
+              )}
             </div>
           )}
           {isMobile && (
@@ -135,7 +142,10 @@ export function ResidentSidebar({
         </nav>
 
         {/* Sign out & Collapse */}
-        <div className="p-2 border-t border-sidebar-border space-y-1">
+        <div
+          className="p-2 border-t border-sidebar-border space-y-1 shrink-0"
+          style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+        >
           <SwitchAccountButton showLabels={showLabels} />
           <button
             onClick={onSignOut}

@@ -34,10 +34,10 @@ function exportBalanceExcel(data: UnitBalance[], debtorsOnly: boolean) {
     ردیف: i + 1,
     پلاک: ub.unit.unit_number,
     مالک: ub.unit.owner_name,
-    "دریافتی‌ها (تومان)": Math.round(ub.totalPayments),
-    "بدهی شارژ (تومان)": Math.round(ub.totalCharges),
-    "هزینه تسهیم‌شده (تومان)": Math.round(ub.totalAllocatedExpenses),
-    "مانده (تومان)": Math.round(ub.balance),
+    "دریافتی‌ها (ریال)": Math.round(ub.totalPayments),
+    "بدهی شارژ (ریال)": Math.round(ub.totalCharges),
+    "هزینه تسهیم‌شده (ریال)": Math.round(ub.totalAllocatedExpenses),
+    "مانده (ریال)": Math.round(ub.balance),
     وضعیت: ub.balance >= 0 ? "بستانکار" : "بدهکار",
   }));
 
@@ -50,10 +50,10 @@ function exportBalanceExcel(data: UnitBalance[], debtorsOnly: boolean) {
     ردیف: "" as any,
     پلاک: "",
     مالک: "جمع کل",
-    "دریافتی‌ها (تومان)": Math.round(totalPayments),
-    "بدهی شارژ (تومان)": Math.round(totalCharges),
-    "هزینه تسهیم‌شده (تومان)": Math.round(totalExpenses),
-    "مانده (تومان)": Math.round(totalBalance),
+    "دریافتی‌ها (ریال)": Math.round(totalPayments),
+    "بدهی شارژ (ریال)": Math.round(totalCharges),
+    "هزینه تسهیم‌شده (ریال)": Math.round(totalExpenses),
+    "مانده (ریال)": Math.round(totalBalance),
     وضعیت: "",
   });
 
@@ -166,7 +166,7 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {formatNumber(totals.totalPayments)} تومان
+              {formatNumber(totals.totalPayments)} ریال
             </div>
           </CardContent>
         </Card>
@@ -178,7 +178,7 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {formatNumber(totals.totalExpenses)} تومان
+              {formatNumber(totals.totalExpenses)} ریال
             </div>
           </CardContent>
         </Card>
@@ -190,7 +190,7 @@ export function UnitBalanceReport({ onSelectUnit, dateRange }: UnitBalanceReport
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${totals.totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatNumber(Math.abs(totals.totalBalance))} تومان
+              {formatNumber(Math.abs(totals.totalBalance))} ریال
               {totals.totalBalance < 0 && <span className="text-sm mr-1">(بدهکار)</span>}
             </div>
           </CardContent>

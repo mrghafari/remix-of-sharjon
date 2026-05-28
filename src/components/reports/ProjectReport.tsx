@@ -181,10 +181,10 @@ export function ProjectReport() {
                 >
                   <TableCell className="font-medium">{proj.name}</TableCell>
                   <TableCell>
-                    {proj.budget ? `${formatNumber(proj.budget)} تومان` : "-"}
+                    {proj.budget ? `${formatNumber(proj.budget)} ریال` : "-"}
                   </TableCell>
                   <TableCell className="font-bold text-primary">
-                    {formatNumber(proj.totalExpenses)} تومان
+                    {formatNumber(proj.totalExpenses)} ریال
                   </TableCell>
                   <TableCell>{proj.expenseCount} مورد</TableCell>
                   <TableCell className="text-sm">
@@ -254,14 +254,14 @@ export function ProjectReport() {
                 <div className="p-4 bg-muted/50 rounded-lg text-center">
                   <p className="text-sm text-muted-foreground">مجموع هزینه‌ها</p>
                   <p className="text-xl font-bold text-primary mt-1">
-                    {formatNumber(totalProjectAmount)} تومان
+                    {formatNumber(totalProjectAmount)} ریال
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg text-center">
                   <p className="text-sm text-muted-foreground">بودجه</p>
                   <p className="text-xl font-bold mt-1">
                     {selectedProject.budget
-                      ? `${formatNumber(selectedProject.budget)} تومان`
+                      ? `${formatNumber(selectedProject.budget)} ریال`
                       : "-"}
                   </p>
                 </div>
@@ -275,7 +275,7 @@ export function ProjectReport() {
                     }`}
                   >
                     {selectedProject.budget
-                      ? `${formatNumber(selectedProject.budget - totalProjectAmount)} تومان`
+                      ? `${formatNumber(selectedProject.budget - totalProjectAmount)} ریال`
                       : "-"}
                   </p>
                 </div>
@@ -325,7 +325,7 @@ export function ProjectReport() {
                               </Badge>
                             </TableCell>
                             <TableCell className="font-bold">
-                              {formatNumber(Number(expense.amount))} تومان
+                              {formatNumber(Number(expense.amount))} ریال
                             </TableCell>
                             <TableCell>{formatJalaliDate(expense.expense_date)}</TableCell>
                             <TableCell>
@@ -362,7 +362,7 @@ export function ProjectReport() {
                           جمع کل
                         </TableCell>
                         <TableCell className="text-primary">
-                          {formatNumber(totalProjectAmount)} تومان
+                          {formatNumber(totalProjectAmount)} ریال
                         </TableCell>
                         <TableCell colSpan={3} />
                       </TableRow>
@@ -395,7 +395,7 @@ export function ProjectReport() {
                           <TableCell>{ua.residentName || "-"}</TableCell>
                           <TableCell>{ua.area ? `${ua.area} متر` : "-"}</TableCell>
                           <TableCell className="font-bold text-primary">
-                            {formatNumber(ua.allocatedAmount)} تومان
+                            {formatNumber(ua.allocatedAmount)} ریال
                           </TableCell>
                         </TableRow>
                       ))}
@@ -404,7 +404,7 @@ export function ProjectReport() {
                           جمع کل
                         </TableCell>
                         <TableCell className="text-primary">
-                          {formatNumber(totalUnitAllocated)} تومان
+                          {formatNumber(totalUnitAllocated)} ریال
                         </TableCell>
                       </TableRow>
                     </TableBody>

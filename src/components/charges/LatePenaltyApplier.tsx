@@ -171,7 +171,7 @@ export function LatePenaltyApplier() {
       qc.invalidateQueries({ queryKey: ["unit-charges"] });
       toast({
         title: "جریمه‌ها اعمال شد",
-        description: `${records.length} رکورد جریمه به مبلغ کل ${formatNumber(totalPenalty)} تومان ثبت شد.`,
+        description: `${records.length} رکورد جریمه به مبلغ کل ${formatNumber(totalPenalty)} ریال ثبت شد.`,
       });
     } catch (e: any) {
       toast({
@@ -269,7 +269,7 @@ export function LatePenaltyApplier() {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">جمع جریمه‌های جدید:</span>
-            <span className="font-bold text-destructive">{formatNumber(totalPenalty)} تومان</span>
+            <span className="font-bold text-destructive">{formatNumber(totalPenalty)} ریال</span>
           </div>
         </div>
 
@@ -339,7 +339,7 @@ export function LatePenaltyApplier() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
                   <AlertDialogDescription>
-                    مجموع {formatNumber(totalPenalty)} تومان جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
+                    مجموع {formatNumber(totalPenalty)} ریال جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

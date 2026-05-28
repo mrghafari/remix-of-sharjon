@@ -103,7 +103,7 @@ export function SearchCommand({ open, onOpenChange, onTabChange }: SearchCommand
                 <Receipt className="w-4 h-4 text-muted-foreground" />
                 <span>{expense.title}</span>
                 <span className="text-xs text-muted-foreground mr-auto">
-                  {formatAmount(expense.amount)} تومان
+                  {formatAmount(expense.amount)} ریال
                 </span>
               </CommandItem>
             ))}
@@ -121,7 +121,7 @@ export function SearchCommand({ open, onOpenChange, onTabChange }: SearchCommand
               >
                 <CreditCard className="w-4 h-4 text-muted-foreground" />
                 <span>
-                  واحد {payment.units?.unit_number || "?"} - {formatAmount(payment.amount)} تومان
+                  واحد {payment.units?.unit_number || "?"} - {formatAmount(payment.amount)} ریال
                 </span>
               </CommandItem>
             ))}

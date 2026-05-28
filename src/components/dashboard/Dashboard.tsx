@@ -92,7 +92,7 @@ export function Dashboard({ onTabChange }: DashboardProps) {
         <StatsCard
           title="مجموع دریافتی"
           value={isLoading ? "-" : formatAmount(totalPayments)}
-          change="تومان"
+          change="ریال"
           changeType="positive"
           icon={CreditCard}
           iconColor="bg-accent"
@@ -102,7 +102,7 @@ export function Dashboard({ onTabChange }: DashboardProps) {
         <StatsCard
           title="مجموع هزینه‌ها"
           value={isLoading ? "-" : formatAmount(totalExpenses)}
-          change="تومان"
+          change="ریال"
           changeType="negative"
           icon={AlertCircle}
           iconColor="bg-destructive"

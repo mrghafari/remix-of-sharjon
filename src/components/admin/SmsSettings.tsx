@@ -43,8 +43,8 @@ type SmsState = {
 
 const DEFAULT_TEMPLATES: SmsTemplate[] = [
   { id: crypto.randomUUID(), title: "پیام خوش‌آمدگویی / کد ورود", content: "به سامانه شارژان خوش آمدید. کد ورود: {code}" },
-  { id: crypto.randomUUID(), title: "تأیید پرداخت", content: "پرداخت شما به مبلغ {amount} تومان با موفقیت ثبت شد." },
-  { id: crypto.randomUUID(), title: "یادآوری شارژ", content: "شارژ ماهانه شما به مبلغ {amount} تومان در انتظار پرداخت است." },
+  { id: crypto.randomUUID(), title: "تأیید پرداخت", content: "پرداخت شما به مبلغ {amount} ریال با موفقیت ثبت شد." },
+  { id: crypto.randomUUID(), title: "یادآوری شارژ", content: "شارژ ماهانه شما به مبلغ {amount} ریال در انتظار پرداخت است." },
 ];
 
 const DEFAULT_STATE: SmsState = {

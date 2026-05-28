@@ -21,7 +21,7 @@ interface GatewayConfig {
   sandbox?: boolean;
 }
 
-type BankKey = "saman" | "mellat" | "parsian" | "saderat" | "pasargad" | "melli";
+type BankKey = "saman" | "blu_saman" | "mellat" | "parsian" | "saderat" | "pasargad" | "melli";
 
 type GatewaysState = {
   zarinpal: GatewayConfig;
@@ -38,6 +38,7 @@ const DEFAULT_STATE: GatewaysState = {
   nextpay: { enabled: false, api_key: "", sandbox: true },
   banks: {
     saman: { ...DEFAULT_BANK },
+    blu_saman: { ...DEFAULT_BANK },
     mellat: { ...DEFAULT_BANK },
     parsian: { ...DEFAULT_BANK },
     saderat: { ...DEFAULT_BANK },
@@ -48,6 +49,7 @@ const DEFAULT_STATE: GatewaysState = {
 
 const BANK_META: { key: BankKey; name: string; fields: ("merchant_id" | "terminal_id" | "username" | "password")[] }[] = [
   { key: "saman", name: "بانک سامان", fields: ["merchant_id", "terminal_id"] },
+  { key: "blu_saman", name: "بلو (بانک سامان)", fields: ["merchant_id", "terminal_id", "username"] },
   { key: "mellat", name: "بانک ملت", fields: ["terminal_id", "username", "password"] },
   { key: "parsian", name: "بانک پارسیان", fields: ["merchant_id"] },
   { key: "saderat", name: "بانک صادرات", fields: ["merchant_id", "terminal_id"] },

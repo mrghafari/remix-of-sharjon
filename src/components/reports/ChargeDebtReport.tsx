@@ -62,9 +62,9 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
         ردیف: i + 1,
         پلاک: s.unit.unit_number,
         مالک: s.unit.owner_name,
-        "کل بدهی شارژ (تومان)": Math.round(s.totalCharges),
-        "کل پرداختی (تومان)": Math.round(s.totalPayments),
-        "مانده بدهی (تومان)": Math.round(s.totalCharges - s.totalPayments),
+        "کل بدهی شارژ (ریال)": Math.round(s.totalCharges),
+        "کل پرداختی (ریال)": Math.round(s.totalPayments),
+        "مانده بدهی (ریال)": Math.round(s.totalCharges - s.totalPayments),
       }));
       const ws = XLSX.utils.json_to_sheet(rows);
       ws["!cols"] = [{ width: 6 }, { width: 10 }, { width: 20 }, { width: 20 }, { width: 20 }, { width: 20 }];
@@ -168,7 +168,7 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">
-              {formatNumber(selectedUnit ? selectedUnit.totalCharges : totalAllCharges)} تومان
+              {formatNumber(selectedUnit ? selectedUnit.totalCharges : totalAllCharges)} ریال
             </div>
           </CardContent>
         </Card>
@@ -179,7 +179,7 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {formatNumber(selectedUnit ? selectedUnit.totalPayments : totalAllPayments)} تومان
+              {formatNumber(selectedUnit ? selectedUnit.totalPayments : totalAllPayments)} ریال
             </div>
           </CardContent>
         </Card>
@@ -195,7 +195,7 @@ export function ChargeDebtReport({ dateRange, onDateRangeChange }: ChargeDebtRep
               const remaining = charges - payments;
               return (
                 <div className={`text-2xl font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  {formatNumber(Math.abs(remaining))} تومان
+                  {formatNumber(Math.abs(remaining))} ریال
                   {remaining > 0 && <span className="text-sm mr-1">(بدهکار)</span>}
                   {remaining < 0 && <span className="text-sm mr-1">(بستانکار)</span>}
                 </div>

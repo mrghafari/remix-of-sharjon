@@ -297,7 +297,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
               <CardContent className="pt-6">
                 <div className="text-sm text-muted-foreground">کل دریافتی‌ها</div>
                 <div className="text-xl font-bold text-green-600">
-                  {formatNumber(selectedBalance.totalPayments)} تومان
+                  {formatNumber(selectedBalance.totalPayments)} ریال
                 </div>
               </CardContent>
             </Card>
@@ -305,7 +305,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
               <CardContent className="pt-6">
                 <div className="text-sm text-muted-foreground">کل هزینه‌ها</div>
                 <div className="text-xl font-bold text-red-600">
-                  {formatNumber(selectedBalance.totalAllocatedExpenses)} تومان
+                  {formatNumber(selectedBalance.totalAllocatedExpenses)} ریال
                 </div>
               </CardContent>
             </Card>
@@ -313,7 +313,7 @@ export function ChronologicalReport({ dateRange, onDateRangeChange }: Chronologi
               <CardContent className="pt-6">
                 <div className="text-sm text-muted-foreground">مانده نهایی</div>
                 <div className={`text-xl font-bold ${selectedBalance.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatNumber(Math.abs(selectedBalance.balance))} تومان
+                  {formatNumber(Math.abs(selectedBalance.balance))} ریال
                   <Badge variant={selectedBalance.balance >= 0 ? "default" : "destructive"} className="mr-2 text-xs">
                     {selectedBalance.balance >= 0 ? "بستانکار" : "بدهکار"}
                   </Badge>

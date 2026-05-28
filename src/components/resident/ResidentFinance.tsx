@@ -329,7 +329,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   </div>
                 </div>
                 <p className="text-[10px] text-muted-foreground pt-1 border-t">
-                  توجه: بدهی‌های شارژ ماهانه ({formatNumber(totalCharges)} تومان) جداگانه نمایش داده می‌شوند و در این مانده لحاظ نشده‌اند.
+                  توجه: بدهی‌های شارژ ماهانه ({formatNumber(totalCharges)} ریال) جداگانه نمایش داده می‌شوند و در این مانده لحاظ نشده‌اند.
                 </p>
                 <p className="text-[10px] text-amber-600 pt-1 border-t">
                   ⚠ پرداخت بدهی مانده حساب فقط در صورت جابجایی و تغییر مالکیت و یا اتمام قرارداد مستاجر انجام می‌شود.
@@ -437,7 +437,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                           </Badge>
                         </TableCell>
                         <TableCell className="font-semibold text-emerald-600 text-left whitespace-nowrap">
-                          {formatNumber(Number(p.amount))} تومان
+                          {formatNumber(Number(p.amount))} ریال
                         </TableCell>
                       </TableRow>
                       );
@@ -511,7 +511,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                             </Badge>
                           </TableCell>
                           <TableCell className="font-semibold text-red-600 text-left whitespace-nowrap">
-                            {formatNumber(Number(e.allocated_amount))} تومان
+                            {formatNumber(Number(e.allocated_amount))} ریال
                           </TableCell>
                         </TableRow>
                       );
@@ -536,7 +536,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
           {selectedChargeIds.size > 0 && (
             <Button size="sm" onClick={openBulkPay} className="gap-1">
               <CreditCard className="w-3 h-3" />
-              پرداخت تجمیعی ({formatNumber(selectedTotals.charge + selectedTotals.extra)} تومان)
+              پرداخت تجمیعی ({formatNumber(selectedTotals.charge + selectedTotals.extra)} ریال)
             </Button>
           )}
         </CardHeader>
@@ -571,7 +571,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs">{c.description || "-"}</TableCell>
-                    <TableCell className="font-semibold text-orange-600">{formatNumber(Number(c.amount))} تومان</TableCell>
+                    <TableCell className="font-semibold text-orange-600">{formatNumber(Number(c.amount))} ریال</TableCell>
                     <TableCell>
                       <Button
                         size="sm"

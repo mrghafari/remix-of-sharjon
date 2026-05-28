@@ -121,7 +121,7 @@ export function ChargeHistory() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs font-semibold">
-                        {formatNumber(Number(c.amount))} تومان
+                        {formatNumber(Number(c.amount))} ریال
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {c.description || "-"}
