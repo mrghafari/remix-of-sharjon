@@ -67,13 +67,13 @@ export function UnitReportPrintable({ unitBalance, dateRange, categoryLabels }: 
         <div>
           <div style={{ fontSize: "11px", color: "#666" }}>کل دریافتی‌ها</div>
           <div style={{ fontSize: "16px", fontWeight: "bold", color: "#16a34a" }}>
-            {formatNumber(unitBalance.totalPayments)} تومان
+            {formatNumber(unitBalance.totalPayments)} ریال
           </div>
         </div>
         <div style={{ borderRight: "1px solid #ddd", borderLeft: "1px solid #ddd", padding: "0 20px" }}>
           <div style={{ fontSize: "11px", color: "#666" }}>کل هزینه‌های تسهیم‌شده</div>
           <div style={{ fontSize: "16px", fontWeight: "bold", color: "#dc2626" }}>
-            {formatNumber(unitBalance.totalAllocatedExpenses)} تومان
+            {formatNumber(unitBalance.totalAllocatedExpenses)} ریال
           </div>
         </div>
         <div>
@@ -83,7 +83,7 @@ export function UnitReportPrintable({ unitBalance, dateRange, categoryLabels }: 
             fontWeight: "bold", 
             color: unitBalance.balance >= 0 ? "#16a34a" : "#dc2626" 
           }}>
-            {formatNumber(Math.abs(unitBalance.balance))} تومان
+            {formatNumber(Math.abs(unitBalance.balance))} ریال
             <span style={{ fontSize: "12px", marginRight: "5px" }}>
               ({unitBalance.balance >= 0 ? "بستانکار" : "بدهکار"})
             </span>
@@ -103,7 +103,7 @@ export function UnitReportPrintable({ unitBalance, dateRange, categoryLabels }: 
                 <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>تاریخ</th>
                 <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>دوره</th>
                 <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>نوع صندوق</th>
-                <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>مبلغ (تومان)</th>
+                <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>مبلغ (ریال)</th>
                 <th style={{ padding: "8px", textAlign: "right", border: "1px solid #ddd" }}>توضیحات</th>
               </tr>
             </thead>

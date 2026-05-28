@@ -24,7 +24,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
 function formatToman(n: number) {
-  return new Intl.NumberFormat("fa-IR").format(n) + " تومان";
+  return new Intl.NumberFormat("fa-IR").format(n) + " ریال";
 }
 
 const TEMPLATE_LABELS: Record<string, string> = {

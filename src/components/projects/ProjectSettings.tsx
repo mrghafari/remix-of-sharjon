@@ -116,7 +116,7 @@ export function ProjectSettings() {
                     </TableCell>
                     <TableCell>
                       {project.budget ? (
-                        <span className="font-medium">{formatNumber(project.budget)} تومان</span>
+                        <span className="font-medium">{formatNumber(project.budget)} ریال</span>
                       ) : (
                         <span className="text-muted-foreground">-</span>
                       )}

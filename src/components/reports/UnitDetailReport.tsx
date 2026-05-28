@@ -136,7 +136,7 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">
-                  {formatNumber(selectedBalance.totalPayments)} تومان
+                  {formatNumber(selectedBalance.totalPayments)} ریال
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {selectedBalance.paymentBreakdown.length} تراکنش
@@ -151,7 +151,7 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">
-                  {formatNumber(selectedBalance.totalAllocatedExpenses)} تومان
+                  {formatNumber(selectedBalance.totalAllocatedExpenses)} ریال
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {selectedBalance.expenseBreakdown.length} هزینه
@@ -170,7 +170,7 @@ export function UnitDetailReport({ selectedUnitId, onSelectUnit, dateRange, onDa
               </CardHeader>
               <CardContent>
                 <div className={`text-2xl font-bold ${selectedBalance.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatNumber(Math.abs(selectedBalance.balance))} تومان
+                  {formatNumber(Math.abs(selectedBalance.balance))} ریال
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {selectedBalance.balance >= 0 ? "بستانکار" : "بدهکار"}

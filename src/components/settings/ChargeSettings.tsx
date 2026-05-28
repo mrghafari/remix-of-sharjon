@@ -191,7 +191,7 @@ export function ChargeSettings() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض شارژ (تومان)</Label>
+              <Label>مبلغ پیش‌فرض شارژ (ریال)</Label>
               <NumericInput
                 value={chargeAmount}
                 onChange={setChargeAmount}
@@ -199,7 +199,7 @@ export function ChargeSettings() {
               />
             </div>
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض فوق‌شارژ (تومان)</Label>
+              <Label>مبلغ پیش‌فرض فوق‌شارژ (ریال)</Label>
               <NumericInput
                 value={extraChargeAmount}
                 onChange={setExtraChargeAmount}
@@ -339,14 +339,14 @@ export function ChargeSettings() {
               <div className="font-medium">خلاصه:</div>
               {Number(chargeAmount) > 0 && (
                 <div>
-                  شارژ: {Number(chargeAmount).toLocaleString("fa-IR")} تومان ×{" "}
+                  شارژ: {Number(chargeAmount).toLocaleString("fa-IR")} ریال ×{" "}
                   {units.length} واحد
                 </div>
               )}
               {Number(extraChargeAmount) > 0 && (
                 <div>
                   فوق‌شارژ: {Number(extraChargeAmount).toLocaleString("fa-IR")}{" "}
-                  تومان × {units.length} واحد
+                  ریال × {units.length} واحد
                 </div>
               )}
               <div className="text-muted-foreground text-xs mt-1">

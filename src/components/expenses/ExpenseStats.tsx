@@ -52,7 +52,7 @@ export function ExpenseStats() {
             <div>
               <p className="text-sm text-muted-foreground">مجموع هزینه‌ها</p>
               <p className="text-2xl font-bold mt-1">{formatAmount(totalAmount)}</p>
-              <p className="text-xs text-muted-foreground">تومان</p>
+              <p className="text-xs text-muted-foreground">ریال</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-primary-foreground" />
@@ -85,7 +85,7 @@ export function ExpenseStats() {
               <div>
                 <p className="text-sm text-muted-foreground">بیشترین هزینه</p>
                 <p className="text-lg font-bold mt-1">{topCategory.label}</p>
-                <p className="text-sm text-muted-foreground">{formatAmount(topCategory.total)} تومان</p>
+                <p className="text-sm text-muted-foreground">{formatAmount(topCategory.total)} ریال</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-warning flex items-center justify-center text-xl">
                 {topCategory.icon}

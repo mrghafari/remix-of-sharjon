@@ -32,7 +32,7 @@ export function PaymentsStats() {
     {
       title: "مجموع دریافتی",
       value: formatAmount(totalAmount),
-      suffix: "تومان",
+      suffix: "ریال",
       icon: TrendingUp,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
@@ -40,7 +40,7 @@ export function PaymentsStats() {
     {
       title: `دریافتی سال ${currentYear}`,
       value: formatAmount(thisYearAmount),
-      suffix: "تومان",
+      suffix: "ریال",
       icon: Calendar,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",

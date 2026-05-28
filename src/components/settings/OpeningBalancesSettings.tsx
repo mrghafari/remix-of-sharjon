@@ -267,11 +267,11 @@ export function OpeningBalancesSettings() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>مبلغ اولیه صندوق شارژ (تومان)</Label>
+              <Label>مبلغ اولیه صندوق شارژ (ریال)</Label>
               <NumericInput value={fundCharge} onChange={setFundCharge} placeholder="0" />
             </div>
             <div className="space-y-2">
-              <Label>مبلغ اولیه صندوق شارژ فوق‌العاده (تومان)</Label>
+              <Label>مبلغ اولیه صندوق شارژ فوق‌العاده (ریال)</Label>
               <NumericInput value={fundExtra} onChange={setFundExtra} placeholder="0" />
             </div>
           </div>

@@ -110,7 +110,7 @@ export function IncomeForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>مبلغ (تومان)</Label>
+            <Label>مبلغ (ریال)</Label>
             <NumericInput value={amount} onChange={setAmount} required />
           </div>
 

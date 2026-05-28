@@ -176,7 +176,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>بودجه (تومان)</FormLabel>
+                  <FormLabel>بودجه (ریال)</FormLabel>
                   <FormControl>
                     <NumericInput value={field.value || ""} onChange={field.onChange} />
                   </FormControl>

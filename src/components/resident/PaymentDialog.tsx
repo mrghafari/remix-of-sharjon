@@ -207,7 +207,7 @@ export function PaymentDialog({
                       </Label>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      بدهی: {r(chargeDebt).toLocaleString("fa-IR")} تومان
+                      بدهی: {r(chargeDebt).toLocaleString("fa-IR")} ریال
                     </span>
                   </div>
                   {chargeChecked && (
@@ -236,7 +236,7 @@ export function PaymentDialog({
                       </Label>
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      بدهی: {r(extraDebt).toLocaleString("fa-IR")} تومان
+                      بدهی: {r(extraDebt).toLocaleString("fa-IR")} ریال
                     </span>
                   </div>
                   {extraChecked && (
@@ -253,7 +253,7 @@ export function PaymentDialog({
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-sm text-muted-foreground">مجموع پرداخت:</span>
                 <span className="text-lg font-bold text-primary">
-                  {totalAmount.toLocaleString("fa-IR")} تومان
+                  {totalAmount.toLocaleString("fa-IR")} ریال
                 </span>
               </div>
             </div>
@@ -279,18 +279,18 @@ export function PaymentDialog({
                 {chargeChecked && r(chargeAmount) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">صندوق شارژ:</span>
-                    <span className="font-semibold">{r(chargeAmount).toLocaleString("fa-IR")} تومان</span>
+                    <span className="font-semibold">{r(chargeAmount).toLocaleString("fa-IR")} ریال</span>
                   </div>
                 )}
                 {extraChecked && r(extraAmount) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">صندوق فوق‌شارژ:</span>
-                    <span className="font-semibold">{r(extraAmount).toLocaleString("fa-IR")} تومان</span>
+                    <span className="font-semibold">{r(extraAmount).toLocaleString("fa-IR")} ریال</span>
                   </div>
                 )}
                 <div className="flex justify-between text-base pt-2 border-t">
                   <span className="font-medium">مجموع:</span>
-                  <span className="font-bold text-primary">{totalAmount.toLocaleString("fa-IR")} تومان</span>
+                  <span className="font-bold text-primary">{totalAmount.toLocaleString("fa-IR")} ریال</span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>پرداخت‌کننده:</span>
@@ -321,13 +321,13 @@ export function PaymentDialog({
               <DialogDescription>پرداخت شما با موفقیت ثبت شد و به صندوق‌های مربوطه واریز شد</DialogDescription>
             </DialogHeader>
             <div className="py-4 text-center space-y-2">
-              <p className="text-2xl font-bold text-emerald-600">{totalAmount.toLocaleString("fa-IR")} تومان</p>
+              <p className="text-2xl font-bold text-emerald-600">{totalAmount.toLocaleString("fa-IR")} ریال</p>
               <div className="text-sm text-muted-foreground space-y-1">
                 {chargeChecked && r(chargeAmount) > 0 && (
-                  <p>✓ {r(chargeAmount).toLocaleString("fa-IR")} تومان به صندوق شارژ</p>
+                  <p>✓ {r(chargeAmount).toLocaleString("fa-IR")} ریال به صندوق شارژ</p>
                 )}
                 {extraChecked && r(extraAmount) > 0 && (
-                  <p>✓ {r(extraAmount).toLocaleString("fa-IR")} تومان به صندوق فوق‌شارژ</p>
+                  <p>✓ {r(extraAmount).toLocaleString("fa-IR")} ریال به صندوق فوق‌شارژ</p>
                 )}
               </div>
             </div>

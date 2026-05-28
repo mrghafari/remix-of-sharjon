@@ -16,7 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 
 function formatToman(n: number) {
-  return new Intl.NumberFormat("fa-IR").format(Math.round(n)) + " تومان";
+  return new Intl.NumberFormat("fa-IR").format(Math.round(n)) + " ریال";
 }
 
 function formatJalaliDateTime(iso: string) {
@@ -261,7 +261,7 @@ export function AdminSmsPackages() {
                 />
               </div>
               <div>
-                <Label>قیمت (تومان)</Label>
+                <Label>قیمت (ریال)</Label>
                 <Input
                   type="number"
                   value={editing.price ?? ""}

@@ -126,7 +126,7 @@ export function PaymentsList() {
   };
 
   const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("fa-IR").format(Math.round(amount)) + " تومان";
+    return new Intl.NumberFormat("fa-IR").format(Math.round(amount)) + " ریال";
   };
 
   if (isLoading) {
@@ -262,7 +262,7 @@ export function PaymentsList() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>مبلغ (تومان)</Label>
+              <Label>مبلغ (ریال)</Label>
               <NumericInput value={editData.amount} onChange={(v) => setEditData({ ...editData, amount: v })} required />
             </div>
             <div className="grid grid-cols-2 gap-4">

@@ -226,9 +226,9 @@ export function UtilitiesPage() {
                       <span>{st.icon}</span> {st.label}
                     </p>
                     <p className="text-xl font-bold">{formatAmount(st.totalQty)} <span className="text-xs font-normal text-muted-foreground">{st.unit}</span></p>
-                    <p className="text-sm text-muted-foreground">مبلغ قبوض: {formatAmount(st.totalAmt)} تومان</p>
+                    <p className="text-sm text-muted-foreground">مبلغ قبوض: {formatAmount(st.totalAmt)} ریال</p>
                     {st.expenseTotal > 0 && (
-                      <p className="text-xs text-muted-foreground">هزینه ثبت‌شده: {formatAmount(st.expenseTotal)} تومان</p>
+                      <p className="text-xs text-muted-foreground">هزینه ثبت‌شده: {formatAmount(st.expenseTotal)} ریال</p>
                     )}
                   </div>
                   <div className="text-left space-y-1">
@@ -290,7 +290,7 @@ export function UtilitiesPage() {
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">مبلغ قبض (تومان)</label>
+                <label className="text-sm font-medium mb-1 block">مبلغ قبض (ریال)</label>
                 <NumericInput value={formAmount} onChange={setFormAmount} placeholder="مبلغ" />
               </div>
               <div className="sm:col-span-2">
@@ -346,7 +346,7 @@ export function UtilitiesPage() {
                           contentStyle={{ borderRadius: 8, fontSize: 12 }}
                           formatter={(value: number, name: string) => {
                             if (name === "quantity") return [formatAmount(value) + ` ${ut.unit}`, "مصرف"];
-                            if (name === "amount") return [formatAmount(value) + " تومان", "مبلغ"];
+                            if (name === "amount") return [formatAmount(value) + " ریال", "مبلغ"];
                             return [formatAmount(value), name];
                           }}
                         />
@@ -387,7 +387,7 @@ export function UtilitiesPage() {
                   <TableHead>نوع</TableHead>
                   <TableHead>تاریخ</TableHead>
                   <TableHead>مصرف</TableHead>
-                  <TableHead>مبلغ (تومان)</TableHead>
+                  <TableHead>مبلغ (ریال)</TableHead>
                   <TableHead>قیمت واحد</TableHead>
                   <TableHead>توضیحات</TableHead>
                   <TableHead></TableHead>
@@ -445,8 +445,8 @@ export function UtilitiesPage() {
                 <div className="flex-1 overflow-auto p-6 space-y-4">
                   <div className="grid grid-cols-3 gap-3">
                     <Card className="p-3"><div className="text-xs text-muted-foreground">کل مصرف</div><div className="text-lg font-bold">{formatAmount(totalQty)} {ut.unit}</div></Card>
-                    <Card className="p-3"><div className="text-xs text-muted-foreground">کل مبلغ</div><div className="text-lg font-bold">{formatAmount(totalAmt)} تومان</div></Card>
-                    <Card className="p-3"><div className="text-xs text-muted-foreground">میانگین قیمت واحد</div><div className="text-lg font-bold">{formatAmount(totalQty > 0 ? totalAmt / totalQty : 0)} تومان</div></Card>
+                    <Card className="p-3"><div className="text-xs text-muted-foreground">کل مبلغ</div><div className="text-lg font-bold">{formatAmount(totalAmt)} ریال</div></Card>
+                    <Card className="p-3"><div className="text-xs text-muted-foreground">میانگین قیمت واحد</div><div className="text-lg font-bold">{formatAmount(totalQty > 0 ? totalAmt / totalQty : 0)} ریال</div></Card>
                   </div>
                   {series.length === 0 ? (
                     <div className="h-96 flex items-center justify-center text-muted-foreground">داده‌ای برای نمایش وجود ندارد</div>
@@ -470,7 +470,7 @@ export function UtilitiesPage() {
                             labelFormatter={(label) => `تاریخ: ${label}`}
                             formatter={(value: number, name: string) => {
                               if (name === "quantity") return [formatAmount(value) + ` ${ut.unit}`, "مصرف"];
-                              if (name === "amount") return [formatAmount(value) + " تومان", "مبلغ"];
+                              if (name === "amount") return [formatAmount(value) + " ریال", "مبلغ"];
                               return [formatAmount(value), name];
                             }}
                           />
@@ -504,7 +504,7 @@ export function UtilitiesPage() {
               <NumericInput value={editQty} onChange={setEditQty} placeholder="مقدار مصرف" />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">مبلغ قبض (تومان)</label>
+              <label className="text-sm font-medium mb-1 block">مبلغ قبض (ریال)</label>
               <NumericInput value={editAmount} onChange={setEditAmount} placeholder="مبلغ" />
             </div>
             <div className="sm:col-span-2">

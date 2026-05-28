@@ -223,7 +223,7 @@ export function ExpenseForm({ onClose }: ExpenseFormProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <Label htmlFor="amount" className="shrink-0 w-24 text-sm">مبلغ (تومان) *</Label>
+              <Label htmlFor="amount" className="shrink-0 w-24 text-sm">مبلغ (ریال) *</Label>
               <NumericInput
                 id="amount"
                 value={amount}
