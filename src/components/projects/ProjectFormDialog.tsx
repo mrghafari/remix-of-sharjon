@@ -62,6 +62,7 @@ const formSchema = z.object({
   budget: z.string().optional(),
   is_active: z.boolean(),
   apply_manager_discount: z.boolean(),
+  is_visible_to_residents: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -86,6 +87,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       budget: "",
       is_active: true,
       apply_manager_discount: false,
+      is_visible_to_residents: true,
     },
   });
 
@@ -100,6 +102,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         budget: project.budget ? project.budget.toString() : "",
         is_active: project.is_active,
         apply_manager_discount: project.apply_manager_discount ?? false,
+        is_visible_to_residents: project.is_visible_to_residents ?? true,
       });
     } else {
       form.reset({
@@ -110,6 +113,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
         budget: "",
         is_active: true,
         apply_manager_discount: false,
+        is_visible_to_residents: true,
       });
     }
   }, [project, form, open]);
@@ -123,6 +127,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: ProjectFormDi
       budget: values.budget ? parseFloat(values.budget) : undefined,
       is_active: values.is_active,
       apply_manager_discount: values.apply_manager_discount,
+      is_visible_to_residents: values.is_visible_to_residents,
     };
 
     if (project) {
