@@ -14,6 +14,7 @@ interface ResidentSidebarProps {
   unitNumber: string;
   role: string;
   personName: string;
+  personPhone?: string;
   onSignOut: () => void;
   mobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
@@ -45,6 +46,7 @@ export function ResidentSidebar({
   unitNumber,
   role,
   personName,
+  personPhone,
   onSignOut,
   mobileOpen = false,
   onMobileOpenChange,
@@ -95,6 +97,11 @@ export function ResidentSidebar({
               <p className="text-[10px] text-sidebar-foreground/60 truncate">
                 واحد {unitNumber} • {role === "owner" ? "مالک" : "ساکن"}: {personName}
               </p>
+              {personPhone && (
+                <p className="text-[10px] text-sidebar-foreground/50 truncate" dir="ltr">
+                  {personPhone}
+                </p>
+              )}
             </div>
           )}
           {isMobile && (

@@ -150,6 +150,7 @@ const ResidentDashboard = () => {
         unitNumber={unitNumber}
         role={currentMatch?.role || "resident"}
         personName={personName}
+        personPhone={localStorage.getItem("resident_matches_phone") || undefined}
         onSignOut={handleSignOut}
         mobileOpen={mobileSidebarOpen}
         onMobileOpenChange={setMobileSidebarOpen}
