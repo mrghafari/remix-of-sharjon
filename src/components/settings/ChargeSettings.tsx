@@ -113,61 +113,11 @@ export function ChargeSettings() {
   };
 
   const handleApply = async () => {
-    const { monthLabel } = buildDescriptions();
-
-    // بررسی تکراری بودن شارژ برای این ماه/سال
-    if (currentBuildingId) {
-      const fundTypesToCheck: ("charge" | "extra_charge")[] = [];
-      if ((Number(chargeAmount) || 0) > 0) fundTypesToCheck.push("charge");
-      if ((Number(extraChargeAmount) || 0) > 0) fundTypesToCheck.push("extra_charge");
-
-      if (fundTypesToCheck.length > 0) {
-        const selectedMonthNumber = Number(selectedMonth);
-        const selectedYearNumber = Number(selectedYear);
-
-        const [{ data: existing }, { data: paidExisting }] = await Promise.all([
-          supabase
-            .from("unit_charges")
-            .select("id, fund_type")
-            .eq("building_id", currentBuildingId)
-            .eq("month", selectedMonthNumber)
-            .eq("year", selectedYearNumber)
-            .in("fund_type", fundTypesToCheck),
-          supabase
-            .from("payments")
-            .select("id, fund_type")
-            .eq("building_id", currentBuildingId)
-            .eq("month", selectedMonthNumber)
-            .eq("year", selectedYearNumber)
-            .in("fund_type", fundTypesToCheck),
-        ]);
-
-        const paidRowsById = new Map(
-          (paidExisting || []).map((row) => [row.id, row])
-        );
-        const paidRows = Array.from(paidRowsById.values());
-        const allRows = [...(existing || []), ...paidRows];
-        if (allRows.length > 0) {
-          const chargeUnpaid = (existing || []).filter((r) => r.fund_type === "charge").length;
-          const extraUnpaid = (existing || []).filter((r) => r.fund_type === "extra_charge").length;
-          const chargePaid = paidRows.filter((r) => r.fund_type === "charge").length;
-          const extraPaid = paidRows.filter((r) => r.fund_type === "extra_charge").length;
-          const parts: string[] = [];
-          if (chargeUnpaid > 0) parts.push(`${chargeUnpaid} رکورد شارژ ثبت‌شده (پرداخت‌نشده)`);
-          if (extraUnpaid > 0) parts.push(`${extraUnpaid} رکورد فوق‌شارژ ثبت‌شده (پرداخت‌نشده)`);
-          if (chargePaid > 0) parts.push(`${chargePaid} پرداخت شارژ`);
-          if (extraPaid > 0) parts.push(`${extraPaid} پرداخت فوق‌شارژ`);
-          setDuplicateInfo({
-            open: true,
-            message: `برای ${monthLabel} قبلاً ${parts.join(" و ")} وجود دارد. در صورت ادامه، رکوردهای تکراری ایجاد خواهد شد.`,
-          });
-          return;
-        }
-      }
-    }
-
+    // اعمال شارژ به صورت خودکار از واحدهایی که قبلاً برای این ماه شارژ دارند صرف‌نظر می‌کند.
+    // بنابراین در صورت حذف پرداخت یک واحد، با اعمال مجدد، فقط همان واحد دوباره شارژ می‌شود.
     runApply();
   };
+
 
   const vacantCount = units.filter((u) => !u.is_occupied).length;
   const hasManagerDiscount =
