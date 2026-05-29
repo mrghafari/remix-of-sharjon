@@ -64,10 +64,8 @@ export function ChargeSettings() {
   const [selectedMonth, setSelectedMonth] = useState(currentJalaliMonth);
   const [selectedYear, setSelectedYear] = useState(currentJalaliYear);
   const [applyDescription, setApplyDescription] = useState("");
-  const [duplicateInfo, setDuplicateInfo] = useState<{
-    open: boolean;
-    message: string;
-  }>({ open: false, message: "" });
+
+
 
   if (!currentBuilding || !currentBuildingId) return null;
 
