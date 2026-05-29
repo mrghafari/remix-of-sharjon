@@ -91,7 +91,17 @@ export function useApplyCharges() {
       const applyForFund = (baseAmount: number, fundType: FundType) => {
         if (baseAmount <= 0) return;
 
+        // Build set of unit ids that already have a charge row for this period+fund_type
+        const existingSet = new Set(
+          (existingCharges as any[])
+            .filter(
+              (c) => c.month === month && c.year === year && c.fund_type === fundType
+            )
+            .map((c) => c.unit_id)
+        );
+
         const vacantDiscount = fundType === "charge" ? vacantChargeDiscount : vacantExtraDiscount;
+
         const mgrDiscount = fundType === "charge" ? managerChargeDiscount : managerExtraDiscount;
         const fundDescription =
           fundType === "charge"
