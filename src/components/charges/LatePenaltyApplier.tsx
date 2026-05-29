@@ -142,13 +142,20 @@ export function LatePenaltyApplier() {
   const newOnes = candidates.filter((c) => !c.alreadyApplied);
   const totalPenalty = newOnes.reduce((s, c) => s + c.penalty, 0);
 
-  // Grace period: how many days remain after end-of-period before penalty can apply
+  // Grace period: starts from the day the manager actually applied charges for this period (latest created_at of unit_charges for selected month/year).
+  // If no charges yet exist for this period, fall back to end-of-month.
   const graceDays = Math.max(0, policy?.late_grace_days || 0);
-  const eomMs = endOfJalaliMonth(Number(year), Number(month)).getTime();
-  const graceEndMs = eomMs + graceDays * 86400000;
+  const periodChargeDates = (existingCharges as any[])
+    .filter((c) => c.year === Number(year) && c.month === Number(month) && !isPenaltyDescription(c.description))
+    .map((c) => new Date(c.created_at).getTime());
+  const applyBaseMs = periodChargeDates.length > 0
+    ? Math.max(...periodChargeDates)
+    : endOfJalaliMonth(Number(year), Number(month)).getTime();
+  const graceEndMs = applyBaseMs + graceDays * 86400000;
   const nowMs = Date.now();
   const graceRemainingDays = Math.max(0, Math.ceil((graceEndMs - nowMs) / 86400000));
   const withinGrace = nowMs < graceEndMs;
+
 
   const handleApply = async () => {
     if (!currentBuildingId || newOnes.length === 0) return;
