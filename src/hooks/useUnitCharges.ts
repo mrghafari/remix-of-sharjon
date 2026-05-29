@@ -44,6 +44,9 @@ export function useApplyCharges() {
   const { currentBuildingId, currentBuilding } = useBuilding();
   const { data: units = [] } = useUnits();
   const { data: activeManager } = useActiveManager();
+  const { data: existingCharges = [] } = useUnitCharges();
+
+
 
   return useMutation({
     mutationFn: async ({
