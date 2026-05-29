@@ -145,8 +145,9 @@ export function useApplyCharges() {
       applyForFund(extraChargeAmount, "extra_charge");
 
       if (records.length === 0) {
-        throw new Error("مبلغی برای اعمال وجود ندارد");
+        throw new Error("همه واحدها قبلاً برای این دوره شارژ شده‌اند");
       }
+
 
       const { error } = await supabase.from("unit_charges").insert(records);
       if (error) throw error;
