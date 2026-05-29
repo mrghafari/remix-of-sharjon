@@ -110,7 +110,10 @@ export function useApplyCharges() {
 
         // Calculate each unit's amount
         units.forEach((unit) => {
+          // Skip units that already have a charge for this period/fund_type (so re-apply only fills missing ones)
+          if (existingSet.has(unit.id)) return;
           let amount = baseAmount;
+
 
           // Vacant discount
           if (!unit.is_occupied && vacantDiscount > 0) {
