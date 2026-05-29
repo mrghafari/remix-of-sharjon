@@ -71,9 +71,14 @@ export function useAutoLatePenalty() {
         const key = `${currentBuildingId}:${y}-${m}`;
         if (ranRef.current.has(key)) continue;
 
-        // Respect grace days: only apply once we are past end-of-month + grace
-        const eom = endOfJalaliMonth(y, m).getTime();
-        if (nowMs < eom + graceDays * 86400000) continue;
+        // Respect grace days: only apply once we are past (apply-date + grace).
+        // apply-date = latest created_at of non-penalty unit_charges for this period; fallback end-of-month.
+        const periodDates = (existingCharges as any[])
+          .filter((c) => c.year === y && c.month === m && !isPenaltyDescription(c.description))
+          .map((c) => new Date(c.created_at).getTime());
+        const applyBase = periodDates.length > 0 ? Math.max(...periodDates) : endOfJalaliMonth(y, m).getTime();
+        if (nowMs < applyBase + graceDays * 86400000) continue;
+
 
         // Respect manual dismissal persisted by LatePenaltyApplier
         try {
