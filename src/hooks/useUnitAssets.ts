@@ -141,6 +141,54 @@ export function useDeleteUnitVehicle() {
   });
 }
 
+export function useUpdateUnitStorage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string; unit_id: string; storage_number: string; description?: string | null }) => {
+      const { id, unit_id, ...rest } = payload;
+      const { error } = await (supabase as any)
+        .from("unit_storages")
+        .update(rest)
+        .eq("id", id);
+      if (error) throw error;
+      return payload;
+    },
+    onSuccess: (p) => {
+      qc.invalidateQueries({ queryKey: ["unit-storages", p.unit_id] });
+      toast({ title: "ذخیره شد", description: "انبار ویرایش شد" });
+    },
+    onError: () => toast({ title: "خطا", description: "خطا در ویرایش", variant: "destructive" }),
+  });
+}
+
+export function useUpdateUnitVehicle() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      id: string;
+      unit_id: string;
+      plate_part1: string;
+      plate_letter: string;
+      plate_part2: string;
+      plate_city: string;
+      description?: string | null;
+    }) => {
+      const { id, unit_id, ...rest } = payload;
+      const { error } = await (supabase as any)
+        .from("unit_vehicles")
+        .update(rest)
+        .eq("id", id);
+      if (error) throw error;
+      return payload;
+    },
+    onSuccess: (p) => {
+      qc.invalidateQueries({ queryKey: ["unit-vehicles", p.unit_id] });
+      toast({ title: "ذخیره شد", description: "خودرو ویرایش شد" });
+    },
+    onError: () => toast({ title: "خطا", description: "خطا در ویرایش", variant: "destructive" }),
+  });
+}
+
 export const IRAN_PLATE_LETTERS = [
   "الف","ب","پ","ت","ث","ج","د","س","ش","ص","ط","ع","ف","ق","ک","گ","ل","م","ن","و","ه","ی","D","S",
 ];
