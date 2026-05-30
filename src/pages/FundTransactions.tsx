@@ -109,7 +109,7 @@ export default function FundTransactions() {
                 مجموع دریافتی
               </div>
               <p className="text-xl font-bold text-green-600">
-                {formatAmount(totalIncome)} ت
+                {formatAmount(totalIncome)} ریال
               </p>
             </CardContent>
           </Card>
@@ -121,7 +121,7 @@ export default function FundTransactions() {
                 مجموع هزینه
               </div>
               <p className="text-xl font-bold text-red-600">
-                {formatAmount(totalExpense)} ت
+                {formatAmount(totalExpense)} ریال
               </p>
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ export default function FundTransactions() {
                 موجودی
               </div>
               <p className={`text-xl font-bold ${balance >= 0 ? "text-green-600" : "text-red-600"}`}>
-                {formatAmount(Math.abs(balance))} {balance < 0 && "-"} ت
+                {formatAmount(Math.abs(balance))} {balance < 0 && "-"} ریال
               </p>
             </CardContent>
           </Card>

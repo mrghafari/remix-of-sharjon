@@ -403,7 +403,7 @@ export function UtilitiesPage() {
                       <TableCell>{formatDate(r.reading_date)}</TableCell>
                       <TableCell>{formatAmount(Number(r.quantity))} <span className="text-xs text-muted-foreground">{ut?.unit}</span></TableCell>
                       <TableCell>{formatAmount(Number(r.amount))}</TableCell>
-                      <TableCell className="text-xs">{unitPrice > 0 ? `${formatAmount(unitPrice)} ت` : "-"}</TableCell>
+                      <TableCell className="text-xs">{unitPrice > 0 ? `${formatAmount(unitPrice)} ریال` : "-"}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{r.description || "-"}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
