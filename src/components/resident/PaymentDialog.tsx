@@ -1,16 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, CreditCard, CheckCircle2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
 import type { Json } from "@/integrations/supabase/types";
+
+const BANK_LABELS: Record<string, string> = {
+  saman: "بانک سامان",
+  blu_saman: "بلو (بانک سامان)",
+  mellat: "بانک ملت",
+  parsian: "بانک پارسیان",
+  saderat: "بانک صادرات",
+  pasargad: "بانک پاسارگاد",
+  melli: "بانک ملی",
+};
+const TOP_LABELS: Record<string, string> = {
+  zarinpal: "زرین‌پال",
+  idpay: "آیدی‌پی",
+  nextpay: "نکست‌پی",
+};
 
 interface Props {
   open: boolean;
