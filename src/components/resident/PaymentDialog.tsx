@@ -330,6 +330,27 @@ export function PaymentDialog({
                 </div>
               )}
 
+              {/* انتخاب درگاه */}
+              {gateways.length > 0 ? (
+                <div className="rounded-lg border p-3 space-y-2 bg-muted/20">
+                  <Label className="text-sm font-medium">انتخاب درگاه پرداخت</Label>
+                  <RadioGroup value={selectedGateway} onValueChange={setSelectedGateway} className="grid grid-cols-2 gap-2">
+                    {gateways.map((g) => (
+                      <label
+                        key={g.key}
+                        htmlFor={`gw-${g.key}`}
+                        className="flex items-center gap-2 border rounded-md p-2 cursor-pointer hover:bg-muted/40"
+                      >
+                        <RadioGroupItem value={g.key} id={`gw-${g.key}`} />
+                        <span className="text-xs">{g.label}</span>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </div>
+              ) : (
+                <p className="text-xs text-destructive text-center">هیچ درگاه پرداختی فعال نیست. با مدیر تماس بگیرید.</p>
+              )}
+
               {/* جمع کل */}
               <div className="flex justify-between items-center pt-2 border-t">
                 <span className="text-sm text-muted-foreground">مجموع پرداخت:</span>
