@@ -104,7 +104,7 @@ export function FundBalance() {
                       fund.balance >= 0 ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    {formatAmount(fund.balance)} ت
+                    {formatAmount(fund.balance)} ریال
                   </span>
                 </div>
               </div>
@@ -123,7 +123,7 @@ export function FundBalance() {
                   : "text-red-600"
               }`}
             >
-              {formatAmount(chargeBalance + extraChargeBalance)} ت
+              {formatAmount(chargeBalance + extraChargeBalance)} ریال
             </span>
           </div>
         </div>
