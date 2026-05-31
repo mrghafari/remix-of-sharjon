@@ -118,7 +118,10 @@ const Index = () => {
     return hash || "dashboard";
   });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { buildings, isLoading } = useBuilding();
+  const [forceCreate, setForceCreate] = useState(() => {
+    return new URLSearchParams(window.location.search).get("new") === "1";
+  });
+  const { buildings, isLoading, setCurrentBuildingId } = useBuilding();
   useAutoApplyCharges();
 
   const setActiveTab = (tab: string) => {
