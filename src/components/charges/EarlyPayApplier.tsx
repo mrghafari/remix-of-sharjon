@@ -28,10 +28,14 @@ const fmt = (n: number) => Math.round(Math.abs(n)).toLocaleString("fa-IR");
 const isDiscountDescription = (d?: string | null) =>
   !!d && d.startsWith("تخفیف خوش‌حسابی");
 
+const isMetaDescription = (d?: string | null) =>
+  !!d && (d.startsWith("جریمه") || d.startsWith("تخفیف خوش‌حسابی"));
+
 export function EarlyPayApplier() {
   const { data: policy, isLoading: policyLoading } = usePaymentPolicy();
   const { data: units = [] } = useUnits();
   const { data: payments = [] } = usePayments();
+  const { data: existingCharges = [] } = useUnitCharges();
   const { currentBuildingId } = useBuilding();
   const qc = useQueryClient();
 
@@ -40,39 +44,59 @@ export function EarlyPayApplier() {
   const [year, setYear] = useState(String(Number(format(now, "yyyy", { locale: faIR }))));
   const [submitting, setSubmitting] = useState(false);
 
-  // Candidates: units whose payments in this jalali month fall on/before early_pay_days
+  // Per-unit proportional discount: factor depends on how many days after the
+  // charge was applied the payment was made.
+  //   factor = max(0, (early_pay_days - daysElapsed)) / early_pay_days
+  //   discount = paid * (early_pay_discount_percent / 100) * factor
   const candidates = useMemo(() => {
     if (!policy?.early_pay_enabled || policy.early_pay_discount_percent <= 0) return [];
     const m = Number(month);
     const y = Number(year);
-    const dayLimit = Math.max(1, policy.early_pay_days || 1);
-    const discountPct = policy.early_pay_discount_percent;
-
-    // Sum eligible payments per unit (within month, day<=dayLimit, fund_type=charge)
-    const eligible = new Map<string, number>();
-    for (const p of payments as any[]) {
-      if (!p.payment_date) continue;
-      const d = new Date(p.payment_date);
-      const jMonth = Number(format(d, "M", { locale: faIR }));
-      const jYear = Number(format(d, "yyyy", { locale: faIR }));
-      const jDay = Number(format(d, "d", { locale: faIR }));
-      if (jMonth !== m || jYear !== y) continue;
-      if (jDay > dayLimit) continue;
-      eligible.set(p.unit_id, (eligible.get(p.unit_id) || 0) + Number(p.amount || 0));
-    }
+    const windowDays = Math.max(1, policy.early_pay_days || 1);
+    const pct = policy.early_pay_discount_percent / 100;
 
     return units
       .map((u: any) => {
-        const paid = eligible.get(u.id) || 0;
-        const discount = Math.round((paid * discountPct) / 100);
-        // Check existing discount payment record for this period
+        // applyBase = latest non-meta charge created_at for this unit/period
+        const unitCharges = (existingCharges as any[]).filter(
+          (c) =>
+            c.unit_id === u.id &&
+            c.year === y &&
+            c.month === m &&
+            !isMetaDescription(c.description)
+        );
+        const applyBase = unitCharges.length
+          ? Math.max(...unitCharges.map((c) => new Date(c.created_at).getTime()))
+          : null;
+
+        let paid = 0;
+        let discount = 0;
+        if (applyBase != null) {
+          for (const p of payments as any[]) {
+            if (p.unit_id !== u.id) continue;
+            if (p.fund_type !== "charge") continue;
+            if (isDiscountDescription(p.description)) continue;
+            if (p.month !== m || p.year !== y) continue;
+            if (!p.payment_date) continue;
+            const pMs = new Date(p.payment_date).getTime();
+            if (pMs < applyBase) continue;
+            const daysElapsed = Math.floor((pMs - applyBase) / 86400000);
+            if (daysElapsed > windowDays) continue;
+            const factor = Math.max(0, windowDays - daysElapsed) / windowDays;
+            const amt = Number(p.amount || 0);
+            paid += amt;
+            discount += amt * pct * factor;
+          }
+        }
+        discount = Math.round(discount);
+
         const alreadyApplied = (payments as any[]).some(
           (p) => p.unit_id === u.id && p.month === m && p.year === y && isDiscountDescription(p.description)
         );
         return { unit: u, paid, discount, alreadyApplied };
       })
       .filter((c) => c.discount > 0);
-  }, [units, payments, policy, month, year]);
+  }, [units, payments, existingCharges, policy, month, year]);
 
   const newOnes = candidates.filter((c) => !c.alreadyApplied);
   const totalDiscount = newOnes.reduce((s, c) => s + c.discount, 0);
