@@ -241,7 +241,15 @@ const ResidentAuth = () => {
   };
 
   const handleCreateBuilding = () => {
-    navigate("/dashboard", { replace: true });
+    // Clear any previously selected building so the user lands on the
+    // "create new building" screen instead of an existing one.
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("resident_matches_all");
+      localStorage.removeItem("currentBuildingId");
+    } catch { /* ignore */ }
+    // Full reload to /dashboard with new=1 flag so Index renders the create form
+    window.location.href = "/dashboard?new=1";
   };
 
   const handleConfirmSelection = async () => {
@@ -475,23 +483,21 @@ const ResidentAuth = () => {
                 </div>
               )}
 
-              {!isNewUser && (
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">➕ ساختمان جدید</p>
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200"
-                    onClick={handleCreateBuilding}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Plus className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 text-right">
-                      <p className="text-sm font-bold">ایجاد ساختمان</p>
-                      <p className="text-xs text-muted-foreground">ساختمان جدید بسازید</p>
-                    </div>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">➕ ساختمان جدید</p>
+                <div
+                  className="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 border-dashed border-border hover:border-primary/50 transition-all duration-200"
+                  onClick={handleCreateBuilding}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <Plus className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <p className="text-sm font-bold">ایجاد ساختمان</p>
+                    <p className="text-xs text-muted-foreground">ساختمان جدید بسازید</p>
                   </div>
                 </div>
-              )}
+              </div>
 
               <Button
                 type="button"

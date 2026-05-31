@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
-function CreateBuildingScreen() {
+function CreateBuildingScreen({ onCreated }: { onCreated?: () => void }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [totalUnits, setTotalUnits] = useState("");
@@ -35,11 +35,14 @@ function CreateBuildingScreen() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    createBuilding.mutate({
-      name: name.trim(),
-      address: address.trim() || undefined,
-      total_units: totalUnits ? parseInt(totalUnits) : undefined,
-    });
+    createBuilding.mutate(
+      {
+        name: name.trim(),
+        address: address.trim() || undefined,
+        total_units: totalUnits ? parseInt(totalUnits) : undefined,
+      },
+      { onSuccess: () => onCreated?.() }
+    );
   };
 
   return (
@@ -115,6 +118,9 @@ const Index = () => {
     return hash || "dashboard";
   });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [forceCreate, setForceCreate] = useState(() => {
+    return new URLSearchParams(window.location.search).get("new") === "1";
+  });
   const { buildings, isLoading } = useBuilding();
   useAutoApplyCharges();
 
@@ -150,8 +156,18 @@ const Index = () => {
     );
   }
 
-  if (buildings.length === 0) {
-    return <CreateBuildingScreen />;
+  if (buildings.length === 0 || forceCreate) {
+    return (
+      <CreateBuildingScreen
+        onCreated={() => {
+          // Clear the ?new=1 flag and select the freshly created building
+          const url = new URL(window.location.href);
+          url.searchParams.delete("new");
+          window.history.replaceState({}, "", url.toString());
+          setForceCreate(false);
+        }}
+      />
+    );
   }
 
   const renderContent = () => {
