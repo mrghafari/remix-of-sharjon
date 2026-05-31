@@ -156,8 +156,18 @@ const Index = () => {
     );
   }
 
-  if (buildings.length === 0) {
-    return <CreateBuildingScreen />;
+  if (buildings.length === 0 || forceCreate) {
+    return (
+      <CreateBuildingScreen
+        onCreated={() => {
+          // Clear the ?new=1 flag and select the freshly created building
+          const url = new URL(window.location.href);
+          url.searchParams.delete("new");
+          window.history.replaceState({}, "", url.toString());
+          setForceCreate(false);
+        }}
+      />
+    );
   }
 
   const renderContent = () => {
