@@ -10,6 +10,7 @@ import { usePayments } from "@/hooks/usePayments";
 import { useManagers } from "@/hooks/useManagers";
 import { useBackfillExpenseShares } from "@/hooks/useBackfillExpenseShares";
 import { useAutoLatePenalty } from "@/hooks/useAutoLatePenalty";
+import { useAutoEarlyPay } from "@/hooks/useAutoEarlyPay";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 
 const formatAmount = (amount: number) => {
