@@ -241,7 +241,15 @@ const ResidentAuth = () => {
   };
 
   const handleCreateBuilding = () => {
-    navigate("/dashboard", { replace: true });
+    // Clear any previously selected building so the user lands on the
+    // "create new building" screen instead of an existing one.
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("resident_matches_all");
+      localStorage.removeItem("currentBuildingId");
+    } catch { /* ignore */ }
+    // Full reload to /dashboard with new=1 flag so Index renders the create form
+    window.location.href = "/dashboard?new=1";
   };
 
   const handleConfirmSelection = async () => {
