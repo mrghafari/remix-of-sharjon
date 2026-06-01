@@ -133,33 +133,32 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
 
   const openPay = (chargeIds?: string[]) => {
     if (chargeIds && chargeIds.length > 0) {
-      // Pay only the selected rows: compute amounts split by fund_type
       let charge = 0;
       let extra = 0;
       const idSet = new Set(chargeIds);
-      charges.forEach((c) => {
+      charges.forEach((c: any) => {
         if (!idSet.has(c.id)) return;
-        const amt = Number(c.amount);
+        const amt = remainingOf(c);
+        if (amt <= 0) return;
         if (c.fund_type === "extra_charge") extra += amt;
         else charge += amt;
       });
       setBulkMode({ charge: Math.round(charge), extra: Math.round(extra) });
       setPayChargeIds(chargeIds);
     } else {
-      // پرداخت مانده حساب: هیچ ردیف شارژی نباید حذف شود
       setBulkMode(null);
       setPayChargeIds([]);
     }
     setPayOpen(true);
   };
 
-  // محاسبه تجمیعی موارد انتخاب‌شده با همان الگوریتم تفکیک fund_type
   const selectedTotals = useMemo(() => {
     let charge = 0;
     let extra = 0;
-    charges.forEach((c) => {
+    charges.forEach((c: any) => {
       if (!selectedChargeIds.has(c.id)) return;
-      const amt = Number(c.amount);
+      const amt = remainingOf(c);
+      if (amt <= 0) return;
       if (c.fund_type === "extra_charge") extra += amt;
       else charge += amt;
     });
