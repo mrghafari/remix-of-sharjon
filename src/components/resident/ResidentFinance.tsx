@@ -99,10 +99,11 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
 
   const totalPayments = useMemo(() => payments.reduce((s, p) => s + Number(p.amount), 0), [payments]);
   const totalExpenses = useMemo(() => expenseShares.reduce((s, e) => s + Number(e.allocated_amount), 0), [expenseShares]);
-  const totalCharges = useMemo(() => charges.reduce((s, c) => s + Number(c.amount), 0), [charges]);
+  // مانده هر ردیف شارژ = مبلغ - مبلغ پرداخت‌شده
+  const remainingOf = (c: any) => Math.max(0, Number(c.amount) - Number(c.paid_amount || 0));
+  const totalCharges = useMemo(() => charges.reduce((s, c: any) => s + remainingOf(c), 0), [charges]);
   const balance = totalPayments - totalExpenses;
 
-  // تفکیک بدهی شارژ و فوق‌شارژ بر اساس fund_type
   const chargePaid = useMemo(
     () => payments.filter((p) => p.fund_type === "charge").reduce((s, p) => s + Number(p.amount), 0),
     [payments]
@@ -119,49 +120,45 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     () => expenseShares.filter((e: any) => e.expenses?.fund_type === "extra_charge").reduce((s, e) => s + Number(e.allocated_amount), 0),
     [expenseShares]
   );
-  const chargeOwed = useMemo(() => {
-    const fromCharges = charges.filter((c) => c.fund_type === "charge").reduce((s, c) => s + Number(c.amount), 0);
-    return chargeExpenses + fromCharges;
-  }, [chargeExpenses, charges]);
-  const extraOwed = useMemo(() => {
-    const fromCharges = charges.filter((c) => c.fund_type === "extra_charge").reduce((s, c) => s + Number(c.amount), 0);
-    return extraExpenses + fromCharges;
-  }, [extraExpenses, charges]);
-
-  const chargeDebt = Math.max(0, chargeOwed - chargePaid);
-  const extraDebt = Math.max(0, extraOwed - extraPaid);
+  const chargeDebt = useMemo(
+    () => charges.filter((c: any) => c.fund_type === "charge").reduce((s, c: any) => s + remainingOf(c), 0),
+    [charges]
+  );
+  const extraDebt = useMemo(
+    () => charges.filter((c: any) => c.fund_type === "extra_charge").reduce((s, c: any) => s + remainingOf(c), 0),
+    [charges]
+  );
   const chargeBalance = chargePaid - chargeExpenses;
   const extraBalance = extraPaid - extraExpenses;
 
   const openPay = (chargeIds?: string[]) => {
     if (chargeIds && chargeIds.length > 0) {
-      // Pay only the selected rows: compute amounts split by fund_type
       let charge = 0;
       let extra = 0;
       const idSet = new Set(chargeIds);
-      charges.forEach((c) => {
+      charges.forEach((c: any) => {
         if (!idSet.has(c.id)) return;
-        const amt = Number(c.amount);
+        const amt = remainingOf(c);
+        if (amt <= 0) return;
         if (c.fund_type === "extra_charge") extra += amt;
         else charge += amt;
       });
       setBulkMode({ charge: Math.round(charge), extra: Math.round(extra) });
       setPayChargeIds(chargeIds);
     } else {
-      // پرداخت مانده حساب: هیچ ردیف شارژی نباید حذف شود
       setBulkMode(null);
       setPayChargeIds([]);
     }
     setPayOpen(true);
   };
 
-  // محاسبه تجمیعی موارد انتخاب‌شده با همان الگوریتم تفکیک fund_type
   const selectedTotals = useMemo(() => {
     let charge = 0;
     let extra = 0;
-    charges.forEach((c) => {
+    charges.forEach((c: any) => {
       if (!selectedChargeIds.has(c.id)) return;
-      const amt = Number(c.amount);
+      const amt = remainingOf(c);
+      if (amt <= 0) return;
       if (c.fund_type === "extra_charge") extra += amt;
       else charge += amt;
     });
@@ -551,19 +548,38 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
                   <TableHead className="text-right">مبلغ</TableHead>
+                  <TableHead className="text-right">پرداخت‌شده</TableHead>
+                  <TableHead className="text-right">مانده</TableHead>
+                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">عملیات</TableHead>
                   <TableHead className="text-right w-10">
                     <Checkbox
-                      checked={selectedChargeIds.size === charges.length && charges.length > 0}
-                      onCheckedChange={toggleSelectAll}
+                      checked={
+                        charges.filter((c: any) => remainingOf(c) > 0).length > 0 &&
+                        selectedChargeIds.size === charges.filter((c: any) => remainingOf(c) > 0).length
+                      }
+                      onCheckedChange={() => {
+                        const payable = charges.filter((c: any) => remainingOf(c) > 0).map((c) => c.id);
+                        if (selectedChargeIds.size === payable.length) setSelectedChargeIds(new Set());
+                        else setSelectedChargeIds(new Set(payable));
+                      }}
                       aria-label="انتخاب همه"
                     />
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {charges.map((c) => (
-                  <TableRow key={c.id} data-state={selectedChargeIds.has(c.id) ? "selected" : undefined}>
+                {charges.map((c: any) => {
+                  const paid = Number(c.paid_amount || 0);
+                  const remaining = remainingOf(c);
+                  const isFullyPaid = remaining <= 0 && (paid > 0 || c.paid_at);
+                  const isPartiallyPaid = paid > 0 && remaining > 0;
+                  return (
+                  <TableRow
+                    key={c.id}
+                    data-state={selectedChargeIds.has(c.id) ? "selected" : undefined}
+                    className={isFullyPaid ? "opacity-60" : undefined}
+                  >
                     <TableCell className="text-xs">{c.year}/{c.month}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
@@ -572,11 +588,23 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     </TableCell>
                     <TableCell className="text-xs">{c.description || "-"}</TableCell>
                     <TableCell className="font-semibold text-orange-600">{formatNumber(Number(c.amount))} ریال</TableCell>
+                    <TableCell className="text-emerald-600 text-xs">{paid > 0 ? `${formatNumber(paid)} ریال` : "-"}</TableCell>
+                    <TableCell className="font-semibold text-xs">{remaining > 0 ? `${formatNumber(remaining)} ریال` : "0"}</TableCell>
+                    <TableCell>
+                      {isFullyPaid ? (
+                        <Badge className="text-xs bg-emerald-600 hover:bg-emerald-600">پرداخت شده</Badge>
+                      ) : isPartiallyPaid ? (
+                        <Badge variant="secondary" className="text-xs">پرداخت جزئی</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs">پرداخت نشده</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => openPay([c.id])}
+                        disabled={remaining <= 0}
                       >
                         <CreditCard className="w-3 h-3 ml-1" />
                         پرداخت
@@ -587,10 +615,12 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                         checked={selectedChargeIds.has(c.id)}
                         onCheckedChange={() => toggleChargeSelect(c.id)}
                         aria-label="انتخاب برای پرداخت تجمیعی"
+                        disabled={remaining <= 0}
                       />
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
           )}
