@@ -1648,6 +1648,8 @@ export type Database = {
           id: string
           month: number
           owner_name: string | null
+          paid_amount: number
+          paid_at: string | null
           resident_name: string | null
           unit_id: string
           year: number
@@ -1661,6 +1663,8 @@ export type Database = {
           id?: string
           month: number
           owner_name?: string | null
+          paid_amount?: number
+          paid_at?: string | null
           resident_name?: string | null
           unit_id: string
           year: number
@@ -1674,6 +1678,8 @@ export type Database = {
           id?: string
           month?: number
           owner_name?: string | null
+          paid_amount?: number
+          paid_at?: string | null
           resident_name?: string | null
           unit_id?: string
           year?: number
