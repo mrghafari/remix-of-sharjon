@@ -41,16 +41,8 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          rsync -avz -e "ssh -p 2222 -o StrictHostKeyChecking=no" dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/my-block-boss/
+          rsync -avz -e "ssh -p 22 -o StrictHostKeyChecking=no" dist/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/my-block-boss/
       
       - name: Restart Nginx
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 2222
-          script: |
-            chown -R www-data:www-data /var/www/my-block-boss/
-            systemctl restart nginx
-            echo "✅ Deployment completed successfully!"
+        run: |
+          ssh -p 22 -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chown -R www-data:www-data /var/www/my-block-boss/ && systemctl restart nginx && echo '✅ Deployment completed!'"
