@@ -97,6 +97,9 @@ export function ChargeHistory() {
                   <TableHead className="text-right">مالک/ساکن</TableHead>
                   <TableHead className="text-right">نوع</TableHead>
                   <TableHead className="text-right">مبلغ</TableHead>
+                  <TableHead className="text-right">پرداختی</TableHead>
+                  <TableHead className="text-right">باقیمانده</TableHead>
+                  <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
@@ -104,8 +107,13 @@ export function ChargeHistory() {
               <TableBody>
                 {sorted.map((c) => {
                   const unit = unitMap.get(c.unit_id);
+                  const amount = Number(c.amount);
+                  const paid = Number(c.paid_amount || 0);
+                  const remaining = Math.max(0, amount - paid);
+                  const isPaid = remaining === 0 && paid > 0;
+                  const isPartial = paid > 0 && remaining > 0;
                   return (
-                    <TableRow key={c.id}>
+                    <TableRow key={c.id} className={isPaid ? "opacity-60" : ""}>
                       <TableCell className="text-xs">
                         {JALALI_MONTHS[(c.month || 1) - 1]} {c.year}
                       </TableCell>
@@ -121,7 +129,22 @@ export function ChargeHistory() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs font-semibold">
-                        {formatNumber(Number(c.amount))} ریال
+                        {formatNumber(amount)} ریال
+                      </TableCell>
+                      <TableCell className="text-xs text-green-600">
+                        {paid > 0 ? `${formatNumber(paid)} ریال` : "-"}
+                      </TableCell>
+                      <TableCell className="text-xs text-destructive font-medium">
+                        {remaining > 0 ? `${formatNumber(remaining)} ریال` : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {isPaid ? (
+                          <Badge className="text-xs bg-green-600 hover:bg-green-700">پرداخت شده</Badge>
+                        ) : isPartial ? (
+                          <Badge variant="secondary" className="text-xs">پرداخت جزئی</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-xs">پرداخت نشده</Badge>
+                        )}
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
                         {c.description || "-"}
