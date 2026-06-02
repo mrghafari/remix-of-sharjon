@@ -17,9 +17,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+      
+      - name: Clean install
+        run: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
       
       - name: Install dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
       
       - name: Build project
         run: npm run build
@@ -27,15 +33,22 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       
+      - name: List dist files
+        run: ls -la dist/
+      
       - name: Copy files to server
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
           source: "dist/*"
           target: "/var/www/my-block-boss/"
           strip_components: 1
+          debug: true
+          timeout: "30s"
+          command_timeout: "60s"
       
       - name: Restart Nginx
         uses: appleboy/ssh-action@v1.0.0
@@ -43,5 +56,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
           script: |
             systemctl restart nginx
+            echo "✅ Deployment completed successfully!"
+          debug: true
