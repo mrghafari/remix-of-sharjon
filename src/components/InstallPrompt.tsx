@@ -9,14 +9,16 @@ type BIPEvent = Event & {
 
 const STORAGE_KEY_DISMISSED = "pwa_install_dismissed";
 const STORAGE_KEY_INSTALLED = "pwa_installed";
-const DELAY_MS = 10000; // 10 seconds
+const VISIBLE_MS = 10000; // visible for 10 seconds then auto-hide
 
 export function InstallPrompt() {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSHint, setShowIOSHint] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [fadingOut, setFadingOut] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isAlreadyInstalled = () => {
     const standalone =
@@ -25,46 +27,50 @@ export function InstallPrompt() {
     return standalone || localStorage.getItem(STORAGE_KEY_INSTALLED) === "1";
   };
 
+  const scheduleAutoHide = (onHide: () => void) => {
+    // Start fade-out shortly before fully hiding
+    fadeTimerRef.current = setTimeout(() => setFadingOut(true), VISIBLE_MS - 400);
+    hideTimerRef.current = setTimeout(() => {
+      onHide();
+      setFadingOut(false);
+    }, VISIBLE_MS);
+  };
+
   useEffect(() => {
     if (isAlreadyInstalled()) return;
     if (localStorage.getItem(STORAGE_KEY_DISMISSED) === "1") return;
 
-    // Detect iOS
     const ua = window.navigator.userAgent.toLowerCase();
     const ios = /iphone|ipad|ipod/.test(ua);
     setIsIOS(ios);
 
-    // Listen for beforeinstallprompt (Android/Chrome/Desktop)
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BIPEvent);
-      // Show after 10 seconds
-      timerRef.current = setTimeout(() => {
-        if (!isAlreadyInstalled()) setVisible(true);
-      }, DELAY_MS);
+      setVisible(true);
+      scheduleAutoHide(() => setVisible(false));
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Listen for successful install
     const installedHandler = () => {
       localStorage.setItem(STORAGE_KEY_INSTALLED, "1");
       setVisible(false);
       setShowIOSHint(false);
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
     window.addEventListener("appinstalled", installedHandler);
 
-    // For iOS: show hint after 10 seconds too
     if (ios) {
-      timerRef.current = setTimeout(() => {
-        if (!isAlreadyInstalled()) setShowIOSHint(true);
-      }, DELAY_MS);
+      setShowIOSHint(true);
+      scheduleAutoHide(() => setShowIOSHint(false));
     }
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
   }, []);
 
@@ -83,12 +89,17 @@ export function InstallPrompt() {
     setVisible(false);
     setShowIOSHint(false);
     localStorage.setItem(STORAGE_KEY_DISMISSED, "1");
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
   };
+
+  const wrapperCls = `fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 transition-opacity duration-500 ${
+    fadingOut ? "opacity-0" : "opacity-100 animate-fade-in"
+  }`;
 
   if (visible && deferred) {
     return (
-      <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-fade-in">
+      <div className={wrapperCls}>
         <div className="bg-card border border-border shadow-lg rounded-xl p-4 flex items-center gap-3" dir="rtl">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Download className="w-5 h-5 text-primary" />
@@ -108,7 +119,7 @@ export function InstallPrompt() {
 
   if (isIOS && showIOSHint) {
     return (
-      <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50 animate-fade-in">
+      <div className={wrapperCls}>
         <div className="bg-card border border-border shadow-lg rounded-xl p-4 flex items-start gap-3" dir="rtl">
           <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Download className="w-5 h-5 text-primary" />
