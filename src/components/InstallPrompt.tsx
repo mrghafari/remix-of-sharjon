@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -7,58 +7,83 @@ type BIPEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+const STORAGE_KEY_DISMISSED = "pwa_install_dismissed";
+const STORAGE_KEY_INSTALLED = "pwa_installed";
+const DELAY_MS = 10000; // 10 seconds
+
 export function InstallPrompt() {
   const [deferred, setDeferred] = useState<BIPEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [showIOSHint, setShowIOSHint] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    // Detect iOS (iOS Safari doesn't support beforeinstallprompt)
-    const ua = window.navigator.userAgent.toLowerCase();
-    const ios = /iphone|ipad|ipod/.test(ua);
+  const isAlreadyInstalled = () => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true;
-    const dismissed = localStorage.getItem("pwa_install_dismissed") === "1";
+    return standalone || localStorage.getItem(STORAGE_KEY_INSTALLED) === "1";
+  };
 
+  useEffect(() => {
+    if (isAlreadyInstalled()) return;
+    if (localStorage.getItem(STORAGE_KEY_DISMISSED) === "1") return;
+
+    // Detect iOS
+    const ua = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipad|ipod/.test(ua);
     setIsIOS(ios);
 
-    if (standalone || dismissed) return;
-
+    // Listen for beforeinstallprompt (Android/Chrome/Desktop)
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferred(e as BIPEvent);
-      setVisible(true);
+      // Show after 10 seconds
+      timerRef.current = setTimeout(() => {
+        if (!isAlreadyInstalled()) setVisible(true);
+      }, DELAY_MS);
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // For iOS show hint after small delay
+    // Listen for successful install
+    const installedHandler = () => {
+      localStorage.setItem(STORAGE_KEY_INSTALLED, "1");
+      setVisible(false);
+      setShowIOSHint(false);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+    window.addEventListener("appinstalled", installedHandler);
+
+    // For iOS: show hint after 10 seconds too
     if (ios) {
-      const t = setTimeout(() => setShowIOSHint(true), 3000);
-      return () => {
-        window.removeEventListener("beforeinstallprompt", handler);
-        clearTimeout(t);
-      };
+      timerRef.current = setTimeout(() => {
+        if (!isAlreadyInstalled()) setShowIOSHint(true);
+      }, DELAY_MS);
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   const handleInstall = async () => {
     if (!deferred) return;
     await deferred.prompt();
     const choice = await deferred.userChoice;
-    if (choice.outcome === "accepted" || choice.outcome === "dismissed") {
-      setVisible(false);
-      setDeferred(null);
+    if (choice.outcome === "accepted") {
+      localStorage.setItem(STORAGE_KEY_INSTALLED, "1");
     }
+    setVisible(false);
+    setDeferred(null);
   };
 
   const dismiss = () => {
     setVisible(false);
     setShowIOSHint(false);
-    localStorage.setItem("pwa_install_dismissed", "1");
+    localStorage.setItem(STORAGE_KEY_DISMISSED, "1");
+    if (timerRef.current) clearTimeout(timerRef.current);
   };
 
   if (visible && deferred) {
