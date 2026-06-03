@@ -44,9 +44,9 @@ export function EarlyPayApplier() {
   const [year, setYear] = useState(String(Number(format(now, "yyyy", { locale: faIR }))));
   const [submitting, setSubmitting] = useState(false);
 
-  // Per-unit proportional discount: factor depends on how many days after the
-  // charge was applied the payment was made.
-  //   factor = max(0, (early_pay_days - daysElapsed)) / early_pay_days
+  // Per-unit, per-fund proportional discount: factor depends on how many days
+  // after that fund's charge was applied the payment was made.
+  //   factor   = max(0, (early_pay_days - daysElapsed)) / early_pay_days
   //   discount = paid * (early_pay_discount_percent / 100) * factor
   const candidates = useMemo(() => {
     if (!policy?.early_pay_enabled || policy.early_pay_discount_percent <= 0) return [];
@@ -54,15 +54,24 @@ export function EarlyPayApplier() {
     const y = Number(year);
     const windowDays = Math.max(1, policy.early_pay_days || 1);
     const pct = policy.early_pay_discount_percent / 100;
+    const funds: Array<"charge" | "extra_charge"> = ["charge", "extra_charge"];
 
-    return units
-      .map((u: any) => {
-        // applyBase = latest non-meta charge created_at for this unit/period
+    const rows: Array<{
+      unit: any;
+      fundType: "charge" | "extra_charge";
+      paid: number;
+      discount: number;
+      alreadyApplied: boolean;
+    }> = [];
+
+    for (const u of units as any[]) {
+      for (const fundType of funds) {
         const unitCharges = (existingCharges as any[]).filter(
           (c) =>
             c.unit_id === u.id &&
             c.year === y &&
             c.month === m &&
+            c.fund_type === fundType &&
             !isMetaDescription(c.description)
         );
         const applyBase = unitCharges.length
@@ -74,8 +83,7 @@ export function EarlyPayApplier() {
         if (applyBase != null) {
           for (const p of payments as any[]) {
             if (p.unit_id !== u.id) continue;
-            if (p.fund_type !== "charge") continue;
-            if (isDiscountDescription(p.description)) continue;
+            if (p.fund_type !== fundType) continue;
             if (p.month !== m || p.year !== y) continue;
             if (!p.payment_date) continue;
             const pMs = new Date(p.payment_date).getTime();
@@ -89,13 +97,20 @@ export function EarlyPayApplier() {
           }
         }
         discount = Math.round(discount);
+        if (discount <= 0) continue;
 
-        const alreadyApplied = (payments as any[]).some(
-          (p) => p.unit_id === u.id && p.month === m && p.year === y && isDiscountDescription(p.description)
+        const alreadyApplied = (existingCharges as any[]).some(
+          (c) =>
+            c.unit_id === u.id &&
+            c.month === m &&
+            c.year === y &&
+            c.fund_type === fundType &&
+            isDiscountDescription(c.description)
         );
-        return { unit: u, paid, discount, alreadyApplied };
-      })
-      .filter((c) => c.discount > 0);
+        rows.push({ unit: u, fundType, paid, discount, alreadyApplied });
+      }
+    }
+    return rows;
   }, [units, payments, existingCharges, policy, month, year]);
 
   const newOnes = candidates.filter((c) => !c.alreadyApplied);
@@ -105,23 +120,22 @@ export function EarlyPayApplier() {
     if (!currentBuildingId || newOnes.length === 0) return;
     setSubmitting(true);
     try {
-      // Record discounts as credit "payments" (extra income on charge fund)
-      const todayIso = new Date().toISOString().slice(0, 10);
+      // Record discounts as NEGATIVE unit_charges (reduce charge/extra-charge,
+      // not the fund balance).
       const records = newOnes.map((c) => ({
         building_id: currentBuildingId,
         unit_id: c.unit.id,
-        amount: c.discount,
-        fund_type: "charge" as const,
+        amount: -c.discount,
+        fund_type: c.fundType,
         month: Number(month),
         year: Number(year),
-        payment_date: todayIso,
         description: `تخفیف خوش‌حسابی ${persianMonths[Number(month) - 1]} ${year}`,
         owner_name: c.unit.owner_name || null,
         resident_name: c.unit.resident_name || null,
       }));
-      const { error } = await supabase.from("payments").insert(records);
+      const { error } = await supabase.from("unit_charges").insert(records);
       if (error) throw error;
-      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["unit-charges"] });
       toast({
         title: "تخفیف‌ها اعمال شد",
         description: `${records.length} رکورد تخفیف به مبلغ کل ${fmt(totalDiscount)} ریال ثبت شد.`,
