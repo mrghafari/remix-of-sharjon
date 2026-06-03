@@ -235,6 +235,7 @@ export function EarlyPayApplier() {
                   <tr>
                     <th className="text-right px-3 py-2">واحد</th>
                     <th className="text-right px-3 py-2">مالک/ساکن</th>
+                    <th className="text-right px-3 py-2">صندوق</th>
                     <th className="text-right px-3 py-2">پرداخت واجد شرایط</th>
                     <th className="text-right px-3 py-2">تخفیف</th>
                     <th className="text-right px-3 py-2">وضعیت</th>
@@ -242,9 +243,10 @@ export function EarlyPayApplier() {
                 </thead>
                 <tbody>
                   {candidates.map((c) => (
-                    <tr key={c.unit.id} className="border-t">
+                    <tr key={`${c.unit.id}-${c.fundType}`} className="border-t">
                       <td className="px-3 py-2">{c.unit.unit_number}</td>
                       <td className="px-3 py-2">{c.unit.resident_name || c.unit.owner_name}</td>
+                      <td className="px-3 py-2 text-xs">{c.fundType === "charge" ? "شارژ" : "فوق شارژ"}</td>
                       <td className="px-3 py-2">{fmt(c.paid)}</td>
                       <td className="px-3 py-2 text-emerald-700 font-medium">{fmt(c.discount)}</td>
                       <td className="px-3 py-2 text-xs">
