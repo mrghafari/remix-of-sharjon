@@ -568,11 +568,11 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                   <TableHead className="text-right w-10">
                     <Checkbox
                       checked={
-                        charges.filter((c: any) => remainingOf(c) > 0).length > 0 &&
-                        selectedChargeIds.size === charges.filter((c: any) => remainingOf(c) > 0).length
+                        charges.filter((c: any) => isDiscount(c) || remainingOf(c) > 0).length > 0 &&
+                        selectedChargeIds.size === charges.filter((c: any) => isDiscount(c) || remainingOf(c) > 0).length
                       }
                       onCheckedChange={() => {
-                        const payable = charges.filter((c: any) => remainingOf(c) > 0).map((c) => c.id);
+                        const payable = charges.filter((c: any) => isDiscount(c) || remainingOf(c) > 0).map((c) => c.id);
                         if (selectedChargeIds.size === payable.length) setSelectedChargeIds(new Set());
                         else setSelectedChargeIds(new Set(payable));
                       }}
