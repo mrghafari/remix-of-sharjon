@@ -442,6 +442,7 @@ export type Database = {
           is_active: boolean
           options: Json
           question: string
+          vote_salt: string
         }
         Insert: {
           building_id: string
@@ -452,6 +453,7 @@ export type Database = {
           is_active?: boolean
           options?: Json
           question: string
+          vote_salt?: string
         }
         Update: {
           building_id?: string
@@ -462,6 +464,7 @@ export type Database = {
           is_active?: boolean
           options?: Json
           question?: string
+          vote_salt?: string
         }
         Relationships: [
           {
