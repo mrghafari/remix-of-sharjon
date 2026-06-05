@@ -13,6 +13,7 @@ const formatAmount = (amount: number) => {
 
 export function FundBalance() {
   const navigate = useNavigate();
+  const [reconOpen, setReconOpen] = useState(false);
   const { data: payments = [] } = usePayments();
   const { data: expenses = [] } = useExpenses();
 
