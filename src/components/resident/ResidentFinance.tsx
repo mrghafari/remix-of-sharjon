@@ -157,23 +157,36 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     setPayOpen(true);
   };
 
-  const selectedTotals = useMemo(() => {
-    let charge = 0;
-    let extra = 0;
-    let hasNonDiscount = false;
+  const selectedBreakdown = useMemo(() => {
+    const map = {
+      charge: { net: 0, hasNonDiscount: false, hasDiscount: false },
+      extra_charge: { net: 0, hasNonDiscount: false, hasDiscount: false },
+    };
     charges.forEach((c: any) => {
       if (!selectedChargeIds.has(c.id)) return;
       const amt = signedRemain(c);
       if (amt === 0) return;
-      if (!isDiscount(c)) hasNonDiscount = true;
-      if (c.fund_type === "extra_charge") extra += amt;
-      else charge += amt;
+      const ft: "charge" | "extra_charge" = c.fund_type === "extra_charge" ? "extra_charge" : "charge";
+      map[ft].net += amt;
+      if (isDiscount(c)) map[ft].hasDiscount = true;
+      else map[ft].hasNonDiscount = true;
     });
-    return { charge: Math.round(charge), extra: Math.round(extra), hasNonDiscount };
+    return map;
   }, [charges, selectedChargeIds]);
 
+  const selectedTotals = {
+    charge: Math.round(selectedBreakdown.charge.net),
+    extra: Math.round(selectedBreakdown.extra_charge.net),
+  };
   const bulkNet = selectedTotals.charge + selectedTotals.extra;
-  const canBulkPay = selectedTotals.hasNonDiscount && bulkNet > 0;
+  // اگر تخفیف خوش‌حسابی انتخاب شده، باید با شارژ/فوق‌شارژ از همان جنس همراه شود و خالص آن جنس نباید منفی شود
+  const canBulkPay = (() => {
+    const fc = selectedBreakdown.charge;
+    const fe = selectedBreakdown.extra_charge;
+    if (fc.hasDiscount && (!fc.hasNonDiscount || fc.net < 0)) return false;
+    if (fe.hasDiscount && (!fe.hasNonDiscount || fe.net < 0)) return false;
+    return (fc.hasNonDiscount || fe.hasNonDiscount) && bulkNet > 0;
+  })();
 
   const openBulkPay = () => {
     if (!canBulkPay) return;
