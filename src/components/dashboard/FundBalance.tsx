@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, TrendingDown, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Wallet, TrendingUp, TrendingDown, ChevronLeft, FileCheck2 } from "lucide-react";
 import { usePayments, FundType } from "@/hooks/usePayments";
 import { useExpenses } from "@/hooks/useExpenses";
+import { BankReconciliationDialog } from "./BankReconciliationDialog";
 
 const formatAmount = (amount: number) => {
   return new Intl.NumberFormat("fa-IR").format(Math.round(amount));
