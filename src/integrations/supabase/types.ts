@@ -790,6 +790,7 @@ export type Database = {
           id: string
           is_paid: boolean | null
           project_id: string | null
+          reconciled_at: string | null
           title: string
           unit_id: string | null
           updated_at: string
@@ -807,6 +808,7 @@ export type Database = {
           id?: string
           is_paid?: boolean | null
           project_id?: string | null
+          reconciled_at?: string | null
           title: string
           unit_id?: string | null
           updated_at?: string
@@ -824,6 +826,7 @@ export type Database = {
           id?: string
           is_paid?: boolean | null
           project_id?: string | null
+          reconciled_at?: string | null
           title?: string
           unit_id?: string | null
           updated_at?: string
@@ -1000,6 +1003,7 @@ export type Database = {
           month: number
           owner_name: string | null
           payment_date: string
+          reconciled_at: string | null
           resident_name: string | null
           unit_id: string | null
           year: number
@@ -1015,6 +1019,7 @@ export type Database = {
           month: number
           owner_name?: string | null
           payment_date?: string
+          reconciled_at?: string | null
           resident_name?: string | null
           unit_id?: string | null
           year: number
@@ -1030,6 +1035,7 @@ export type Database = {
           month?: number
           owner_name?: string | null
           payment_date?: string
+          reconciled_at?: string | null
           resident_name?: string | null
           unit_id?: string | null
           year?: number
