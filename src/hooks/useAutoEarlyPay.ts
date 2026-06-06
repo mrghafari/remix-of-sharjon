@@ -79,20 +79,11 @@ export function useAutoEarlyPay() {
 
         const records: any[] = [];
 
+        const idsToDelete: string[] = [];
+
         for (const u of units as any[]) {
           for (const fundType of funds) {
-            // Already a discount row for this unit/period/fund?
-            const alreadyApplied = (existingCharges as any[]).some(
-              (c) =>
-                c.unit_id === u.id &&
-                c.month === m &&
-                c.year === y &&
-                c.fund_type === fundType &&
-                isDiscountDescription(c.description)
-            );
-            if (alreadyApplied) continue;
-
-            // applyBase: latest non-meta same-fund charge created_at
+            // applyBase: latest non-meta same-fund charge created_at (روز اعمال توسط مدیر)
             const unitCharges = (existingCharges as any[]).filter(
               (c) =>
                 c.unit_id === u.id &&
@@ -105,9 +96,6 @@ export function useAutoEarlyPay() {
             const applyBase = Math.max(
               ...unitCharges.map((c) => new Date(c.created_at).getTime())
             );
-
-            // Wait until window has fully closed
-            if (nowMs < applyBase + windowMs) continue;
 
             let discount = 0;
             for (const p of payments as any[]) {
@@ -126,12 +114,39 @@ export function useAutoEarlyPay() {
             }
 
             discount = Math.round(discount);
+
+            // Existing discount row for this (unit, period, fund)
+            const existingDiscount = (existingCharges as any[]).find(
+              (c) =>
+                c.unit_id === u.id &&
+                c.month === m &&
+                c.year === y &&
+                c.fund_type === fundType &&
+                isDiscountDescription(c.description)
+            );
+            const existingAmt = existingDiscount
+              ? Math.abs(Number(existingDiscount.amount || 0))
+              : 0;
+
+            // If unchanged, skip
+            if (discount === existingAmt) continue;
+
+            // Replace: delete old then insert new (only if discount > 0)
+            if (existingDiscount) {
+              // Only replace if not yet consumed by a payment
+              if (Number(existingDiscount.paid_amount || 0) === 0) {
+                idsToDelete.push(existingDiscount.id);
+              } else {
+                continue; // already paid, do not touch
+              }
+            }
+
             if (discount <= 0) continue;
 
             records.push({
               building_id: currentBuildingId,
               unit_id: u.id,
-              amount: -discount, // negative -> reduces unit's fund debt
+              amount: -discount,
               fund_type: fundType,
               month: m,
               year: y,
@@ -142,15 +157,21 @@ export function useAutoEarlyPay() {
           }
         }
 
+        if (idsToDelete.length > 0) {
+          await supabase.from("unit_charges").delete().in("id", idsToDelete);
+        }
+
         if (records.length > 0) {
           const { error } = await supabase.from("unit_charges").insert(records);
           if (!error) {
             qc.invalidateQueries({ queryKey: ["unit-charges"] });
             toast({
               title: "تخفیف خوش‌حسابی خودکار اعمال شد",
-              description: `${records.length} رکورد تخفیف برای ${persianMonths[m - 1]} ${y} ثبت شد.`,
+              description: `${records.length} رکورد تخفیف برای ${persianMonths[m - 1]} ${y} ثبت/به‌روز شد.`,
             });
           }
+        } else if (idsToDelete.length > 0) {
+          qc.invalidateQueries({ queryKey: ["unit-charges"] });
         }
       }
     })();
