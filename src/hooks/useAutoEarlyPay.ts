@@ -87,7 +87,7 @@ export function useAutoEarlyPay() {
 
         for (const u of units as any[]) {
           for (const fundType of funds) {
-            // applyBase: latest non-meta same-fund charge created_at (روز اعمال توسط مدیر)
+            // Non-meta charges for this unit/period/fund (روزِ اعمال هر ردیف = created_at آن)
             const unitCharges = (existingCharges as any[]).filter(
               (c) =>
                 c.unit_id === u.id &&
@@ -97,25 +97,27 @@ export function useAutoEarlyPay() {
                 !isMetaDescription(c.description)
             );
             if (unitCharges.length === 0) continue;
-            const applyBase = Math.max(
-              ...unitCharges.map((c) => new Date(c.created_at).getTime())
-            );
 
+            // Calculate discount per-charge based on its own created_at و paid_at
             let discount = 0;
-            for (const p of payments as any[]) {
-              if (p.unit_id !== u.id) continue;
-              if (p.fund_type !== fundType) continue;
-              if (p.month !== m || p.year !== y) continue;
-              if (!p.payment_date) continue;
-              const pMs = new Date(p.payment_date).getTime();
-              if (pMs < applyBase) continue;
-              const daysElapsed = Math.floor((pMs - applyBase) / 86400000);
+            for (const c of unitCharges) {
+              const amt = Number(c.amount || 0);
+              const paid = Number(c.paid_amount || 0);
+              if (paid <= 0) continue;
+              if (!c.paid_at) continue;
+              const baseMs = new Date(c.created_at).getTime();
+              const paidMs = new Date(c.paid_at).getTime();
+              if (paidMs < baseMs) continue;
+              const daysElapsed = Math.floor((paidMs - baseMs) / 86400000);
               if (daysElapsed > policy.early_pay_days) continue;
               const factor =
                 Math.max(0, policy.early_pay_days - daysElapsed) /
                 policy.early_pay_days;
-              discount += Number(p.amount || 0) * pct * factor;
+              // Discount applies to amount actually paid (capped at charge amount)
+              const eligible = Math.min(paid, Math.max(amt, 0));
+              discount += eligible * pct * factor;
             }
+
 
             discount = Math.round(discount);
 
