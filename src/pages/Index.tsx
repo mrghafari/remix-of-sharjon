@@ -124,6 +124,7 @@ const Index = () => {
   });
   const { buildings, isLoading } = useBuilding();
   useAutoApplyCharges();
+  useAutoEarlyPay();
 
   const setActiveTab = (tab: string) => {
     if (tab !== activeTab) {
