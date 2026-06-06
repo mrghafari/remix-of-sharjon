@@ -150,6 +150,9 @@ export function ChargeHistory() {
                       <TableCell className="text-xs text-muted-foreground">
                         {c.description || "-"}
                       </TableCell>
+                      <TableCell className="text-xs">
+                        {c.created_at ? format(new Date(c.created_at), "yyyy/MM/dd", { locale: faIR }) : "-"}
+                      </TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
