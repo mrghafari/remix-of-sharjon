@@ -101,6 +101,7 @@ export function ChargeHistory() {
                   <TableHead className="text-right">باقیمانده</TableHead>
                   <TableHead className="text-right">وضعیت</TableHead>
                   <TableHead className="text-right">توضیحات</TableHead>
+                  <TableHead className="text-right">تاریخ اعمال</TableHead>
                   <TableHead className="w-10"></TableHead>
                 </TableRow>
               </TableHeader>
