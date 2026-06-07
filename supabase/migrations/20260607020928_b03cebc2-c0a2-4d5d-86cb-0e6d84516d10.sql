@@ -1,0 +1,2 @@
+ALTER TABLE public.unit_module_access DROP CONSTRAINT unit_module_access_module_key_check;
+ALTER TABLE public.unit_module_access ADD CONSTRAINT unit_module_access_module_key_check CHECK (module_key = ANY (ARRAY['all_expenses'::text, 'fund_balances'::text, 'unit_balance'::text]));
