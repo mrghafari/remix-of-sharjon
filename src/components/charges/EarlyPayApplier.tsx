@@ -25,6 +25,12 @@ const persianMonths = [
 
 const fmt = (n: number) => Math.round(Math.abs(n)).toLocaleString("fa-IR");
 
+const startOfLocalDay = (ms: number) => {
+  const d = new Date(ms);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+};
+
 const isDiscountDescription = (d?: string | null) =>
   !!d && d.startsWith("تخفیف خوش‌حسابی");
 
