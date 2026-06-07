@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
-import { endOfJalaliMonth, endOfJalaliMonthIso } from "@/lib/jalaliMonthRange";
+import { endOfJalaliMonth } from "@/lib/jalaliMonthRange";
 import {
   AlertDialog,
   AlertDialogAction,

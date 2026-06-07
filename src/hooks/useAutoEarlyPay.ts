@@ -64,8 +64,6 @@ export function useAutoEarlyPay() {
     const now = new Date();
     const curM = Number(format(now, "M", { locale: faIR }));
     const curY = Number(format(now, "yyyy", { locale: faIR }));
-    const nowMs = now.getTime();
-    const windowMs = policy.early_pay_days * 86400000;
     const pct = policy.early_pay_discount_percent / 100;
     const funds: FundType[] = ["charge", "extra_charge"];
 
