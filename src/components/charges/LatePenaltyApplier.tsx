@@ -359,20 +359,20 @@ export function LatePenaltyApplier() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  disabled={submitting || withinGrace}
+                  disabled={submitting || readyNewOnes.length === 0}
                   variant="destructive"
                   size="sm"
                   className="gap-2"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
-                  اعمال جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد
+                  اعمال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent dir="rtl">
                 <AlertDialogHeader>
                   <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
                   <AlertDialogDescription>
-                    مجموع {formatNumber(totalPenalty)} ریال جریمه برای {newOnes.length.toLocaleString("fa-IR")} واحد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
+                    مجموع {formatNumber(totalPenalty)} ریال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
