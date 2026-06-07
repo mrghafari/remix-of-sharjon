@@ -19,6 +19,7 @@ import {
   exportExpensesPdf,
   inDateRange,
 } from "@/lib/residentExport";
+import { useMyUnitModules } from "@/hooks/useUnitModuleAccess";
 
 interface Props {
   buildingId: string;
