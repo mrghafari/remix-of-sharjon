@@ -368,6 +368,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+        )}
       </div>
 
       <PaymentDialog
