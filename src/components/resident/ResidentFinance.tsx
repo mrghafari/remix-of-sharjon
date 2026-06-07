@@ -400,6 +400,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
           setPayOpen(o);
           if (!o) {
             setBulkMode(null);
+            setBulkPeriods({});
             setSelectedChargeIds(new Set());
             setPayChargeIds([]);
           }
@@ -414,6 +415,8 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         residentName={unitInfo?.resident_name}
         chargeFundIdsToClear={charges.filter((c) => payChargeIds.includes(c.id) && c.fund_type === "charge").map((c) => c.id)}
         extraFundIdsToClear={charges.filter((c) => payChargeIds.includes(c.id) && c.fund_type === "extra_charge").map((c) => c.id)}
+        chargePeriod={bulkPeriods.charge}
+        extraPeriod={bulkPeriods.extra}
       />
 
       {/* Tabbed Tables */}
