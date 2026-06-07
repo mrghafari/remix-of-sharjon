@@ -22,6 +22,7 @@ import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
 import { useAutoApplyCharges } from "@/hooks/useAutoApplyCharges";
 import { useAutoEarlyPay } from "@/hooks/useAutoEarlyPay";
+import { useAutoLatePenalty } from "@/hooks/useAutoLatePenalty";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,6 +126,7 @@ const Index = () => {
   const { buildings, isLoading } = useBuilding();
   useAutoApplyCharges();
   useAutoEarlyPay();
+  useAutoLatePenalty();
 
   const setActiveTab = (tab: string) => {
     if (tab !== activeTab) {
