@@ -297,7 +297,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
             </div>
           </CardContent>
         </Card>
+        {canSeeBalance && (
         <TooltipProvider delayDuration={150}>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Card
