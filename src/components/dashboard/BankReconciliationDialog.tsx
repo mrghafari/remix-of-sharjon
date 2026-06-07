@@ -108,12 +108,26 @@ export function BankReconciliationDialog({ open, onOpenChange }: Props) {
   }, [payments, expenses]);
 
   const filtered = useMemo(() => {
-    const q = query.trim();
+    const toLatin = (s: string) =>
+      s.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+       .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+    const q = toLatin(query.trim().toLowerCase()).replace(/[,،\s]/g, "");
     return rows.filter((r) => {
       if (filter === "open" && r.reconciled_at) return false;
       if (filter === "reconciled" && !r.reconciled_at) return false;
-      if (q && !`${r.description} ${r.person}`.includes(q)) return false;
-      return true;
+      if (!q) return true;
+      const hay = toLatin(
+        [
+          r.description,
+          r.person,
+          r.date,
+          formatJalaliDate(r.date),
+          String(Math.round(Math.abs(r.amount))),
+          r.fund_type === "charge" ? "شارژ" : "فوق‌شارژ فوق شارژ",
+          r.amount >= 0 ? "دریافت" : "پرداخت",
+        ].join(" ").toLowerCase()
+      ).replace(/[,،]/g, "");
+      return hay.includes(q);
     });
   }, [rows, filter, query]);
 
