@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export type ModulePersonType = "owner" | "resident" | "both";
-export type ModuleKey = "all_expenses" | "fund_balances";
+export type ModuleKey = "all_expenses" | "fund_balances" | "unit_balance";
 
 export const MODULES: { key: ModuleKey; label: string }[] = [
   { key: "all_expenses", label: "همه هزینه‌های ساختمان" },
   { key: "fund_balances", label: "موجودی صندوق‌ها" },
+  { key: "unit_balance", label: "مانده حساب واحد" },
 ];
 
 export interface UnitModuleAccessRow {
