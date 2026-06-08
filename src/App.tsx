@@ -146,7 +146,7 @@ const App = () => (
             path="/admin"
             element={
               <AdminRoute>
-                <Auth />
+                <Admin />
               </AdminRoute>
             }
           />
