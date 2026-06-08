@@ -58,7 +58,7 @@ export default function AdminBuildingView() {
   }
 
   if (!user || !isSuperAdmin) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

@@ -63,6 +63,29 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { data: isSuperAdmin, isPending: rolePending } = useIsSuperAdmin(user?.id);
+
+  if (loading || (user && rolePending)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
+  if (!isSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function ResidentAuthRoute({ children }: { children: React.ReactNode }) {
   const { loading } = useAuth();
 
@@ -88,7 +111,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/auth" element={<AuthRoute><Auth /></AuthRoute>} />
+          <Route path="/auth" element={<Navigate to="/admin" replace />} />
           <Route path="/resident-auth" element={<ResidentAuthRoute><ResidentAuth /></ResidentAuthRoute>} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route
@@ -122,17 +145,17 @@ const App = () => (
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <Admin />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
             path="/admin/customer/:userId"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminBuildingView />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route path="*" element={<NotFound />} />
