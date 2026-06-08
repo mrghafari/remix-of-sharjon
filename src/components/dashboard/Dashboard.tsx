@@ -51,11 +51,23 @@ export function Dashboard({ onTabChange }: DashboardProps) {
         : mainManager.unit?.owner_name ?? "—"
     : null;
 
-  const filteredPayments = managerStartDate
-    ? payments.filter((p) => p.payment_date >= managerStartDate)
+  // Determine the precise cutoff timestamp for "since manager started".
+  // If the manager's start_date matches the day they were added, use the exact created_at
+  // moment (so records earlier the same day are excluded). Otherwise use start_date midnight.
+  const managerCutoff: Date | null = mainManager
+    ? (() => {
+        const createdAt = new Date(mainManager.created_at);
+        const createdDay = createdAt.toISOString().slice(0, 10);
+        if (mainManager.start_date === createdDay) return createdAt;
+        return new Date(`${mainManager.start_date}T00:00:00`);
+      })()
+    : null;
+
+  const filteredPayments = managerCutoff
+    ? payments.filter((p) => new Date(p.created_at) >= managerCutoff)
     : payments;
-  const filteredExpenses = managerStartDate
-    ? expenses.filter((e) => e.expense_date >= managerStartDate)
+  const filteredExpenses = managerCutoff
+    ? expenses.filter((e) => new Date(e.created_at) >= managerCutoff)
     : expenses;
 
   const totalPayments = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
