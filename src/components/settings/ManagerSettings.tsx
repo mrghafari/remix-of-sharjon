@@ -60,14 +60,12 @@ export function ManagerSettings() {
   const { data: roles = [], isLoading: rolesLoading } = useManagerRoles();
   const { currentBuilding } = useBuilding();
   const deleteManager = useDeleteManager();
-  const endTenure = useEndManagerTenure();
   const createRole = useCreateManagerRole();
   const deleteRole = useDeleteManagerRole();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingManager, setEditingManager] = useState<Manager | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [endId, setEndId] = useState<string | null>(null);
 
   const [transferRole, setTransferRole] = useState<ManagerRole | null>(null);
   const [showRolesManager, setShowRolesManager] = useState(false);
