@@ -122,17 +122,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-16 border-y border-border bg-muted/30">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, i) => (
-            <div key={i} className="text-center">
-              <div className="text-3xl md:text-4xl font-extrabold text-primary">{stat.value}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Features */}
       <section id="features" className="py-24">
