@@ -125,15 +125,6 @@ export default function Landing() {
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: "100ms" }}>
             از ثبت شارژ و هزینه‌ها تا گزارش‌گیری مالی و اطلاع‌رسانی خودکار — همه چیز در یک پلتفرم ابری حرفه‌ای.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <Button size="lg" onClick={() => navigate("/resident-auth")} className="bg-gradient-primary hover:opacity-90 shadow-glow text-base px-8 h-12">
-              شروع رایگان — بدون کارت بانکی
-              <ArrowLeft className="w-5 h-5 mr-2" />
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 h-12">
-              مشاهده دمو
-            </Button>
-          </div>
         </div>
       </section>
 
