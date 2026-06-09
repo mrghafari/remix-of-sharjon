@@ -99,14 +99,12 @@ export default function Landing() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden pt-20 pb-32">
+      <section className="relative overflow-hidden pt-12 pb-12">
         {/* Background image */}
         <div className="absolute inset-0 -z-10">
           <img src={blueTehran} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px]" />
         </div>
-
-        <div className="max-w-7xl mx-auto px-6 text-center" />
       </section>
 
 
