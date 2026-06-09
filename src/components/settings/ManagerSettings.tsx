@@ -19,7 +19,6 @@ import {
 import {
   useManagers,
   useDeleteManager,
-  useEndManagerTenure,
   Manager,
 } from "@/hooks/useManagers";
 import {
