@@ -36,7 +36,10 @@ interface BuildingFormData {
   total_units: string;
   vacant_charge_discount_percent: number;
   vacant_extra_charge_discount_percent: number;
+  latitude: number | null;
+  longitude: number | null;
 }
+
 
 export function BuildingSettings() {
   const { buildings, isLoading } = useBuilding();
