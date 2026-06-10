@@ -72,7 +72,7 @@ export function useCreateBuilding() {
   const adminForUserId = ctx?.adminForUserId;
 
   return useMutation({
-    mutationFn: async (building: { name: string; address?: string; total_units?: number }) => {
+    mutationFn: async (building: { name: string; address?: string; total_units?: number; latitude?: number | null; longitude?: number | null }) => {
       if (adminForUserId) {
         // Admin creating building for a specific customer
         const { data, error } = await supabase.rpc("admin_create_building_for_user", {
@@ -82,7 +82,11 @@ export function useCreateBuilding() {
           _total_units: building.total_units || null,
         });
         if (error) throw error;
-        return { id: data };
+        const newId = data as string;
+        if (building.latitude != null && building.longitude != null && newId) {
+          await supabase.from("buildings").update({ latitude: building.latitude, longitude: building.longitude }).eq("id", newId);
+        }
+        return { id: newId };
       }
       const { error } = await supabase
         .from("buildings")
@@ -90,6 +94,7 @@ export function useCreateBuilding() {
       if (error) throw error;
       return building;
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["buildings"] });
       queryClient.invalidateQueries({ queryKey: ["building_members"] });
