@@ -15,9 +15,12 @@ export interface Building {
   default_extra_charge_amount: number;
   auto_charge_enabled?: boolean;
   auto_charge_day?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   created_at: string;
   updated_at: string;
 }
+
 
 interface BuildingContextType {
   currentBuildingId: string | null;
