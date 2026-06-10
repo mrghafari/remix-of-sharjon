@@ -78,6 +78,10 @@ export function Header({ onTabChange, onMenuClick }: HeaderProps) {
           <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} onTabChange={onTabChange} />
         )}
 
+        <div className="hidden md:flex flex-1 justify-center">
+          <ShamsiDateDisplay />
+        </div>
+
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden md:block">
             <BuildingSelector />
