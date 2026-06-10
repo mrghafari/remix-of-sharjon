@@ -41,6 +41,7 @@ export default function Admin() {
             <Shield className="h-7 w-7 text-primary" />
             <h1 className="text-xl font-bold">پنل مدیریت پلتفرم</h1>
           </div>
+          <ShamsiDateDisplay />
           <Button variant="ghost" size="sm" onClick={() => signOut()}>
             <LogOut className="h-4 w-4 ml-1" />
             خروج
