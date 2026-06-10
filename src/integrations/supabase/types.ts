@@ -518,6 +518,8 @@ export type Database = {
           default_charge_amount: number
           default_extra_charge_amount: number
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           total_units: number | null
           updated_at: string
@@ -532,6 +534,8 @@ export type Database = {
           default_charge_amount?: number
           default_extra_charge_amount?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           total_units?: number | null
           updated_at?: string
@@ -546,6 +550,8 @@ export type Database = {
           default_charge_amount?: number
           default_extra_charge_amount?: number
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           total_units?: number | null
           updated_at?: string
