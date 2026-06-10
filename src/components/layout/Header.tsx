@@ -4,6 +4,7 @@ import { Search, User, LogOut, Menu, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BuildingSelector } from "./BuildingSelector";
+import { ShamsiDateDisplay } from "./ShamsiDateDisplay";
 import { SearchCommand } from "./SearchCommand";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
