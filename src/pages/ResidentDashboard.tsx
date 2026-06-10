@@ -167,7 +167,10 @@ const ResidentDashboard = () => {
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <div className="flex-1" />
+          <div className="hidden md:flex flex-1 justify-center">
+            <ShamsiDateDisplay />
+          </div>
+          <div className="flex-1 md:flex-none" />
           <NotificationBell buildingId={currentBuildingId} isManager={false} onNavigate={setActiveTab} />
         </div>
         <div className="p-3 md:p-6">
