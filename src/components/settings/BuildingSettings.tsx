@@ -56,7 +56,10 @@ export function BuildingSettings() {
     total_units: "",
     vacant_charge_discount_percent: 0,
     vacant_extra_charge_discount_percent: 0,
+    latitude: null,
+    longitude: null,
   });
+  const [locating, setLocating] = useState(false);
 
   const handleAdd = () => {
     setEditId(null);
@@ -66,6 +69,8 @@ export function BuildingSettings() {
       total_units: "",
       vacant_charge_discount_percent: 0,
       vacant_extra_charge_discount_percent: 0,
+      latitude: null,
+      longitude: null,
     });
     setDialogOpen(true);
   };
@@ -78,8 +83,34 @@ export function BuildingSettings() {
       total_units: b.total_units?.toString() || "",
       vacant_charge_discount_percent: b.vacant_charge_discount_percent || 0,
       vacant_extra_charge_discount_percent: b.vacant_extra_charge_discount_percent || 0,
+      latitude: b.latitude ?? null,
+      longitude: b.longitude ?? null,
     });
     setDialogOpen(true);
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: "خطا", description: "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند", variant: "destructive" });
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({ ...f, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+        setLocating(false);
+        toast({ title: "موفق", description: "موقعیت مکانی ثبت شد" });
+      },
+      (err) => {
+        setLocating(false);
+        toast({
+          title: "خطا در دریافت موقعیت",
+          description: err.code === 1 ? "دسترسی به موقعیت رد شد" : "موقعیت در دسترس نیست",
+          variant: "destructive",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -90,6 +121,8 @@ export function BuildingSettings() {
       total_units: form.total_units ? parseInt(form.total_units) : undefined,
       vacant_charge_discount_percent: form.vacant_charge_discount_percent,
       vacant_extra_charge_discount_percent: form.vacant_extra_charge_discount_percent,
+      latitude: form.latitude,
+      longitude: form.longitude,
     };
 
     if (editId) {
@@ -98,6 +131,7 @@ export function BuildingSettings() {
       createBuilding.mutate(data, { onSuccess: () => setDialogOpen(false) });
     }
   };
+
 
   const handleDelete = () => {
     if (deleteId) {
