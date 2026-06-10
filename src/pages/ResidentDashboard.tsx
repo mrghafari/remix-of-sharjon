@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useResidentUnit } from "@/hooks/useResidentUnit";
 import { ResidentSidebar } from "@/components/layout/ResidentSidebar";
 import { ResidentBottomNav } from "@/components/layout/ResidentBottomNav";
+import { ShamsiDateDisplay } from "@/components/layout/ShamsiDateDisplay";
 import { ResidentFinance } from "@/components/resident/ResidentFinance";
 import { ResidentAnnouncements } from "@/components/resident/ResidentAnnouncements";
 import { ResidentPolls } from "@/components/resident/ResidentPolls";
@@ -167,7 +168,10 @@ const ResidentDashboard = () => {
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <div className="flex-1" />
+          <div className="hidden md:flex flex-1 justify-center">
+            <ShamsiDateDisplay />
+          </div>
+          <div className="flex-1 md:flex-none" />
           <NotificationBell buildingId={currentBuildingId} isManager={false} onNavigate={setActiveTab} />
         </div>
         <div className="p-3 md:p-6">

@@ -4,6 +4,7 @@ import { Search, User, LogOut, Menu, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BuildingSelector } from "./BuildingSelector";
+import { ShamsiDateDisplay } from "./ShamsiDateDisplay";
 import { SearchCommand } from "./SearchCommand";
 import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,6 +77,10 @@ export function Header({ onTabChange, onMenuClick }: HeaderProps) {
         {onTabChange && (
           <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} onTabChange={onTabChange} />
         )}
+
+        <div className="hidden md:flex flex-1 justify-center">
+          <ShamsiDateDisplay />
+        </div>
 
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden md:block">

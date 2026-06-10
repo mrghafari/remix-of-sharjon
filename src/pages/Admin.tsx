@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { ShamsiDateDisplay } from "@/components/layout/ShamsiDateDisplay";
 import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2 } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
@@ -40,6 +41,7 @@ export default function Admin() {
             <Shield className="h-7 w-7 text-primary" />
             <h1 className="text-xl font-bold">پنل مدیریت پلتفرم</h1>
           </div>
+          <ShamsiDateDisplay />
           <Button variant="ghost" size="sm" onClick={() => signOut()}>
             <LogOut className="h-4 w-4 ml-1" />
             خروج
