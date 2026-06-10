@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Building2, Plus, Pencil, Trash2, Loader2, Home } from "lucide-react";
+import { Building2, Plus, Pencil, Trash2, Loader2, Home, MapPin, ExternalLink } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
 import {
   useBuilding,
   useCreateBuilding,
@@ -34,7 +36,10 @@ interface BuildingFormData {
   total_units: string;
   vacant_charge_discount_percent: number;
   vacant_extra_charge_discount_percent: number;
+  latitude: number | null;
+  longitude: number | null;
 }
+
 
 export function BuildingSettings() {
   const { buildings, isLoading } = useBuilding();
@@ -51,7 +56,10 @@ export function BuildingSettings() {
     total_units: "",
     vacant_charge_discount_percent: 0,
     vacant_extra_charge_discount_percent: 0,
+    latitude: null,
+    longitude: null,
   });
+  const [locating, setLocating] = useState(false);
 
   const handleAdd = () => {
     setEditId(null);
@@ -61,6 +69,8 @@ export function BuildingSettings() {
       total_units: "",
       vacant_charge_discount_percent: 0,
       vacant_extra_charge_discount_percent: 0,
+      latitude: null,
+      longitude: null,
     });
     setDialogOpen(true);
   };
@@ -73,8 +83,34 @@ export function BuildingSettings() {
       total_units: b.total_units?.toString() || "",
       vacant_charge_discount_percent: b.vacant_charge_discount_percent || 0,
       vacant_extra_charge_discount_percent: b.vacant_extra_charge_discount_percent || 0,
+      latitude: b.latitude ?? null,
+      longitude: b.longitude ?? null,
     });
     setDialogOpen(true);
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: "خطا", description: "مرورگر شما از موقعیت‌یابی پشتیبانی نمی‌کند", variant: "destructive" });
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({ ...f, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+        setLocating(false);
+        toast({ title: "موفق", description: "موقعیت مکانی ثبت شد" });
+      },
+      (err) => {
+        setLocating(false);
+        toast({
+          title: "خطا در دریافت موقعیت",
+          description: err.code === 1 ? "دسترسی به موقعیت رد شد" : "موقعیت در دسترس نیست",
+          variant: "destructive",
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -85,6 +121,8 @@ export function BuildingSettings() {
       total_units: form.total_units ? parseInt(form.total_units) : undefined,
       vacant_charge_discount_percent: form.vacant_charge_discount_percent,
       vacant_extra_charge_discount_percent: form.vacant_extra_charge_discount_percent,
+      latitude: form.latitude,
+      longitude: form.longitude,
     };
 
     if (editId) {
@@ -93,6 +131,7 @@ export function BuildingSettings() {
       createBuilding.mutate(data, { onSuccess: () => setDialogOpen(false) });
     }
   };
+
 
   const handleDelete = () => {
     if (deleteId) {
@@ -147,6 +186,18 @@ export function BuildingSettings() {
                         معافیت خالی: شارژ {b.vacant_charge_discount_percent}% | فوق‌شارژ {b.vacant_extra_charge_discount_percent}%
                       </div>
                     )}
+                    {b.latitude != null && b.longitude != null && (
+                      <a
+                        href={`https://www.google.com/maps?q=${b.latitude},${b.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <MapPin className="w-3 h-3" />
+                        مشاهده روی نقشه
+                      </a>
+                    )}
+
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon" onClick={() => handleEdit(b)}>
@@ -186,6 +237,38 @@ export function BuildingSettings() {
                 placeholder="آدرس ساختمان"
               />
             </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                موقعیت مکانی
+              </Label>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} disabled={locating} className="gap-1">
+                  {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+                  {form.latitude != null ? "بروزرسانی موقعیت" : "دریافت موقعیت فعلی"}
+                </Button>
+                {form.latitude != null && form.longitude != null && (
+                  <>
+                    <span className="text-xs text-muted-foreground ltr" dir="ltr">
+                      {form.latitude.toFixed(5)}, {form.longitude.toFixed(5)}
+                    </span>
+                    <a
+                      href={`https://www.google.com/maps?q=${form.latitude},${form.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-xs flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      نقشه
+                    </a>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                برای ثبت دقیق موقعیت، روی دکمه بزنید و دسترسی به موقعیت را اجازه دهید.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label>تعداد واحدها</Label>
               <Input
