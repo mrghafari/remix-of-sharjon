@@ -186,6 +186,18 @@ export function BuildingSettings() {
                         معافیت خالی: شارژ {b.vacant_charge_discount_percent}% | فوق‌شارژ {b.vacant_extra_charge_discount_percent}%
                       </div>
                     )}
+                    {b.latitude != null && b.longitude != null && (
+                      <a
+                        href={`https://www.google.com/maps?q=${b.latitude},${b.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <MapPin className="w-3 h-3" />
+                        مشاهده روی نقشه
+                      </a>
+                    )}
+
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon" onClick={() => handleEdit(b)}>
