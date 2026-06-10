@@ -226,6 +226,38 @@ export function BuildingSettings() {
               />
             </div>
             <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                موقعیت مکانی
+              </Label>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} disabled={locating} className="gap-1">
+                  {locating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}
+                  {form.latitude != null ? "بروزرسانی موقعیت" : "دریافت موقعیت فعلی"}
+                </Button>
+                {form.latitude != null && form.longitude != null && (
+                  <>
+                    <span className="text-xs text-muted-foreground ltr" dir="ltr">
+                      {form.latitude.toFixed(5)}, {form.longitude.toFixed(5)}
+                    </span>
+                    <a
+                      href={`https://www.google.com/maps?q=${form.latitude},${form.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-xs flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      نقشه
+                    </a>
+                  </>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                برای ثبت دقیق موقعیت، روی دکمه بزنید و دسترسی به موقعیت را اجازه دهید.
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label>تعداد واحدها</Label>
               <Input
                 type="number"
