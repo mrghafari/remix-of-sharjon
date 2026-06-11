@@ -116,8 +116,8 @@ function CreateBuildingScreen({ onCreated }: { onCreated?: () => void }) {
 
 const Index = () => {
   const [activeTab, setActiveTabState] = useState(() => {
-    const hash = window.location.hash.replace("#", "");
-    return hash || "dashboard";
+    const params = new URLSearchParams(window.location.search);
+    return params.get("tab") || window.location.hash.replace("#", "") || "dashboard";
   });
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [forceCreate, setForceCreate] = useState(() => {
@@ -130,18 +130,31 @@ const Index = () => {
 
   const setActiveTab = (tab: string) => {
     if (tab !== activeTab) {
-      window.history.pushState({ tab }, "", `#${tab}`);
+      const url = new URL(window.location.href);
+      url.hash = "";
+      if (tab === "dashboard") url.searchParams.delete("tab");
+      else url.searchParams.set("tab", tab);
+      window.history.pushState({ tab }, "", url.pathname + url.search);
     }
     setActiveTabState(tab);
   };
 
   useEffect(() => {
-    // Seed initial history state so first back press stays in-app
-    if (!window.history.state || !window.history.state.tab) {
-      window.history.replaceState({ tab: activeTab }, "", `#${activeTab}`);
+    // Strip any legacy hash from the URL and normalize to a clean path + ?tab=
+    if (window.location.hash) {
+      const legacyTab = window.location.hash.replace("#", "");
+      const url = new URL(window.location.href);
+      url.hash = "";
+      if (legacyTab && legacyTab !== "dashboard") {
+        url.searchParams.set("tab", legacyTab);
+      }
+      window.history.replaceState({ tab: legacyTab || "dashboard" }, "", url.pathname + url.search);
+    } else if (!window.history.state || !window.history.state.tab) {
+      window.history.replaceState({ tab: activeTab }, "", window.location.pathname + window.location.search);
     }
     const onPop = (e: PopStateEvent) => {
-      const tab = (e.state && e.state.tab) || window.location.hash.replace("#", "") || "dashboard";
+      const params = new URLSearchParams(window.location.search);
+      const tab = (e.state && e.state.tab) || params.get("tab") || "dashboard";
       setActiveTabState(tab);
     };
     window.addEventListener("popstate", onPop);
