@@ -1,4 +1,6 @@
-import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy, X, ScrollText, Send } from "lucide-react";
+import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy, X, ScrollText, Send, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -37,6 +39,8 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
   const { currentBuilding } = useBuilding();
   const { data: ticketUnread = 0 } = useUnreadTicketsCount({ buildingId: currentBuilding?.id });
   const isMobile = useIsMobile();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   // On mobile, ignore collapsed mode
   const showLabels = isMobile ? true : !collapsed;
@@ -44,6 +48,17 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
   const handleItemClick = (id: string) => {
     onTabChange(id);
     if (isMobile) onMobileOpenChange?.(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("resident_matches_all");
+      localStorage.removeItem("resident_matches_phone");
+      localStorage.removeItem("currentBuildingId");
+      await signOut();
+    } catch {}
+    window.location.href = "/";
   };
 
   return (
@@ -62,10 +77,14 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
           // Desktop width
           !isMobile && (collapsed ? "w-20" : "w-64"),
           // Mobile width and slide
-          isMobile && "w-64",
+          isMobile && "w-[85vw] max-w-xs",
           isMobile && !mobileOpen && "translate-x-full",
           isMobile && mobileOpen && "translate-x-0"
         )}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         {/* Logo */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border">
@@ -119,9 +138,17 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
           })}
         </nav>
 
-        {/* Collapse Button - desktop only */}
-        {!isMobile && (
-          <div className="p-2 border-t border-sidebar-border">
+        {/* Footer: Logout (mobile) + Collapse (desktop) */}
+        <div className="p-2 border-t border-sidebar-border space-y-1">
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {showLabels && <span className="text-xs font-medium">خروج از حساب</span>}
+          </Button>
+          {!isMobile && (
             <Button
               variant="ghost"
               size="icon"
@@ -130,8 +157,8 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
             >
               {collapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
     </>
   );
