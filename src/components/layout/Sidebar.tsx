@@ -77,10 +77,14 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
           // Desktop width
           !isMobile && (collapsed ? "w-20" : "w-64"),
           // Mobile width and slide
-          isMobile && "w-64",
+          isMobile && "w-[85vw] max-w-xs",
           isMobile && !mobileOpen && "translate-x-full",
           isMobile && mobileOpen && "translate-x-0"
         )}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
         {/* Logo */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-sidebar-border">
