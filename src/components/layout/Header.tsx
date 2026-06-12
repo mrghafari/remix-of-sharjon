@@ -64,7 +64,10 @@ export function Header({ onTabChange, onMenuClick }: HeaderProps) {
     || "کاربر";
 
   return (
-    <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
+    <header
+      className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="flex items-center justify-between h-14 md:h-16 px-3 md:px-6 gap-2">
         <div className="relative flex-1 max-w-xs md:w-80 cursor-pointer" onClick={() => setSearchOpen(true)}>
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
