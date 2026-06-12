@@ -156,6 +156,16 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
   const selectedUnit = units.find((u) => u.id === form.watch("unit_id"));
   const roleType = form.watch("role_type");
 
+  // Auto-load mobile from the selected unit for internal managers
+  useEffect(() => {
+    if (source !== "internal" || !selectedUnit) return;
+    const autoPhone =
+      roleType === "owner"
+        ? selectedUnit.phone || ""
+        : selectedUnit.resident_phone || selectedUnit.phone || "";
+    form.setValue("mobile", autoPhone || "");
+  }, [source, selectedUnit, roleType, form]);
+
   const onSubmit = (values: FormValues) => {
     const data = {
       unit_id: values.source === "internal" ? values.unit_id : null,
@@ -319,20 +329,22 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
               />
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="mobile"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>موبایل</FormLabel>
-                    <FormControl>
-                      <Input {...field} dir="ltr" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className={cn("grid gap-4", source === "internal" ? "grid-cols-1" : "grid-cols-2")}>
+              {source === "external" && (
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>موبایل</FormLabel>
+                      <FormControl>
+                        <Input {...field} dir="ltr" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="email"
