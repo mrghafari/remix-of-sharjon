@@ -197,12 +197,11 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     extra: Math.round(selectedBreakdown.extra_charge.net),
   };
   const bulkNet = selectedTotals.charge + selectedTotals.extra;
-  // اگر تخفیف خوش‌حسابی انتخاب شده، باید با شارژ/فوق‌شارژ از همان جنس همراه شود و خالص آن جنس نباید منفی شود
+  // تخفیف خوش‌حسابی فقط زمانی قابل انتخاب است که از همان جنس یک ردیف غیرتخفیف انتخاب شده باشد
+  // (این محدودیت در دیس‌ایبل بودن چک‌باکس‌ها اعمال می‌شود)؛ دکمه پرداخت تجمیعی فقط به مثبت بودن خالص نیاز دارد.
   const canBulkPay = (() => {
     const fc = selectedBreakdown.charge;
     const fe = selectedBreakdown.extra_charge;
-    if (fc.hasDiscount && (!fc.hasNonDiscount || fc.net < 0)) return false;
-    if (fe.hasDiscount && (!fe.hasNonDiscount || fe.net < 0)) return false;
     return (fc.hasNonDiscount || fe.hasNonDiscount) && bulkNet > 0;
   })();
 
