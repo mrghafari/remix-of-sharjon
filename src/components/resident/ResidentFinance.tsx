@@ -684,7 +684,21 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                         checked={selectedChargeIds.has(c.id)}
                         onCheckedChange={() => toggleChargeSelect(c.id)}
                         aria-label="انتخاب برای پرداخت تجمیعی"
-                        disabled={!discount && remaining <= 0}
+                        disabled={
+                          discount
+                            ? !(c.fund_type === "extra_charge"
+                                ? selectedBreakdown.extra_charge.hasNonDiscount
+                                : selectedBreakdown.charge.hasNonDiscount)
+                            : remaining <= 0
+                        }
+                        title={
+                          discount &&
+                          !(c.fund_type === "extra_charge"
+                            ? selectedBreakdown.extra_charge.hasNonDiscount
+                            : selectedBreakdown.charge.hasNonDiscount)
+                            ? "ابتدا یک ردیف شارژ/فوق‌شارژ از همان نوع را انتخاب کنید"
+                            : undefined
+                        }
                       />
                     </TableCell>
                   </TableRow>
