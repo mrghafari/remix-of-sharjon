@@ -138,9 +138,17 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
           })}
         </nav>
 
-        {/* Collapse Button - desktop only */}
-        {!isMobile && (
-          <div className="p-2 border-t border-sidebar-border">
+        {/* Footer: Logout (mobile) + Collapse (desktop) */}
+        <div className="p-2 border-t border-sidebar-border space-y-1">
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {showLabels && <span className="text-xs font-medium">خروج از حساب</span>}
+          </Button>
+          {!isMobile && (
             <Button
               variant="ghost"
               size="icon"
@@ -149,8 +157,8 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
             >
               {collapsed ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
     </>
   );
