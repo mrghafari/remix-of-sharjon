@@ -156,6 +156,16 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
   const selectedUnit = units.find((u) => u.id === form.watch("unit_id"));
   const roleType = form.watch("role_type");
 
+  // Auto-load mobile from the selected unit for internal managers
+  useEffect(() => {
+    if (source !== "internal" || !selectedUnit) return;
+    const autoPhone =
+      roleType === "owner"
+        ? selectedUnit.phone || ""
+        : selectedUnit.resident_phone || selectedUnit.phone || "";
+    form.setValue("mobile", autoPhone || "");
+  }, [source, selectedUnit, roleType, form]);
+
   const onSubmit = (values: FormValues) => {
     const data = {
       unit_id: values.source === "internal" ? values.unit_id : null,
