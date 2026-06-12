@@ -39,6 +39,8 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
   const { currentBuilding } = useBuilding();
   const { data: ticketUnread = 0 } = useUnreadTicketsCount({ buildingId: currentBuilding?.id });
   const isMobile = useIsMobile();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
 
   // On mobile, ignore collapsed mode
   const showLabels = isMobile ? true : !collapsed;
@@ -46,6 +48,17 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
   const handleItemClick = (id: string) => {
     onTabChange(id);
     if (isMobile) onMobileOpenChange?.(false);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      localStorage.removeItem("resident_matches");
+      localStorage.removeItem("resident_matches_all");
+      localStorage.removeItem("resident_matches_phone");
+      localStorage.removeItem("currentBuildingId");
+      await signOut();
+    } catch {}
+    window.location.href = "/";
   };
 
   return (
