@@ -329,20 +329,22 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
               />
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="mobile"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>موبایل</FormLabel>
-                    <FormControl>
-                      <Input {...field} dir="ltr" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className={cn("grid gap-4", source === "internal" ? "grid-cols-1" : "grid-cols-2")}>
+              {source === "external" && (
+                <FormField
+                  control={form.control}
+                  name="mobile"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>موبایل</FormLabel>
+                      <FormControl>
+                        <Input {...field} dir="ltr" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="email"
