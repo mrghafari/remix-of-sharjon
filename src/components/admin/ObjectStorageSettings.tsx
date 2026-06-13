@@ -1,4 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const STORAGE_KEY = "object_storage_enabled";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +18,18 @@ import { toast } from "sonner";
  * (per-customer override of platform defaults).
  */
 export function ObjectStorageSettings() {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, String(enabled));
+    } catch {}
+  }, [enabled]);
   const [form, setForm] = useState({
     provider: "liara",
     endpoint: "storage.c2.liara.site",
