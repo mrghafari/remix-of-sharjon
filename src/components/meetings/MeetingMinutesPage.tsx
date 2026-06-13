@@ -299,6 +299,22 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
     onError: (e: any) => toast.error(e.message || "خطا در حذف"),
   });
 
+  const finalizeMutation = useMutation({
+    mutationFn: async (m: MeetingMinute) => {
+      const { error } = await supabase
+        .from("building_meeting_minutes" as any)
+        .update({ is_finalized: true, finalized_at: new Date().toISOString(), finalized_by: user?.id })
+        .eq("id", m.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("صورتجلسه نهایی شد. دیگر قابل ویرایش نیست اما اهالی امضا نکرده می‌توانند امضا کنند.");
+      queryClient.invalidateQueries({ queryKey: ["meeting_minutes", buildingId] });
+      setFinalizeTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || "خطا در نهایی‌سازی"),
+  });
+
   const handleSign = async (m: MeetingMinute) => {
     if (!user || !buildingId) {
       toast.error("برای امضا باید وارد حساب کاربری باشید");
