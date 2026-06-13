@@ -200,7 +200,10 @@ export type Database = {
           content: string | null
           created_at: string
           created_by: string
+          finalized_at: string | null
+          finalized_by: string | null
           id: string
+          is_finalized: boolean
           meeting_date: string
           pdf_file_name: string | null
           pdf_file_path: string | null
@@ -213,7 +216,10 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by: string
+          finalized_at?: string | null
+          finalized_by?: string | null
           id?: string
+          is_finalized?: boolean
           meeting_date: string
           pdf_file_name?: string | null
           pdf_file_path?: string | null
@@ -226,7 +232,10 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string
+          finalized_at?: string | null
+          finalized_by?: string | null
           id?: string
+          is_finalized?: boolean
           meeting_date?: string
           pdf_file_name?: string | null
           pdf_file_path?: string | null
