@@ -175,9 +175,9 @@ Deno.serve(async (req) => {
         );
         if (already) continue;
         const paid = paySum.get(u.id) || 0;
-        const exp = expSum.get(u.id) || 0;
         const ch = chargeSum.get(u.id) || 0;
-        const balance = paid - (exp + ch);
+        const balance = paid - ch;
+
         if (balance >= 0) continue;
         const debt = Math.abs(balance);
         const penalty = Math.round((debt * pct) / 100);
