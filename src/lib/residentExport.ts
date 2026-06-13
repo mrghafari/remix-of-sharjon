@@ -35,6 +35,7 @@ export interface ResidentExpenseShare {
     title?: string;
     expense_date?: string;
     fund_type?: string;
+    amount?: number;
   } | null;
 }
 
