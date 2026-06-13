@@ -712,6 +712,50 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          plan_id: string | null
+          starts_at: string
+          unit_quota: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          plan_id?: string | null
+          starts_at?: string
+          unit_quota: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          plan_id?: string | null
+          starts_at?: string
+          unit_quota?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expense_attachments: {
         Row: {
           building_id: string
@@ -1743,6 +1787,108 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_payments: {
+        Row: {
+          amount_rial: number
+          authority: string | null
+          created_at: string
+          gateway: string
+          id: string
+          meta: Json | null
+          payment_date: string | null
+          plan_id: string | null
+          ref_id: string | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_rial: number
+          authority?: string | null
+          created_at?: string
+          gateway?: string
+          id?: string
+          meta?: Json | null
+          payment_date?: string | null
+          plan_id?: string | null
+          ref_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_rial?: number
+          authority?: string | null
+          created_at?: string
+          gateway?: string
+          id?: string
+          meta?: Json | null
+          payment_date?: string | null
+          plan_id?: string | null
+          ref_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_payments_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "customer_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price_rial: number
+          sort_order: number
+          unit_quota: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_days: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price_rial: number
+          sort_order?: number
+          unit_quota: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_rial?: number
+          sort_order?: number
+          unit_quota?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       support_ticket_messages: {
         Row: {
           attachment_url: string | null
@@ -2304,6 +2450,27 @@ export type Database = {
           total_users: number
         }[]
       }
+      get_admin_subscription_overview: {
+        Args: never
+        Returns: {
+          days_remaining: number
+          expires_at: string
+          is_active: boolean
+          total_paid: number
+          unit_quota: number
+          units_used: number
+          user_id: string
+        }[]
+      }
+      get_company_revenue: {
+        Args: { _from?: string; _to?: string }
+        Returns: {
+          active_subscriptions: number
+          this_month_revenue: number
+          total_payments: number
+          total_revenue: number
+        }[]
+      }
       get_enabled_payment_gateways: {
         Args: { _building_id: string }
         Returns: Json
@@ -2311,6 +2478,20 @@ export type Database = {
       get_manager_name_at: {
         Args: { _building_id: string; _on_date: string }
         Returns: string
+      }
+      get_my_subscription: {
+        Args: never
+        Returns: {
+          days_remaining: number
+          expires_at: string
+          is_active: boolean
+          plan_id: string
+          plan_name: string
+          starts_at: string
+          subscription_id: string
+          unit_quota: number
+          units_used: number
+        }[]
       }
       get_voter_hash: { Args: { _poll_id: string }; Returns: string }
       has_role: {
