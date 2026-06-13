@@ -122,23 +122,6 @@ export function UnitsList({ onEdit }: UnitsListProps) {
             <Building2 className="w-5 h-5 text-primary" />
             لیست واحدها ({units.length})
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-              <SelectTrigger className="w-[200px] h-9">
-                <SelectValue placeholder="مرتب‌سازی" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unit_number_asc">پلاک (صعودی)</SelectItem>
-                <SelectItem value="unit_number_desc">پلاک (نزولی)</SelectItem>
-                <SelectItem value="floor_asc">طبقه (صعودی)</SelectItem>
-                <SelectItem value="floor_desc">طبقه (نزولی)</SelectItem>
-                <SelectItem value="area_asc">متراژ (صعودی)</SelectItem>
-                <SelectItem value="area_desc">متراژ (نزولی)</SelectItem>
-                <SelectItem value="owner_asc">نام مالک</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </CardHeader>
         <CardContent>
           {units.length === 0 ? (
