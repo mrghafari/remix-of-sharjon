@@ -679,26 +679,30 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                       </Button>
                     </TableCell>
                     <TableCell>
-                      <Checkbox
-                        checked={selectedChargeIds.has(c.id)}
-                        onCheckedChange={() => toggleChargeSelect(c.id)}
-                        aria-label="انتخاب برای پرداخت تجمیعی"
-                        disabled={
-                          discount
-                            ? !(c.fund_type === "extra_charge"
-                                ? selectedBreakdown.extra_charge.hasNonDiscount
-                                : selectedBreakdown.charge.hasNonDiscount)
-                            : remaining <= 0
-                        }
-                        title={
-                          discount &&
-                          !(c.fund_type === "extra_charge"
-                            ? selectedBreakdown.extra_charge.hasNonDiscount
-                            : selectedBreakdown.charge.hasNonDiscount)
-                            ? "ابتدا یک ردیف شارژ/فوق‌شارژ از همان نوع را انتخاب کنید"
-                            : undefined
-                        }
-                      />
+                      {(() => {
+                        const ft = c.fund_type === "extra_charge" ? "extra_charge" : "charge";
+                        const sameType = selectedBreakdown[ft];
+                        const isSelected = selectedChargeIds.has(c.id);
+                        // برای ردیف تخفیف: باید حداقل یک ردیف غیرتخفیف هم‌نوع انتخاب شده باشد
+                        // و افزودن این تخفیف نباید مجموع خالص هم‌نوع را منفی کند
+                        const noBase = discount && !sameType.hasNonDiscount;
+                        const wouldExceed =
+                          discount && !isSelected && (sameType.net + signedRemain(c) < 0);
+                        const disabledReason = noBase
+                          ? "ابتدا یک ردیف شارژ/فوق‌شارژ از همان نوع را انتخاب کنید"
+                          : wouldExceed
+                          ? "جمع تخفیف‌های انتخاب‌شده نباید از مبلغ بدهی هم‌نوع بیشتر شود"
+                          : undefined;
+                        return (
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={() => toggleChargeSelect(c.id)}
+                            aria-label="انتخاب برای پرداخت تجمیعی"
+                            disabled={discount ? (noBase || wouldExceed) : remaining <= 0}
+                            title={disabledReason}
+                          />
+                        );
+                      })()}
                     </TableCell>
                   </TableRow>
                   );
