@@ -536,6 +536,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                       <TableHead className="text-right">نقش</TableHead>
                       <TableHead className="text-right">مدیر</TableHead>
                       <TableHead className="text-right">نوع</TableHead>
+                      <TableHead className="text-left">کل هزینه</TableHead>
                       <TableHead className="text-left">سهم شما</TableHead>
                     </TableRow>
                   </TableHeader>
