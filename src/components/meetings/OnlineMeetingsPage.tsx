@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -20,7 +21,7 @@ import {
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "sonner";
-import { Video, Plus, Trash2, Pencil, Calendar, Clock, Loader2, ExternalLink, Copy, Users } from "lucide-react";
+import { Video, Plus, Trash2, Pencil, Calendar, Clock, Loader2, ExternalLink, Copy, Users, MapPin } from "lucide-react";
 import { sendSmsBatch } from "@/hooks/useSms";
 
 type Audience = "owners" | "residents" | "both";
@@ -31,13 +32,15 @@ interface OnlineMeeting {
   title: string;
   description: string | null;
   scheduled_at: string;
-  room_name: string;
-  jitsi_domain: string;
+  room_name: string | null;
+  jitsi_domain: string | null;
   created_by: string | null;
   created_at: string;
   audience: Audience;
   excluded_owner_unit_ids: string[];
   excluded_resident_unit_ids: string[];
+  location: string | null;
+  has_online: boolean;
 }
 
 interface UnitRow {
@@ -54,7 +57,8 @@ interface Props {
   canEdit?: boolean;
 }
 
-function buildLink(domain: string, room: string) {
+function buildLink(domain: string | null, room: string | null) {
+  if (!domain || !room) return "";
   return `https://${domain}/${encodeURIComponent(room)}`;
 }
 
@@ -78,6 +82,8 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [hasOnline, setHasOnline] = useState(true);
   const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
   const [meetingTime, setMeetingTime] = useState("20:00");
   const [audience, setAudience] = useState<Audience>("both");
@@ -125,6 +131,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
 
   const resetForm = () => {
     setTitle(""); setDescription("");
+    setLocation(""); setHasOnline(true);
     setMeetingDate(new Date()); setMeetingTime("20:00");
     setAudience("both");
     setExcludedOwners(new Set());
@@ -137,6 +144,8 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     setEditing(m);
     setTitle(m.title);
     setDescription(m.description || "");
+    setLocation(m.location || "");
+    setHasOnline(m.has_online !== false && !!m.room_name);
     const d = new Date(m.scheduled_at);
     setMeetingDate(d);
     setMeetingTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
@@ -169,13 +178,14 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
         .eq("building_id", buildingId);
 
       const recipients: any[] = [];
-      const link = buildLink(meeting.jitsi_domain, meeting.room_name);
+      const link = meeting.has_online ? buildLink(meeting.jitsi_domain, meeting.room_name) : "";
       const d = new Date(meeting.scheduled_at);
       const vars = {
         "عنوان": meeting.title,
         "تاریخ": formatJalaliDate(d.toISOString()),
         "ساعت": `${pad(d.getHours())}:${pad(d.getMinutes())}`,
         "لینک": link,
+        "مکان": meeting.location || "",
         "ساختمان": "",
       };
 
@@ -194,10 +204,14 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       });
 
       const audienceText = audienceLabel(meeting.audience);
+      const locLine = meeting.location ? `\nمکان: ${meeting.location}` : "";
+      const onlineLine = meeting.has_online && link
+        ? `\n\nبرای کسانی که نمی‌توانند حضوری شرکت کنند، امکان حضور آنلاین فراهم است:\n${link}`
+        : "";
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
-        title: `جلسه آنلاین: ${meeting.title}`,
-        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\nمدعوین: ${audienceText}\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        title: `جلسه: ${meeting.title}`,
+        content: `جلسه در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.${locLine}\nمدعوین: ${audienceText}${onlineLine}${meeting.description ? `\n\n${meeting.description}` : ""}`,
         is_pinned: true,
         created_by: user?.id,
       });
@@ -219,6 +233,10 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       toast.error("عنوان و تاریخ جلسه الزامی است");
       return;
     }
+    if (!location.trim() && !hasOnline) {
+      toast.error("مکان برگزاری را وارد کنید یا گزینه حضور آنلاین را فعال کنید");
+      return;
+    }
     const [hh, mm] = meetingTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) {
       toast.error("ساعت نامعتبر است");
@@ -236,9 +254,16 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
         audience,
         excluded_owner_unit_ids: Array.from(excludedOwners),
         excluded_resident_unit_ids: Array.from(excludedResidents),
+        location: location.trim() || null,
+        has_online: hasOnline,
       };
 
       if (editing) {
+        // Preserve / create room if has_online toggled on
+        if (hasOnline && !editing.room_name) {
+          payload.room_name = generateRoom(buildingId);
+          payload.jitsi_domain = "meet.jit.si";
+        }
         const { data: updated, error } = await supabase
           .from("building_online_meetings" as any)
           .update(payload)
@@ -249,14 +274,15 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
         toast.success("جلسه به‌روزرسانی شد و اطلاع‌رسانی مجدد ارسال می‌شود");
         if (updated) await notifyResidents(updated as unknown as OnlineMeeting);
       } else {
-        const room = generateRoom(buildingId);
+        if (hasOnline) {
+          payload.room_name = generateRoom(buildingId);
+          payload.jitsi_domain = "meet.jit.si";
+        }
         const { data, error } = await supabase
           .from("building_online_meetings" as any)
           .insert({
             ...payload,
             building_id: buildingId,
-            room_name: room,
-            jitsi_domain: "meet.jit.si",
             created_by: user.id,
           })
           .select()
@@ -293,6 +319,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
 
   const copyLink = (m: OnlineMeeting) => {
     const link = buildLink(m.jitsi_domain, m.room_name);
+    if (!link) return;
     navigator.clipboard.writeText(link).then(
       () => toast.success("لینک کپی شد"),
       () => toast.error("کپی ناموفق بود")
@@ -317,35 +344,49 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     const link = buildLink(m.jitsi_domain, m.room_name);
     const isLive = Math.abs(d.getTime() - now) < 2 * 3600 * 1000;
     const exCount = (m.excluded_owner_unit_ids?.length || 0) + (m.excluded_resident_unit_ids?.length || 0);
+    const onlineAvailable = m.has_online !== false && !!link;
     return (
       <Card key={m.id} className={isLive ? "border-primary/40 bg-primary/5" : ""}>
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="space-y-1 flex-1 min-w-0">
               <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                <Video className="w-4 h-4 text-primary shrink-0" />
+                <Calendar className="w-4 h-4 text-primary shrink-0" />
                 <span>{m.title}</span>
                 {isLive && <span className="text-xs bg-primary text-primary-foreground rounded px-2 py-0.5">در حال برگزاری/نزدیک</span>}
               </CardTitle>
               <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d.toISOString())}</span>
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
+                {m.location && (
+                  <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{m.location}</span>
+                )}
                 <Badge variant="secondary" className="gap-1">
                   <Users className="w-3 h-3" />
                   {audienceLabel(m.audience || "both")}
                 </Badge>
+                {onlineAvailable && (
+                  <Badge variant="outline" className="gap-1 border-primary/40 text-primary">
+                    <Video className="w-3 h-3" />
+                    حضور آنلاین
+                  </Badge>
+                )}
                 <span>مدعوین: {inviteeCount(m)} نفر{exCount > 0 ? ` • ${exCount} استثنا` : ""}</span>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-wrap">
-              <Button size="sm" onClick={() => window.open(link, "_blank", "noopener,noreferrer")}>
-                <ExternalLink className="w-3.5 h-3.5 ml-1" />
-                ورود به جلسه
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => copyLink(m)}>
-                <Copy className="w-3.5 h-3.5 ml-1" />
-                کپی لینک
-              </Button>
+              {onlineAvailable && (
+                <>
+                  <Button size="sm" onClick={() => window.open(link, "_blank", "noopener,noreferrer")}>
+                    <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                    ورود آنلاین
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => copyLink(m)}>
+                    <Copy className="w-3.5 h-3.5 ml-1" />
+                    کپی لینک
+                  </Button>
+                </>
+              )}
               {canEdit && (
                 <>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
@@ -379,7 +420,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
         <div>
           <h2 className="text-lg font-bold">جلسه</h2>
           <p className="text-muted-foreground text-sm mt-1">
-            جلسات از طریق سرویس رایگان meet.jit.si برگزار می‌شود. نیازی به نصب نرم‌افزار نیست.
+            جلسات به‌صورت حضوری در مکان تعیین‌شده برگزار می‌شود. در صورت تمایل می‌توانید گزینه حضور آنلاین (meet.jit.si) را نیز برای کسانی که امکان حضور فیزیکی ندارند فعال کنید.
           </p>
         </div>
         {canEdit && (
@@ -397,7 +438,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       ) : meetings.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-            <Video className="w-12 h-12 mb-3 opacity-30" />
+            <Calendar className="w-12 h-12 mb-3 opacity-30" />
             <p>جلسه‌ای برنامه‌ریزی نشده است</p>
           </CardContent>
         </Card>
@@ -421,7 +462,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto" dir="rtl">
           <DialogHeader>
-            <DialogTitle>{editing ? "ویرایش جلسه آنلاین" : "ایجاد جلسه آنلاین"}</DialogTitle>
+            <DialogTitle>{editing ? "ویرایش جلسه" : "ایجاد جلسه"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -438,6 +479,28 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                 <Input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)} dir="ltr" />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> مکان برگزاری *</Label>
+              <Input
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                placeholder="مثال: لابی ساختمان، طبقه همکف"
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-md border p-3 bg-muted/20">
+              <div className="space-y-0.5">
+                <Label className="text-sm flex items-center gap-1">
+                  <Video className="w-3.5 h-3.5" /> حضور آنلاین (اختیاری)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  در صورت فعال‌سازی، یک لینک جلسه آنلاین برای کسانی که امکان حضور فیزیکی ندارند ایجاد می‌شود.
+                </p>
+              </div>
+              <Switch checked={hasOnline} onCheckedChange={setHasOnline} />
+            </div>
+
             <div className="space-y-2">
               <Label>توضیحات (اختیاری)</Label>
               <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="دستور جلسه، نکات و..." className="min-h-20" />
