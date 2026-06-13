@@ -188,10 +188,16 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const recipients: any[] = [];
       const link = meeting.has_online ? buildLink(meeting.jitsi_domain, meeting.room_name) : "";
       const d = new Date(meeting.scheduled_at);
+      const e = meeting.ends_at ? new Date(meeting.ends_at) : null;
+      const startStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const endStr = e ? `${pad(e.getHours())}:${pad(e.getMinutes())}` : "";
+      const timeRange = endStr ? `${startStr} تا ${endStr}` : startStr;
       const vars = {
         "عنوان": meeting.title,
         "تاریخ": formatJalaliDate(d.toISOString()),
-        "ساعت": `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        "ساعت": timeRange,
+        "ساعت‌شروع": startStr,
+        "ساعت‌پایان": endStr,
         "لینک": link,
         "مکان": meeting.location || "",
         "ساختمان": "",
@@ -214,12 +220,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const audienceText = audienceLabel(meeting.audience);
       const locLine = meeting.location ? `\nمکان: ${meeting.location}` : "";
       const onlineLine = meeting.has_online && link
-        ? `\n\nبرای کسانی که نمی‌توانند حضوری شرکت کنند، امکان حضور آنلاین فراهم است:\n${link}`
+        ? `\n\nبرای کسانی که نمی‌توانند حضوری شرکت کنند، امکان حضور آنلاین فراهم است (لینک تا پایان ساعت جلسه فعال است):\n${link}`
         : "";
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
         title: `جلسه: ${meeting.title}`,
-        content: `جلسه در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.${locLine}\nمدعوین: ${audienceText}${onlineLine}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        content: `جلسه در تاریخ ${formatJalaliDate(d.toISOString())} از ساعت ${startStr}${endStr ? ` تا ${endStr}` : ""} برگزار می‌شود.${locLine}\nمدعوین: ${audienceText}${onlineLine}${meeting.description ? `\n\n${meeting.description}` : ""}`,
         is_pinned: true,
         created_by: user?.id,
       });
