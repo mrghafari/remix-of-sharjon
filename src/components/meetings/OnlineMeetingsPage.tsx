@@ -500,16 +500,23 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
               <Label>عنوان جلسه *</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="مثال: جلسه عمومی هیئت‌مدیره" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
                 <Label>تاریخ *</Label>
                 <JalaliDatePicker value={meetingDate} onChange={setMeetingDate} />
               </div>
               <div className="space-y-2">
-                <Label>ساعت *</Label>
+                <Label>ساعت شروع *</Label>
                 <Input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)} dir="ltr" />
               </div>
+              <div className="space-y-2">
+                <Label>ساعت پایان *</Label>
+                <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} dir="ltr" />
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              لینک ورود آنلاین پس از ساعت پایان به صورت خودکار غیرفعال می‌شود.
+            </p>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> مکان برگزاری *</Label>
