@@ -172,6 +172,10 @@ export function PaymentsList() {
                     <Badge variant="outline">
                       واحد {payment.units?.unit_number || "-"}
                     </Badge>
+                  ) : payment.description === OPENING_MARKER ? (
+                    <Badge variant="outline" className="text-amber-600 border-amber-600">
+                      ورودی اولیه
+                    </Badge>
                   ) : (
                     <Badge variant="outline" className="text-green-600 border-green-600">
                       درآمد
