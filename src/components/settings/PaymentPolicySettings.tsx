@@ -120,6 +120,13 @@ export function PaymentPolicySettings() {
       return { ...f, [k]: v } as PaymentPolicy;
     });
 
+  const toggleAndSave = (key: keyof PaymentPolicy, value: boolean) => {
+    if (!form) return;
+    const next = { ...form, [key]: value } as PaymentPolicy;
+    setForm(next);
+    save.mutate(next);
+  };
+
   const handleEarlyDaysChange = (raw: string) => {
     // allow empty
     if (raw === "") {
@@ -200,7 +207,7 @@ export function PaymentPolicySettings() {
             </div>
             <Switch
               checked={form.early_pay_enabled}
-              onCheckedChange={(v) => update("early_pay_enabled", v)}
+              onCheckedChange={(v) => toggleAndSave("early_pay_enabled", v)}
             />
           </div>
           <p className="text-xs text-muted-foreground">
@@ -246,7 +253,7 @@ export function PaymentPolicySettings() {
             </div>
             <Switch
               checked={form.early_pay_auto_apply}
-              onCheckedChange={(v) => update("early_pay_auto_apply", v)}
+              onCheckedChange={(v) => toggleAndSave("early_pay_auto_apply", v)}
               disabled={!form.early_pay_enabled}
             />
           </div>
@@ -263,7 +270,7 @@ export function PaymentPolicySettings() {
             </div>
             <Switch
               checked={form.late_penalty_enabled}
-              onCheckedChange={(v) => update("late_penalty_enabled", v)}
+              onCheckedChange={(v) => toggleAndSave("late_penalty_enabled", v)}
             />
           </div>
           <p className="text-xs text-muted-foreground">
@@ -320,7 +327,7 @@ export function PaymentPolicySettings() {
             </div>
             <Switch
               checked={form.late_penalty_auto_apply}
-              onCheckedChange={(v) => update("late_penalty_auto_apply", v)}
+              onCheckedChange={(v) => toggleAndSave("late_penalty_auto_apply", v)}
               disabled={!form.late_penalty_enabled}
             />
           </div>
