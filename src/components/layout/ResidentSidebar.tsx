@@ -31,7 +31,7 @@ const baseMenuItems = [
   { id: "managers", label: "سوابق مدیران", icon: UserCog },
   { id: "documents", label: "اسناد", icon: FileText },
   { id: "contacts", label: "دفترچه تلفن", icon: Phone },
-  { id: "meetings", label: "صورتجلسات", icon: ScrollText },
+  { id: "meetings", label: "جلسات", icon: ScrollText },
 ];
 
 const optionalItems: { id: string; label: string; icon: any; module: ModuleKey }[] = [

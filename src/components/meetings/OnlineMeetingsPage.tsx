@@ -1,0 +1,389 @@
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
+import { formatJalaliDate } from "@/lib/jalaliDate";
+import { toast } from "sonner";
+import { Video, Plus, Trash2, Pencil, Calendar, Clock, Loader2, ExternalLink, Copy } from "lucide-react";
+import { sendSmsBatch } from "@/hooks/useSms";
+
+interface OnlineMeeting {
+  id: string;
+  building_id: string;
+  title: string;
+  description: string | null;
+  scheduled_at: string;
+  room_name: string;
+  jitsi_domain: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+interface Props {
+  buildingId: string;
+  canEdit?: boolean;
+}
+
+function buildLink(domain: string, room: string) {
+  return `https://${domain}/${encodeURIComponent(room)}`;
+}
+
+function generateRoom(buildingId: string) {
+  const slug = Math.random().toString(36).slice(2, 8);
+  return `bldg-${buildingId.slice(0, 8)}-${slug}`;
+}
+
+function pad(n: number) { return n.toString().padStart(2, "0"); }
+
+export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<OnlineMeeting | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<OnlineMeeting | null>(null);
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
+  const [meetingTime, setMeetingTime] = useState("20:00");
+  const [submitting, setSubmitting] = useState(false);
+
+  const { data: meetings = [], isLoading } = useQuery({
+    queryKey: ["online_meetings", buildingId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("building_online_meetings" as any)
+        .select("*")
+        .eq("building_id", buildingId)
+        .order("scheduled_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as OnlineMeeting[];
+    },
+    enabled: !!buildingId,
+  });
+
+  const now = Date.now();
+  const upcoming = useMemo(
+    () => meetings.filter(m => new Date(m.scheduled_at).getTime() >= now - 2 * 3600 * 1000),
+    [meetings, now]
+  );
+  const past = useMemo(
+    () => meetings.filter(m => new Date(m.scheduled_at).getTime() < now - 2 * 3600 * 1000),
+    [meetings, now]
+  );
+
+  const resetForm = () => {
+    setTitle(""); setDescription("");
+    setMeetingDate(new Date()); setMeetingTime("20:00");
+    setEditing(null);
+  };
+
+  const openCreate = () => { resetForm(); setDialogOpen(true); };
+  const openEdit = (m: OnlineMeeting) => {
+    setEditing(m);
+    setTitle(m.title);
+    setDescription(m.description || "");
+    const d = new Date(m.scheduled_at);
+    setMeetingDate(d);
+    setMeetingTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    setDialogOpen(true);
+  };
+
+  const notifyResidents = async (meeting: OnlineMeeting) => {
+    try {
+      // Get all phones for the building (owners + residents)
+      const { data: units } = await supabase
+        .from("units")
+        .select("id, unit_number, owner_name, resident_name, phone, resident_phone")
+        .eq("building_id", buildingId);
+
+      const recipients: any[] = [];
+      const link = buildLink(meeting.jitsi_domain, meeting.room_name);
+      const d = new Date(meeting.scheduled_at);
+      const vars = {
+        "عنوان": meeting.title,
+        "تاریخ": formatJalaliDate(d),
+        "ساعت": `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        "لینک": link,
+        "ساختمان": "",
+      };
+      (units || []).forEach((u: any) => {
+        if (u.phone) recipients.push({ phone: u.phone, name: u.owner_name || "همسایه گرامی", role: "owner", unit_id: u.id, variables: { ...vars, "نام": u.owner_name || "" } });
+        if (u.resident_phone && u.resident_phone !== u.phone) {
+          recipients.push({ phone: u.resident_phone, name: u.resident_name || "همسایه گرامی", role: "resident", unit_id: u.id, variables: { ...vars, "نام": u.resident_name || "" } });
+        }
+      });
+
+      // In-app announcement
+      await (supabase as any).from("building_announcements").insert({
+        building_id: buildingId,
+        title: `جلسه آنلاین: ${meeting.title}`,
+        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d)} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        is_pinned: true,
+        created_by: user?.id,
+      });
+
+      if (recipients.length > 0) {
+        try {
+          await sendSmsBatch({ building_id: buildingId, template_key: "online_meeting_invite", recipients });
+        } catch (e) {
+          console.warn("SMS send failed", e);
+        }
+      }
+    } catch (e) {
+      console.warn("Notify failed", e);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!title.trim() || !meetingDate || !user) {
+      toast.error("عنوان و تاریخ جلسه الزامی است");
+      return;
+    }
+    const [hh, mm] = meetingTime.split(":").map(Number);
+    if (isNaN(hh) || isNaN(mm)) {
+      toast.error("ساعت نامعتبر است");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const dt = new Date(meetingDate);
+      dt.setHours(hh, mm, 0, 0);
+
+      if (editing) {
+        const { error } = await supabase
+          .from("building_online_meetings" as any)
+          .update({
+            title: title.trim(),
+            description: description.trim() || null,
+            scheduled_at: dt.toISOString(),
+          })
+          .eq("id", editing.id);
+        if (error) throw error;
+        toast.success("جلسه به‌روزرسانی شد");
+      } else {
+        const room = generateRoom(buildingId);
+        const { data, error } = await supabase
+          .from("building_online_meetings" as any)
+          .insert({
+            building_id: buildingId,
+            title: title.trim(),
+            description: description.trim() || null,
+            scheduled_at: dt.toISOString(),
+            room_name: room,
+            jitsi_domain: "meet.jit.si",
+            created_by: user.id,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        toast.success("جلسه ایجاد شد و اطلاع‌رسانی انجام می‌شود");
+        if (data) await notifyResidents(data as unknown as OnlineMeeting);
+      }
+
+      setDialogOpen(false); resetForm();
+      qc.invalidateQueries({ queryKey: ["online_meetings", buildingId] });
+    } catch (e: any) {
+      toast.error(e.message || "خطا در ثبت جلسه");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: async (m: OnlineMeeting) => {
+      const { error } = await supabase
+        .from("building_online_meetings" as any)
+        .delete()
+        .eq("id", m.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("جلسه حذف شد");
+      qc.invalidateQueries({ queryKey: ["online_meetings", buildingId] });
+      setDeleteTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || "خطا در حذف"),
+  });
+
+  const copyLink = (m: OnlineMeeting) => {
+    const link = buildLink(m.jitsi_domain, m.room_name);
+    navigator.clipboard.writeText(link).then(
+      () => toast.success("لینک کپی شد"),
+      () => toast.error("کپی ناموفق بود")
+    );
+  };
+
+  const renderCard = (m: OnlineMeeting) => {
+    const d = new Date(m.scheduled_at);
+    const link = buildLink(m.jitsi_domain, m.room_name);
+    const isLive = Math.abs(d.getTime() - now) < 2 * 3600 * 1000;
+    return (
+      <Card key={m.id} className={isLive ? "border-primary/40 bg-primary/5" : ""}>
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="space-y-1 flex-1 min-w-0">
+              <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                <Video className="w-4 h-4 text-primary shrink-0" />
+                <span>{m.title}</span>
+                {isLive && <span className="text-xs bg-primary text-primary-foreground rounded px-2 py-0.5">در حال برگزاری/نزدیک</span>}
+              </CardTitle>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d)}</span>
+                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 flex-wrap">
+              <Button size="sm" onClick={() => window.open(link, "_blank", "noopener,noreferrer")}>
+                <ExternalLink className="w-3.5 h-3.5 ml-1" />
+                ورود به جلسه
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => copyLink(m)}>
+                <Copy className="w-3.5 h-3.5 ml-1" />
+                کپی لینک
+              </Button>
+              {canEdit && (
+                <>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(m)}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        {m.description && (
+          <CardContent className="pt-0">
+            <div className="text-sm whitespace-pre-wrap leading-7 bg-muted/30 rounded-md p-3">
+              {m.description}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-4 animate-fade-in" dir="rtl">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-bold">جلسات آنلاین</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            جلسات از طریق سرویس رایگان meet.jit.si برگزار می‌شود. نیازی به نصب نرم‌افزار نیست.
+          </p>
+        </div>
+        {canEdit && (
+          <Button onClick={openCreate}>
+            <Plus className="w-4 h-4 ml-1" />
+            جلسه جدید
+          </Button>
+        )}
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : meetings.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <Video className="w-12 h-12 mb-3 opacity-30" />
+            <p>جلسه‌ای برنامه‌ریزی نشده است</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {upcoming.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground">آینده</h3>
+              <div className="space-y-3">{upcoming.map(renderCard)}</div>
+            </div>
+          )}
+          {past.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground">گذشته</h3>
+              <div className="space-y-3 opacity-80">{past.map(renderCard)}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-lg" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>{editing ? "ویرایش جلسه آنلاین" : "ایجاد جلسه آنلاین"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>عنوان جلسه *</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="مثال: جلسه عمومی هیئت‌مدیره" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>تاریخ *</Label>
+                <JalaliDatePicker value={meetingDate} onChange={setMeetingDate} />
+              </div>
+              <div className="space-y-2">
+                <Label>ساعت *</Label>
+                <Input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)} dir="ltr" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>توضیحات (اختیاری)</Label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="دستور جلسه، نکات و..." className="min-h-24" />
+            </div>
+            {!editing && (
+              <p className="text-xs text-muted-foreground bg-muted/40 rounded p-2">
+                با ثبت جلسه، یک اعلان سنجاق‌شده در داشبورد ساکنین درج می‌شود و در صورت فعال‌بودن سرویس پیامک، لینک ورود به جلسه برای همه ارسال خواهد شد.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>انصراف</Button>
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting && <Loader2 className="w-4 h-4 animate-spin ml-1" />}
+              ذخیره و اطلاع‌رسانی
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف جلسه</AlertDialogTitle>
+            <AlertDialogDescription>
+              آیا از حذف «{deleteTarget?.title}» مطمئن هستید؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
