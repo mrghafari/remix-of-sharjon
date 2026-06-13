@@ -638,6 +638,27 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!finalizeTarget} onOpenChange={(o) => !o && setFinalizeTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>نهایی‌سازی امضاهای صورتجلسه</AlertDialogTitle>
+            <AlertDialogDescription>
+              با نهایی‌سازی «{finalizeTarget?.title}»، این صورتجلسه دیگر قابل ویرایش یا حذف نخواهد بود.
+              امضاهای ثبت‌شده تاکنون معتبر باقی می‌مانند و اهالی‌ای که هنوز امضا نکرده‌اند، می‌توانند پس از نهایی‌سازی نیز امضا کنند.
+              این عمل قابل بازگشت نیست.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => finalizeTarget && finalizeMutation.mutate(finalizeTarget)}
+            >
+              نهایی‌سازی
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
