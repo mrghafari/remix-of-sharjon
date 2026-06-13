@@ -124,11 +124,12 @@ export function PaymentDialog({
       setChargeChecked(r(chargeDebt) > 0);
       setExtraChecked(r(extraDebt) > 0);
       setProcessing(false);
+      setSelectedGateway("");
     }
   }, [open, chargeDebt, extraDebt, defaultRole]);
 
   useEffect(() => {
-    if (gateways.length > 0 && !selectedGateway) {
+    if (gateways.length > 0 && (!selectedGateway || !gateways.some((g) => g.key === selectedGateway))) {
       setSelectedGateway(gateways[0].key);
     }
   }, [gateways, selectedGateway]);
@@ -154,7 +155,7 @@ export function PaymentDialog({
       toast({ title: "درگاه فعالی موجود نیست", description: "از مدیر بخواهید درگاه پرداخت را فعال کند.", variant: "destructive" });
       return;
     }
-    if (!selectedGateway) {
+    if (!selectedGateway || !gateways.some((g) => g.key === selectedGateway)) {
       toast({ title: "درگاه انتخاب نشده", description: "یک درگاه پرداخت انتخاب کنید", variant: "destructive" });
       return;
     }
