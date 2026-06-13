@@ -67,6 +67,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
   const [deleteTarget, setDeleteTarget] = useState<MeetingMinute | null>(null);
   const [signersDialog, setSignersDialog] = useState<MeetingMinute | null>(null);
   const [signConfirmTarget, setSignConfirmTarget] = useState<MeetingMinute | null>(null);
+  const [finalizeTarget, setFinalizeTarget] = useState<MeetingMinute | null>(null);
   const [signing, setSigning] = useState(false);
 
   const [title, setTitle] = useState("");
