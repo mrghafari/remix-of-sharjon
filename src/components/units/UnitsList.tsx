@@ -44,13 +44,25 @@ const getFloorLabel = (floor: number | null) => {
   return `طبقه ${floor}`;
 };
 
-type SortKey = "unit_number_asc" | "unit_number_desc" | "floor_asc" | "floor_desc" | "area_asc" | "area_desc" | "owner_asc";
+type SortField = "unit_number" | "floor" | "area" | "resident_count" | "owner_name" | "resident_name";
+type SortDir = "asc" | "desc";
 
 export function UnitsList({ onEdit }: UnitsListProps) {
   const { data: units = [], isLoading } = useUnits();
   const deleteUnit = useDeleteUnit();
   const [unitToDelete, setUnitToDelete] = useState<Unit | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("unit_number_asc");
+  const [sort, setSort] = useState<{ field: SortField; dir: SortDir }>({ field: "unit_number", dir: "asc" });
+
+  const toggleSort = (field: SortField) => {
+    setSort((prev) => {
+      if (prev.field === field) {
+        if (prev.dir === "asc") return { field, dir: "desc" };
+        // cycling back to default sort by unit_number asc when turning off
+        return { field: "unit_number", dir: "asc" };
+      }
+      return { field, dir: "asc" };
+    });
+  };
 
   const sortedUnits = useMemo(() => {
     const arr = [...units];
@@ -58,25 +70,32 @@ export function UnitsList({ onEdit }: UnitsListProps) {
       const n = parseFloat(String(v ?? ""));
       return isNaN(n) ? d : n;
     };
-    switch (sortKey) {
-      case "unit_number_asc":
-        return arr.sort((a, b) => numOr(a.unit_number, Infinity) - numOr(b.unit_number, Infinity));
-      case "unit_number_desc":
-        return arr.sort((a, b) => numOr(b.unit_number, -Infinity) - numOr(a.unit_number, -Infinity));
-      case "floor_asc":
-        return arr.sort((a, b) => (a.floor ?? Infinity) - (b.floor ?? Infinity));
-      case "floor_desc":
-        return arr.sort((a, b) => (b.floor ?? -Infinity) - (a.floor ?? -Infinity));
-      case "area_asc":
-        return arr.sort((a, b) => numOr(a.area, Infinity) - numOr(b.area, Infinity));
-      case "area_desc":
-        return arr.sort((a, b) => numOr(b.area, -Infinity) - numOr(a.area, -Infinity));
-      case "owner_asc":
-        return arr.sort((a, b) => (a.owner_name || "").localeCompare(b.owner_name || "", "fa"));
-      default:
-        return arr;
-    }
-  }, [units, sortKey]);
+
+    const { field, dir } = sort;
+    const isAsc = dir === "asc";
+    const mult = isAsc ? 1 : -1;
+
+    const compare = (a: Unit, b: Unit) => {
+      switch (field) {
+        case "unit_number":
+          return (numOr(a.unit_number, Infinity) - numOr(b.unit_number, Infinity)) * mult;
+        case "floor":
+          return ((a.floor ?? Infinity) - (b.floor ?? Infinity)) * mult;
+        case "area":
+          return (numOr(a.area, Infinity) - numOr(b.area, Infinity)) * mult;
+        case "resident_count":
+          return ((a.resident_count || 1) - (b.resident_count || 1)) * mult;
+        case "owner_name":
+          return (a.owner_name || "").localeCompare(b.owner_name || "", "fa") * mult;
+        case "resident_name":
+          return (a.resident_name || "").localeCompare(b.resident_name || "", "fa") * mult;
+        default:
+          return 0;
+      }
+    };
+
+    return arr.sort(compare);
+  }, [units, sort]);
 
   const handleDelete = () => {
     if (unitToDelete) {
