@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Loader2, Trash2, LogIn, Search, Settings as SettingsIcon, UserCog } from "lucide-react";
 import { useAdminCustomers, useUpdateCustomer, useDeleteCustomer } from "@/hooks/useAdmin";
+import { useAdminSubscriptionOverview } from "@/hooks/useSubscription";
 import type { AdminCustomer } from "@/hooks/useAdmin";
 import { AdminPlatformSettings } from "./AdminPlatformSettings";
 
@@ -31,6 +32,9 @@ function formatDate(d: string) {
 export function AdminCustomers() {
   const navigate = useNavigate();
   const { data: customers, isLoading } = useAdminCustomers();
+  const { data: overview } = useAdminSubscriptionOverview();
+  const overviewMap = new Map((overview ?? []).map((o) => [o.user_id, o]));
+  const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
   const updateCustomer = useUpdateCustomer();
   const deleteCustomer = useDeleteCustomer();
   const [editCustomer, setEditCustomer] = useState<AdminCustomer | null>(null);
@@ -107,13 +111,17 @@ export function AdminCustomers() {
                     <TableHead className="w-24">پلن</TableHead>
                     <TableHead className="w-24 text-center">ساختمان‌ها</TableHead>
                     <TableHead className="w-20 text-center">واحدها</TableHead>
+                    <TableHead className="w-28 text-center">اعتبار</TableHead>
+                    <TableHead className="w-32 text-center">کل پرداختی</TableHead>
                     <TableHead className="w-28">تاریخ عضویت</TableHead>
                     <TableHead className="w-20">وضعیت</TableHead>
                     <TableHead className="w-52">عملیات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCustomers?.map((c) => (
+                  {filteredCustomers?.map((c) => {
+                    const ov = overviewMap.get(c.user_id);
+                    return (
                     <TableRow key={c.user_id} className={c.is_blocked ? "opacity-50" : ""}>
                       <TableCell className="font-medium">{c.full_name || "—"}</TableCell>
                       <TableCell>
