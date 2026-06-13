@@ -131,28 +131,29 @@ export function ObjectStorageSettings() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>ارائه‌دهنده</Label>
-            <Input disabled value={form.provider} onChange={(e) => update("provider", e.target.value)} />
+            <Input value={form.provider} onChange={(e) => update("provider", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>API Endpoint</Label>
-            <Input disabled dir="ltr" value={form.endpoint} onChange={(e) => update("endpoint", e.target.value)} />
+            <Input dir="ltr" value={form.endpoint} onChange={(e) => update("endpoint", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>نام باکت (Bucket)</Label>
-            <Input disabled dir="ltr" value={form.bucket} onChange={(e) => update("bucket", e.target.value)} />
+            <Input dir="ltr" value={form.bucket} onChange={(e) => update("bucket", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Access Key</Label>
-            <Input disabled dir="ltr" value={form.accessKey} onChange={(e) => update("accessKey", e.target.value)} />
+            <Input dir="ltr" value={form.accessKey} onChange={(e) => update("accessKey", e.target.value)} />
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Secret Key</Label>
-            <Input disabled dir="ltr" type="password" value={form.secretKey} onChange={(e) => update("secretKey", e.target.value)} />
+            <Input dir="ltr" type="password" value={form.secretKey} onChange={(e) => update("secretKey", e.target.value)} />
             <p className="text-[11px] text-muted-foreground">
-              برای تغییر کلیدها از تنظیمات Secrets در Lovable Cloud استفاده کنید.
+              توجه: مقدار واقعی Secret Key در Lovable Cloud به‌صورت امن نگه‌داری می‌شود و برای تغییر آن باید از تنظیمات Secrets استفاده کنید. ویرایش این فیلد فقط برای نمایش محلی است و در سرور اعمال نمی‌شود تا زمانی که «ذخیره تنظیمات» فعال شود.
             </p>
           </div>
         </div>
+
 
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
           <Button onClick={handleTest} disabled={testing} variant="secondary">
