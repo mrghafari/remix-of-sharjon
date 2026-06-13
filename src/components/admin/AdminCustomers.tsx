@@ -131,6 +131,17 @@ export function AdminCustomers() {
                       <TableCell><PlanBadge plan={c.subscription_plan} /></TableCell>
                       <TableCell className="text-center">{c.buildings_count.toLocaleString("fa-IR")} / {c.max_buildings.toLocaleString("fa-IR")}</TableCell>
                       <TableCell className="text-center">{c.total_units.toLocaleString("fa-IR")}</TableCell>
+                      <TableCell className="text-center">
+                        {ov && ov.is_active ? (
+                          <div className="text-xs">
+                            <div className={ov.days_remaining <= 15 ? "text-destructive font-bold" : ""}>{fmt(ov.days_remaining)} روز</div>
+                            <div className="text-muted-foreground">{fmt(ov.units_used)}/{fmt(ov.unit_quota)}</div>
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="text-destructive border-destructive">منقضی</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center text-xs">{fmt(ov?.total_paid || 0)}</TableCell>
                       <TableCell>{formatDate(c.created_at)}</TableCell>
                       <TableCell>
                         {c.is_blocked ? (
@@ -157,7 +168,8 @@ export function AdminCustomers() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
