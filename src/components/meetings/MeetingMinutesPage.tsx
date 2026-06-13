@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "sonner";
-import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip } from "lucide-react";
+import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip, PenLine, CheckCircle2, Users } from "lucide-react";
+import { sendSmsBatch } from "@/hooks/useSms";
 
 interface MeetingMinute {
   id: string;
@@ -27,12 +29,31 @@ interface MeetingMinute {
   created_at: string;
 }
 
+interface Signature {
+  id: string;
+  meeting_minute_id: string;
+  unit_id: string | null;
+  user_id: string;
+  person_name: string | null;
+  person_role: string | null;
+  person_phone: string | null;
+  signed_at: string;
+}
+
+interface ResidentContext {
+  unitId: string;
+  role: "owner" | "resident";
+  personName?: string;
+  personPhone?: string;
+}
+
 interface Props {
   buildingId?: string;
   canEdit?: boolean;
+  residentContext?: ResidentContext;
 }
 
-export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true }: Props) {
+export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true, residentContext }: Props) {
   const { currentBuildingId } = useBuilding();
   const buildingId = propBuildingId || currentBuildingId;
   const { user } = useAuth();
@@ -42,6 +63,9 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<MeetingMinute | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MeetingMinute | null>(null);
+  const [signersDialog, setSignersDialog] = useState<MeetingMinute | null>(null);
+  const [signConfirmTarget, setSignConfirmTarget] = useState<MeetingMinute | null>(null);
+  const [signing, setSigning] = useState(false);
 
   const [title, setTitle] = useState("");
   const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
@@ -63,6 +87,34 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     enabled: !!buildingId,
   });
 
+  const { data: signatures = [] } = useQuery({
+    queryKey: ["meeting_minute_signatures", buildingId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("meeting_minute_signatures" as any)
+        .select("*")
+        .eq("building_id", buildingId!)
+        .order("signed_at", { ascending: false });
+      if (error) throw error;
+      return (data || []) as unknown as Signature[];
+    },
+    enabled: !!buildingId,
+  });
+
+  const signaturesByMinute = useMemo(() => {
+    const map = new Map<string, Signature[]>();
+    for (const s of signatures) {
+      const arr = map.get(s.meeting_minute_id) || [];
+      arr.push(s);
+      map.set(s.meeting_minute_id, arr);
+    }
+    return map;
+  }, [signatures]);
+
+  const myUserId = user?.id;
+  const isSignedByMe = (mid: string) =>
+    !!myUserId && signatures.some(s => s.meeting_minute_id === mid && s.user_id === myUserId);
+
   const filtered = useMemo(() => {
     if (!search.trim()) return minutes;
     const q = search.trim().toLowerCase();
@@ -80,11 +132,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     setEditing(null);
   };
 
-  const openCreate = () => {
-    resetForm();
-    setDialogOpen(true);
-  };
-
+  const openCreate = () => { resetForm(); setDialogOpen(true); };
   const openEdit = (m: MeetingMinute) => {
     setEditing(m);
     setTitle(m.title);
@@ -92,6 +140,44 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     setContent(m.content || "");
     setPdfFile(null);
     setDialogOpen(true);
+  };
+
+  const notifyResidentsToSign = async (m: MeetingMinute) => {
+    try {
+      const { data: units } = await supabase
+        .from("units")
+        .select("id, unit_number, owner_name, resident_name, phone, resident_phone")
+        .eq("building_id", buildingId!);
+
+      const dateStr = formatJalaliDate(m.meeting_date);
+      const vars = { "عنوان": m.title, "تاریخ": dateStr, "ساختمان": "" };
+
+      const recipients: any[] = [];
+      (units || []).forEach((u: any) => {
+        if (u.phone) recipients.push({ phone: u.phone, name: u.owner_name || "همسایه گرامی", role: "owner", unit_id: u.id, variables: { ...vars, "نام": u.owner_name || "" } });
+        if (u.resident_phone && u.resident_phone !== u.phone) {
+          recipients.push({ phone: u.resident_phone, name: u.resident_name || "همسایه گرامی", role: "resident", unit_id: u.id, variables: { ...vars, "نام": u.resident_name || "" } });
+        }
+      });
+
+      await (supabase as any).from("building_announcements").insert({
+        building_id: buildingId,
+        title: `صورتجلسه جدید: ${m.title}`,
+        content: `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ثبت شد.\nلطفاً پس از مطالعه، نسبت به امضای الکترونیکی آن در بخش «جلسات → صورتجلسات» اقدام فرمایید.`,
+        is_pinned: true,
+        created_by: user?.id,
+      });
+
+      if (recipients.length > 0) {
+        try {
+          await sendSmsBatch({ building_id: buildingId!, template_key: "meeting_minute_sign_invite", recipients });
+        } catch (e) {
+          console.warn("SMS send failed", e);
+        }
+      }
+    } catch (e) {
+      console.warn("Notify failed", e);
+    }
   };
 
   const handleSubmit = async () => {
@@ -121,8 +207,6 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
           .from("meeting-minutes")
           .upload(path, pdfFile, { contentType: "application/pdf" });
         if (upErr) throw upErr;
-
-        // Remove old file if replacing
         if (editing?.pdf_file_path) {
           await supabase.storage.from("meeting-minutes").remove([editing.pdf_file_path]);
         }
@@ -149,11 +233,14 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
         if (error) throw error;
         toast.success("صورتجلسه به‌روزرسانی شد");
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("building_meeting_minutes" as any)
-          .insert({ ...payload, created_by: user.id });
+          .insert({ ...payload, created_by: user.id })
+          .select()
+          .single();
         if (error) throw error;
-        toast.success("صورتجلسه ثبت شد");
+        toast.success("صورتجلسه ثبت شد و اطلاع‌رسانی به اهالی انجام می‌شود");
+        if (data) await notifyResidentsToSign(data as unknown as MeetingMinute);
       }
 
       setDialogOpen(false);
@@ -185,6 +272,40 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     onError: (e: any) => toast.error(e.message || "خطا در حذف"),
   });
 
+  const handleSign = async (m: MeetingMinute) => {
+    if (!user || !buildingId) {
+      toast.error("برای امضا باید وارد حساب کاربری باشید");
+      return;
+    }
+    setSigning(true);
+    try {
+      const { error } = await (supabase as any)
+        .from("meeting_minute_signatures")
+        .insert({
+          meeting_minute_id: m.id,
+          building_id: buildingId,
+          unit_id: residentContext?.unitId || null,
+          user_id: user.id,
+          person_name: residentContext?.personName || null,
+          person_role: residentContext?.role || null,
+          person_phone: residentContext?.personPhone || null,
+        });
+      if (error) throw error;
+      toast.success("صورتجلسه با موفقیت امضا شد");
+      setSignConfirmTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["meeting_minute_signatures", buildingId] });
+    } catch (e: any) {
+      if (e.code === "23505") {
+        toast.info("شما قبلاً این صورتجلسه را امضا کرده‌اید");
+        setSignConfirmTarget(null);
+      } else {
+        toast.error(e.message || "خطا در ثبت امضا");
+      }
+    } finally {
+      setSigning(false);
+    }
+  };
+
   const handleDownload = async (m: MeetingMinute) => {
     if (!m.pdf_file_path) return;
     const { data, error } = await supabase.storage
@@ -197,7 +318,6 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     window.open(data.signedUrl, "_blank");
   };
 
-  // Highlight matched text
   const highlight = (text: string, q: string) => {
     if (!q.trim()) return text;
     const parts = text.split(new RegExp(`(${q})`, "gi"));
@@ -208,12 +328,18 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
     );
   };
 
+  const roleLabel = (r: string | null) => r === "owner" ? "مالک" : r === "resident" ? "ساکن" : "—";
+
   return (
-    <div className="max-w-5xl mx-auto space-y-4 animate-fade-in" dir="rtl">
+    <div className="space-y-4 animate-fade-in" dir="rtl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">صورتجلسات ساختمان</h1>
-          <p className="text-muted-foreground text-sm mt-1">آرشیو، جستجو و دانلود صورتجلسات</p>
+          <h2 className="text-lg font-bold">صورتجلسات ساختمان</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            {canEdit
+              ? "آرشیو، جستجو و دانلود صورتجلسات. پس از ثبت، اهالی برای امضای الکترونیکی دعوت می‌شوند."
+              : "صورتجلسات را مطالعه کرده و در صورت تأیید، الکترونیکی امضا کنید."}
+          </p>
         </div>
         {canEdit && (
           <Button onClick={openCreate}>
@@ -250,50 +376,75 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
         </Card>
       ) : (
         <div className="space-y-3">
-          {filtered.map((m) => (
-            <Card key={m.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-3 flex-wrap">
-                  <div className="space-y-1 flex-1 min-w-0">
-                    <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                      <FileText className="w-4 h-4 text-primary shrink-0" />
-                      <span>{highlight(m.title, search)}</span>
-                      {m.pdf_file_path && <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>تاریخ جلسه: {formatJalaliDate(m.meeting_date)}</span>
+          {filtered.map((m) => {
+            const sigs = signaturesByMinute.get(m.id) || [];
+            const signed = isSignedByMe(m.id);
+            return (
+              <Card key={m.id}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                        <FileText className="w-4 h-4 text-primary shrink-0" />
+                        <span>{highlight(m.title, search)}</span>
+                        {m.pdf_file_path && <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />}
+                        {signed && (
+                          <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 hover:bg-green-100">
+                            <CheckCircle2 className="w-3 h-3" /> امضا شده توسط شما
+                          </Badge>
+                        )}
+                      </CardTitle>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          تاریخ جلسه: {formatJalaliDate(m.meeting_date)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setSignersDialog(m)}
+                          className="flex items-center gap-1 hover:text-primary"
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          {sigs.length} امضا
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {m.pdf_file_path && (
+                        <Button variant="outline" size="sm" onClick={() => handleDownload(m)}>
+                          <Download className="w-3.5 h-3.5 ml-1" />
+                          دانلود PDF
+                        </Button>
+                      )}
+                      {!canEdit && !signed && (
+                        <Button size="sm" onClick={() => setSignConfirmTarget(m)}>
+                          <PenLine className="w-3.5 h-3.5 ml-1" />
+                          امضای الکترونیکی
+                        </Button>
+                      )}
+                      {canEdit && (
+                        <>
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(m)}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {m.pdf_file_path && (
-                      <Button variant="outline" size="sm" onClick={() => handleDownload(m)}>
-                        <Download className="w-3.5 h-3.5 ml-1" />
-                        دانلود PDF
-                      </Button>
-                    )}
-                    {canEdit && (
-                      <>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
-                          <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(m)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              {m.content && (
-                <CardContent className="pt-0">
-                  <div className="text-sm whitespace-pre-wrap leading-7 bg-muted/30 rounded-md p-3 max-h-60 overflow-auto">
-                    {highlight(m.content, search)}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          ))}
+                </CardHeader>
+                {m.content && (
+                  <CardContent className="pt-0">
+                    <div className="text-sm whitespace-pre-wrap leading-7 bg-muted/30 rounded-md p-3 max-h-60 overflow-auto">
+                      {highlight(m.content, search)}
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -331,6 +482,11 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
                 <p className="text-xs text-muted-foreground">فایل فعلی: {editing.pdf_file_name}</p>
               )}
             </div>
+            {!editing && (
+              <p className="text-xs text-muted-foreground bg-muted/40 rounded p-2">
+                با ثبت صورتجلسه، یک اعلان سنجاق‌شده در داشبورد ساکنین درج می‌شود و در صورت فعال‌بودن سرویس پیامک، دعوت به امضای الکترونیکی برای همه اهالی ارسال خواهد شد.
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>انصراف</Button>
@@ -347,7 +503,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
           <AlertDialogHeader>
             <AlertDialogTitle>حذف صورتجلسه</AlertDialogTitle>
             <AlertDialogDescription>
-              آیا از حذف «{deleteTarget?.title}» مطمئن هستید؟ این عمل قابل بازگشت نیست.
+              آیا از حذف «{deleteTarget?.title}» مطمئن هستید؟ تمام امضاهای ثبت‌شده نیز حذف خواهند شد و این عمل قابل بازگشت نیست.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -361,6 +517,54 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!signConfirmTarget} onOpenChange={(o) => !o && setSignConfirmTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأیید امضای الکترونیکی</AlertDialogTitle>
+            <AlertDialogDescription>
+              با امضای صورتجلسه «{signConfirmTarget?.title}»، اعلام می‌کنید که محتوای آن را مطالعه و تأیید می‌نمایید. این امضا با نام و شناسه کاربری شما ثبت می‌شود و قابل برگشت نیست.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={signing}>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={signing}
+              onClick={(e) => { e.preventDefault(); signConfirmTarget && handleSign(signConfirmTarget); }}
+            >
+              {signing && <Loader2 className="w-4 h-4 animate-spin ml-1" />}
+              تأیید و امضا
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!signersDialog} onOpenChange={(o) => !o && setSignersDialog(null)}>
+        <DialogContent className="max-w-lg" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>امضاکنندگان صورتجلسه</DialogTitle>
+            <DialogDescription>{signersDialog?.title}</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-96 overflow-auto space-y-2">
+            {(signersDialog ? signaturesByMinute.get(signersDialog.id) || [] : []).length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-6">هنوز هیچ امضایی ثبت نشده است</p>
+            ) : (
+              (signersDialog ? signaturesByMinute.get(signersDialog.id) || [] : []).map(s => (
+                <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-md border bg-muted/20">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <div>
+                      <div className="text-sm font-medium">{s.person_name || "بدون نام"}</div>
+                      <div className="text-xs text-muted-foreground">{roleLabel(s.person_role)} {s.person_phone ? `• ${s.person_phone}` : ""}</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">{formatJalaliDate(s.signed_at)}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
