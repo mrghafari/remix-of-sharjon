@@ -1855,11 +1855,13 @@ export type Database = {
           created_at: string
           description: string | null
           duration_days: number
+          features: Json
           id: string
           is_active: boolean
           name: string
           price_rial: number
           sort_order: number
+          tier_key: string | null
           unit_quota: number
           updated_at: string
         }
@@ -1867,11 +1869,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_days: number
+          features?: Json
           id?: string
           is_active?: boolean
           name: string
           price_rial: number
           sort_order?: number
+          tier_key?: string | null
           unit_quota: number
           updated_at?: string
         }
@@ -1879,11 +1883,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_days?: number
+          features?: Json
           id?: string
           is_active?: boolean
           name?: string
           price_rial?: number
           sort_order?: number
+          tier_key?: string | null
           unit_quota?: number
           updated_at?: string
         }
