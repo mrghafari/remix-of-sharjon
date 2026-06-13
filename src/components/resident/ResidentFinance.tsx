@@ -291,11 +291,11 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
           <CardContent className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">ساکن</span>
-              <span className="font-bold text-orange-600">{formatNumber(chargeDebt)}</span>
+              <span className="font-bold text-orange-600">{formatNumber(Math.max(0, chargeDebt))}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">مالک</span>
-              <span className="font-bold text-purple-600">{formatNumber(extraDebt)}</span>
+              <span className="font-bold text-purple-600">{formatNumber(Math.max(0, extraDebt))}</span>
             </div>
           </CardContent>
         </Card>
