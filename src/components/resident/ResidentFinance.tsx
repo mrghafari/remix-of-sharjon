@@ -587,7 +587,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           <CardTitle className="text-base flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-orange-500" />
-            بدهی شارژ ماهانه
+            شارژ ماهانه و تخفیف
           </CardTitle>
           {selectedChargeIds.size > 0 && (
             <Button size="sm" onClick={openBulkPay} disabled={!canBulkPay} className="gap-1">
