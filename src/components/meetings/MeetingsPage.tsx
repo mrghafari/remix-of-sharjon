@@ -7,9 +7,15 @@ import { OnlineMeetingsPage } from "./OnlineMeetingsPage";
 interface Props {
   buildingId?: string;
   canEdit?: boolean;
+  residentContext?: {
+    unitId: string;
+    role: "owner" | "resident";
+    personName?: string;
+    personPhone?: string;
+  };
 }
 
-export function MeetingsPage({ buildingId: propBuildingId, canEdit = true }: Props) {
+export function MeetingsPage({ buildingId: propBuildingId, canEdit = true, residentContext }: Props) {
   const { currentBuildingId } = useBuilding();
   const buildingId = propBuildingId || currentBuildingId;
 
@@ -35,7 +41,7 @@ export function MeetingsPage({ buildingId: propBuildingId, canEdit = true }: Pro
         </TabsList>
 
         <TabsContent value="minutes" className="mt-4">
-          <MeetingMinutesPage buildingId={buildingId} canEdit={canEdit} />
+          <MeetingMinutesPage buildingId={buildingId} canEdit={canEdit} residentContext={residentContext} />
         </TabsContent>
 
         <TabsContent value="online" className="mt-4">
