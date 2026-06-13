@@ -209,7 +209,7 @@ export const exportExpensesPdf = async (
   from?: Date,
   to?: Date
 ) => {
-  const headers = ["ردیف", "تاریخ", "عنوان", "شخص", "نقش", "مدیر", "نوع", "سهم شما (ریال)"];
+  const headers = ["ردیف", "تاریخ", "عنوان", "شخص", "نقش", "مدیر", "نوع", "کل هزینه (ریال)", "سهم شما (ریال)"];
   const body = rows.map((e, i) => {
     const isExtra = (e.expenses?.fund_type ?? "charge") === "extra_charge";
     const preferred = isExtra ? e.owner_name : e.resident_name;
@@ -224,6 +224,7 @@ export const exportExpensesPdf = async (
       role,
       e.manager_name || "-",
       fundLabel(e.expenses?.fund_type),
+      fmt(Number(e.expenses?.amount || 0)),
       fmt(Number(e.allocated_amount)),
     ];
   });
