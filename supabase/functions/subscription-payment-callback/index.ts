@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+const DURATION_DAYS = 365;
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const authority = url.searchParams.get("Authority");
@@ -46,24 +48,25 @@ Deno.serve(async (req) => {
   const { data: plan } = await supabase.from("subscription_plans").select("*").eq("id", payRow.plan_id).single();
   if (!plan) return fail("plan_missing");
 
-  // Extend or create subscription
+  const units = Math.max(1, parseInt(String((payRow.meta as any)?.unit_count ?? 1), 10));
+
   const { data: existing } = await supabase.from("customer_subscriptions")
     .select("*").eq("user_id", payRow.user_id).order("expires_at", { ascending: false }).limit(1).maybeSingle();
   const now = new Date();
   let subId: string;
   if (existing && existing.is_active && new Date(existing.expires_at) > now) {
-    const newExp = new Date(new Date(existing.expires_at).getTime() + plan.duration_days * 86400000);
+    const newExp = new Date(new Date(existing.expires_at).getTime() + DURATION_DAYS * 86400000);
     await supabase.from("customer_subscriptions").update({
       plan_id: plan.id,
-      unit_quota: Math.max(existing.unit_quota, plan.unit_quota),
+      unit_quota: Math.max(existing.unit_quota, units),
       expires_at: newExp.toISOString(),
       is_active: true,
     }).eq("id", existing.id);
     subId = existing.id;
   } else {
-    const exp = new Date(now.getTime() + plan.duration_days * 86400000);
+    const exp = new Date(now.getTime() + DURATION_DAYS * 86400000);
     const { data: newSub } = await supabase.from("customer_subscriptions").insert([{
-      user_id: payRow.user_id, plan_id: plan.id, unit_quota: plan.unit_quota,
+      user_id: payRow.user_id, plan_id: plan.id, unit_quota: units,
       starts_at: now.toISOString(), expires_at: exp.toISOString(), is_active: true,
     }]).select().single();
     subId = newSub!.id;

@@ -1,115 +1,163 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Plus, Pencil, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Save } from "lucide-react";
 import { useSubscriptionPlans, usePlanMutations, type SubscriptionPlan } from "@/hooks/useSubscription";
 import { Textarea } from "@/components/ui/textarea";
+import { loadPricingPlans, tariffForTier, tariffPerUnitRial } from "@/lib/tariff";
+import type { PricingPlanConfig } from "@/components/admin/AdminPricingSettings";
 
 const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
 
+interface Draft {
+  id: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+  features: string[];
+}
+
 export function AdminPlans() {
   const { data: plans, isLoading } = useSubscriptionPlans();
-  const { create, update, remove } = usePlanMutations();
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<SubscriptionPlan | null>(null);
-  const [form, setForm] = useState({
-    name: "", unit_quota: 20, duration_days: 365, price_rial: 0,
-    description: "", is_active: true, sort_order: 0,
-  });
+  const { update } = usePlanMutations();
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [pricing, setPricing] = useState<PricingPlanConfig[]>([]);
 
-  const openCreate = () => {
-    setEditing(null);
-    setForm({ name: "", unit_quota: 20, duration_days: 365, price_rial: 0, description: "", is_active: true, sort_order: (plans?.length ?? 0) + 1 });
-    setOpen(true);
-  };
-  const openEdit = (p: SubscriptionPlan) => {
-    setEditing(p);
-    setForm({
-      name: p.name, unit_quota: p.unit_quota, duration_days: p.duration_days,
-      price_rial: p.price_rial, description: p.description ?? "",
-      is_active: p.is_active, sort_order: p.sort_order,
+  useEffect(() => {
+    loadPricingPlans().then(setPricing);
+  }, []);
+
+  useEffect(() => {
+    if (!plans) return;
+    const next: Record<string, Draft> = {};
+    plans
+      .filter((p) => p.tier_key)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .forEach((p) => {
+        next[p.id] = {
+          id: p.id,
+          name: p.name,
+          description: p.description ?? "",
+          is_active: p.is_active,
+          features: Array.isArray((p as any).features) ? ((p as any).features as string[]) : [],
+        };
+      });
+    setDrafts(next);
+  }, [plans]);
+
+  const tierPlans = (plans ?? []).filter((p) => p.tier_key).sort((a, b) => a.sort_order - b.sort_order);
+
+  const updateDraft = (id: string, patch: Partial<Draft>) =>
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const updateFeature = (id: string, idx: number, val: string) =>
+    setDrafts((prev) => {
+      const f = [...prev[id].features];
+      f[idx] = val;
+      return { ...prev, [id]: { ...prev[id], features: f } };
     });
-    setOpen(true);
+
+  const addFeature = (id: string) =>
+    setDrafts((prev) => ({ ...prev, [id]: { ...prev[id], features: [...prev[id].features, ""] } }));
+
+  const removeFeature = (id: string, idx: number) =>
+    setDrafts((prev) => {
+      const f = prev[id].features.filter((_, i) => i !== idx);
+      return { ...prev, [id]: { ...prev[id], features: f } };
+    });
+
+  const handleSave = (id: string) => {
+    const d = drafts[id];
+    update.mutate({
+      id,
+      name: d.name,
+      description: d.description,
+      is_active: d.is_active,
+      features: d.features.filter((s) => s.trim().length > 0),
+    } as any);
   };
 
-  const handleSave = () => {
-    const payload = { ...form };
-    if (editing) update.mutate({ id: editing.id, ...payload }, { onSuccess: () => setOpen(false) });
-    else create.mutate(payload, { onSuccess: () => setOpen(false) });
-  };
+  if (isLoading) return <Loader2 className="w-5 h-5 animate-spin" />;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>پلن‌های اشتراک</CardTitle>
-        <Button onClick={openCreate} size="sm"><Plus className="w-4 h-4 ml-1" /> پلن جدید</Button>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>نام</TableHead>
-                <TableHead>سقف واحد</TableHead>
-                <TableHead>مدت (روز)</TableHead>
-                <TableHead>قیمت (ریال)</TableHead>
-                <TableHead>وضعیت</TableHead>
-                <TableHead>عملیات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {plans?.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.name}</TableCell>
-                  <TableCell>{fmt(p.unit_quota)}</TableCell>
-                  <TableCell>{fmt(p.duration_days)}</TableCell>
-                  <TableCell>{fmt(p.price_rial)}</TableCell>
-                  <TableCell>{p.is_active ? "فعال" : "غیرفعال"}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="w-4 h-4" /></Button>
-                      <Button size="icon" variant="ghost" className="text-destructive" onClick={() => {
-                        if (confirm(`حذف پلن "${p.name}"؟`)) remove.mutate(p.id);
-                      }}><Trash2 className="w-4 h-4" /></Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+    <div className="space-y-4">
+      <div className="bg-muted/40 border rounded-lg p-4 text-sm text-muted-foreground">
+        قیمت هر واحد در «تعرفه‌ها» تعریف می‌شود. این بخش فقط نام، توضیحات و فهرست فیچرهای هر سطح را مدیریت می‌کند. مدیر هنگام خرید، تعداد واحد دلخواه را وارد می‌کند و قیمت نهایی = تعداد واحد × نرخ سطح انتخاب‌شده در تعرفه‌هاست.
+      </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent dir="rtl">
-          <DialogHeader><DialogTitle>{editing ? "ویرایش پلن" : "پلن جدید"}</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>نام پلن</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>سقف واحد</Label><Input type="number" value={form.unit_quota} onChange={(e) => setForm({ ...form, unit_quota: +e.target.value })} /></div>
-              <div><Label>مدت (روز)</Label><Input type="number" value={form.duration_days} onChange={(e) => setForm({ ...form, duration_days: +e.target.value })} /></div>
-            </div>
-            <div><Label>قیمت (ریال)</Label><Input type="number" value={form.price_rial} onChange={(e) => setForm({ ...form, price_rial: +e.target.value })} /></div>
-            <div><Label>توضیحات</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-            <div className="grid grid-cols-2 gap-3 items-center">
-              <div><Label>ترتیب</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm({ ...form, sort_order: +e.target.value })} /></div>
-              <div className="flex items-center gap-2 pt-6">
-                <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                <Label>فعال</Label>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>انصراف</Button>
-            <Button onClick={handleSave} disabled={create.isPending || update.isPending || !form.name}>ذخیره</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        {tierPlans.map((p) => {
+          const d = drafts[p.id];
+          if (!d) return null;
+          const tariff = tariffForTier(pricing, p.tier_key);
+          const perUnit = tariff ? tariffPerUnitRial(tariff) : 0;
+          return (
+            <Card key={p.id}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">{d.name}</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Switch checked={d.is_active} onCheckedChange={(v) => updateDraft(p.id, { is_active: v })} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label>نام نمایشی</Label>
+                  <Input value={d.name} onChange={(e) => updateDraft(p.id, { name: e.target.value })} />
+                </div>
+                <div>
+                  <Label>توضیحات</Label>
+                  <Textarea
+                    rows={2}
+                    value={d.description}
+                    onChange={(e) => updateDraft(p.id, { description: e.target.value })}
+                  />
+                </div>
+
+                <div className="rounded-md border bg-muted/30 p-3 text-sm">
+                  <div className="text-muted-foreground text-xs mb-1">نرخ هر واحد (سالانه)</div>
+                  {tariff?.contact ? (
+                    <div className="font-bold">تماس بگیرید</div>
+                  ) : (
+                    <div className="font-bold">
+                      {fmt(perUnit)} <span className="text-xs font-normal text-muted-foreground">ریال / واحد / سال</span>
+                    </div>
+                  )}
+                  <div className="text-[11px] text-muted-foreground mt-1">قابل ویرایش در «تنظیمات ادمین ← تعرفه‌ها»</div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>فیچرها</Label>
+                    <Button size="sm" variant="outline" onClick={() => addFeature(p.id)}>
+                      <Plus className="w-3.5 h-3.5 ml-1" /> افزودن
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {d.features.map((f, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <Input value={f} onChange={(e) => updateFeature(p.id, idx, e.target.value)} placeholder="مثلاً: گزارش‌های پیشرفته" />
+                        <Button size="icon" variant="ghost" className="text-destructive" onClick={() => removeFeature(p.id, idx)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {d.features.length === 0 && (
+                      <p className="text-xs text-muted-foreground">فیچری اضافه نشده است</p>
+                    )}
+                  </div>
+                </div>
+
+                <Button className="w-full" onClick={() => handleSave(p.id)} disabled={update.isPending}>
+                  <Save className="w-4 h-4 ml-1" /> ذخیره
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 }

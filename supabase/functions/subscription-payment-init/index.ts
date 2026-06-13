@@ -5,6 +5,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const DURATION_DAYS = 365;
+
+function parsePersianNumber(s: any): number {
+  if (s == null) return 0;
+  if (typeof s === "number") return s;
+  const map: Record<string, string> = {
+    "۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9",
+    "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9",
+  };
+  const ascii = String(s).replace(/[۰-۹٠-٩]/g, (c) => map[c] ?? c).replace(/[^\d.]/g, "");
+  const n = Number(ascii);
+  return isNaN(n) ? 0 : n;
+}
+
+function tierIndex(tierKey: string | null): number {
+  if (tierKey === "free") return 0;
+  if (tierKey === "pro") return 1;
+  if (tierKey === "enterprise") return 2;
+  return -1;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -24,42 +45,57 @@ Deno.serve(async (req) => {
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: corsHeaders });
 
-    const { plan_id } = await req.json();
+    const { plan_id, unit_count } = await req.json();
     if (!plan_id) return new Response(JSON.stringify({ error: "plan_id required" }), { status: 400, headers: corsHeaders });
+    const units = Math.max(1, parseInt(String(unit_count ?? 1), 10));
 
     const { data: plan, error: planErr } = await supabase
       .from("subscription_plans").select("*").eq("id", plan_id).eq("is_active", true).single();
     if (planErr || !plan) return new Response(JSON.stringify({ error: "plan not found" }), { status: 404, headers: corsHeaders });
 
+    // Read tariff from platform_settings
+    const { data: psRow } = await supabase
+      .from("platform_settings").select("setting_value").eq("setting_key", "pricing_plans").maybeSingle();
+    const tariffs = (psRow?.setting_value as any)?.plans ?? [];
+    const idx = tierIndex(plan.tier_key);
+    const tariff = idx >= 0 ? tariffs[idx] : null;
+    if (!tariff) return new Response(JSON.stringify({ error: "tariff not configured" }), { status: 400, headers: corsHeaders });
+    if (tariff.contact) return new Response(JSON.stringify({ error: "این پلن نیازمند تماس با پشتیبانی است" }), { status: 400, headers: corsHeaders });
+
+    const perUnitRial = Math.round(parsePersianNumber(tariff.price) * 1000);
+    const amountRial = perUnitRial * units;
+
+    if (amountRial <= 0) {
+      // Free plan: activate directly
+      const { data: payRow } = await supabase.from("subscription_payments").insert([{
+        user_id: user.id, plan_id: plan.id, amount_rial: 0, gateway: "free", status: "pending",
+        meta: { unit_count: units },
+      }]).select().single();
+      await activateSubscription(supabase, user.id, plan, units, payRow!.id, "FREE-" + payRow!.id.slice(0, 8));
+      const origin = req.headers.get("origin") || "";
+      return new Response(JSON.stringify({ redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`, free: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const merchantId = Deno.env.get("ZARINPAL_MERCHANT_ID");
     const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "";
     const callbackUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/subscription-payment-callback?return=${encodeURIComponent(origin)}`;
 
-    // Amount in Rial; ZarinPal expects Rial.
-    const amountRial = Number(plan.price_rial);
-
-    // Insert pending payment row
     const { data: payRow, error: payErr } = await supabase
-      .from("subscription_payments")
-      .insert([{
-        user_id: user.id,
-        plan_id: plan.id,
-        amount_rial: amountRial,
-        gateway: "zarinpal",
-        status: "pending",
+      .from("subscription_payments").insert([{
+        user_id: user.id, plan_id: plan.id, amount_rial: amountRial,
+        gateway: "zarinpal", status: "pending",
+        meta: { unit_count: units, per_unit_rial: perUnitRial },
       }]).select().single();
     if (payErr) throw payErr;
 
     if (!merchantId) {
-      // Sandbox / dev mode: auto-mark paid for testing
-      await activateSubscription(supabase, user.id, plan, payRow.id, "TEST-" + payRow.id.slice(0, 8));
+      await activateSubscription(supabase, user.id, plan, units, payRow.id, "TEST-" + payRow.id.slice(0, 8));
       return new Response(JSON.stringify({
-        redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`,
-        sandbox: true,
+        redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`, sandbox: true,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Real ZarinPal request
     const zpRes = await fetch("https://api.zarinpal.com/pg/v4/payment/request.json", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -67,19 +103,17 @@ Deno.serve(async (req) => {
         merchant_id: merchantId,
         amount: amountRial,
         callback_url: callbackUrl,
-        description: `خرید پلن ${plan.name}`,
+        description: `خرید پلن ${plan.name} - ${units} واحد`,
         metadata: { payment_id: payRow.id, user_id: user.id },
       }),
     });
     const zpData = await zpRes.json();
     if (!zpData?.data?.authority) {
-      await supabase.from("subscription_payments")
-        .update({ status: "failed", meta: zpData }).eq("id", payRow.id);
+      await supabase.from("subscription_payments").update({ status: "failed", meta: zpData }).eq("id", payRow.id);
       return new Response(JSON.stringify({ error: "zarinpal request failed", details: zpData }),
         { status: 500, headers: corsHeaders });
     }
-    await supabase.from("subscription_payments")
-      .update({ authority: zpData.data.authority }).eq("id", payRow.id);
+    await supabase.from("subscription_payments").update({ authority: zpData.data.authority }).eq("id", payRow.id);
 
     return new Response(JSON.stringify({
       redirect_url: `https://www.zarinpal.com/pg/StartPay/${zpData.data.authority}`,
@@ -90,28 +124,24 @@ Deno.serve(async (req) => {
   }
 });
 
-async function activateSubscription(supabase: any, userId: string, plan: any, paymentId: string, refId: string) {
-  // Extend existing if active, else fresh
+async function activateSubscription(supabase: any, userId: string, plan: any, units: number, paymentId: string, refId: string) {
   const { data: existing } = await supabase.from("customer_subscriptions")
     .select("*").eq("user_id", userId).order("expires_at", { ascending: false }).limit(1).maybeSingle();
   const now = new Date();
-  let startsAt: Date, expiresAt: Date;
   if (existing && existing.is_active && new Date(existing.expires_at) > now) {
-    startsAt = new Date(existing.starts_at);
-    expiresAt = new Date(new Date(existing.expires_at).getTime() + plan.duration_days * 86400000);
+    const expiresAt = new Date(new Date(existing.expires_at).getTime() + DURATION_DAYS * 86400000);
     await supabase.from("customer_subscriptions").update({
-      plan_id: plan.id, unit_quota: Math.max(existing.unit_quota, plan.unit_quota),
+      plan_id: plan.id, unit_quota: Math.max(existing.unit_quota, units),
       expires_at: expiresAt.toISOString(), is_active: true,
     }).eq("id", existing.id);
     await supabase.from("subscription_payments").update({
       status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: existing.id,
     }).eq("id", paymentId);
   } else {
-    startsAt = now;
-    expiresAt = new Date(now.getTime() + plan.duration_days * 86400000);
+    const expiresAt = new Date(now.getTime() + DURATION_DAYS * 86400000);
     const { data: subNew } = await supabase.from("customer_subscriptions").insert([{
-      user_id: userId, plan_id: plan.id, unit_quota: plan.unit_quota,
-      starts_at: startsAt.toISOString(), expires_at: expiresAt.toISOString(), is_active: true,
+      user_id: userId, plan_id: plan.id, unit_quota: units,
+      starts_at: now.toISOString(), expires_at: expiresAt.toISOString(), is_active: true,
     }]).select().single();
     await supabase.from("subscription_payments").update({
       status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: subNew?.id,

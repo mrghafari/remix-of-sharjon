@@ -11,6 +11,8 @@ export interface SubscriptionPlan {
   description: string | null;
   is_active: boolean;
   sort_order: number;
+  tier_key: string | null;
+  features: string[];
 }
 
 export interface MySubscription {
@@ -180,9 +182,9 @@ export function usePlanMutations() {
 
 export function useInitSubscriptionPayment() {
   return useMutation({
-    mutationFn: async (planId: string) => {
+    mutationFn: async ({ planId, unitCount }: { planId: string; unitCount: number }) => {
       const { data, error } = await supabase.functions.invoke("subscription-payment-init", {
-        body: { plan_id: planId },
+        body: { plan_id: planId, unit_count: unitCount },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);

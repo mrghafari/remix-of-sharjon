@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Check, Zap, Clock, ShieldCheck } from "lucide-react";
 import {
@@ -12,6 +14,8 @@ import {
 } from "@/hooks/useSubscription";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "@/hooks/use-toast";
+import { loadPricingPlans, tariffForTier, tariffPerUnitRial } from "@/lib/tariff";
+import type { PricingPlanConfig } from "@/components/admin/AdminPricingSettings";
 
 const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
 
@@ -20,6 +24,12 @@ export function SubscriptionPage() {
   const { data: plans, isLoading: plansLoading } = useSubscriptionPlans(true);
   const { data: payments } = useMySubscriptionPayments();
   const initPayment = useInitSubscriptionPayment();
+  const [pricing, setPricing] = useState<PricingPlanConfig[]>([]);
+  const [unitCounts, setUnitCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    loadPricingPlans().then(setPricing);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -34,6 +44,8 @@ export function SubscriptionPage() {
     }
   }, []);
 
+  const tierPlans = (plans ?? []).filter((p) => (p as any).tier_key);
+
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl">
       <div className="flex items-center gap-3">
@@ -46,7 +58,6 @@ export function SubscriptionPage() {
         </div>
       </div>
 
-      {/* Current status */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">وضعیت فعلی</CardTitle>
@@ -71,46 +82,81 @@ export function SubscriptionPage() {
         </CardContent>
       </Card>
 
-      {/* Plans */}
       <div>
         <h2 className="text-lg font-semibold mb-3">پلن‌های موجود</h2>
         {plansLoading ? (
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
-            {plans?.map((p) => (
-              <Card key={p.id} className="relative">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    {p.name}
-                    <ShieldCheck className="w-5 h-5 text-primary" />
-                  </CardTitle>
-                  {p.description && <CardDescription>{p.description}</CardDescription>}
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="text-2xl font-bold">
-                    {fmt(p.price_rial)} <span className="text-xs font-normal text-muted-foreground">ریال</span>
-                  </div>
-                  <ul className="space-y-1.5 text-sm">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> {fmt(p.unit_quota)} واحد قابل مدیریت</li>
-                    <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> اعتبار {fmt(p.duration_days)} روز</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> پشتیبانی فنی</li>
-                  </ul>
-                  <Button
-                    className="w-full"
-                    disabled={initPayment.isPending}
-                    onClick={() => initPayment.mutate(p.id)}
-                  >
-                    {initPayment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "خرید / تمدید"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {tierPlans.map((p) => {
+              const tariff = tariffForTier(pricing, (p as any).tier_key);
+              const perUnit = tariff ? tariffPerUnitRial(tariff) : 0;
+              const units = unitCounts[p.id] ?? Math.max(sub?.unit_quota || 0, 10);
+              const total = perUnit * units;
+              const features: string[] = Array.isArray((p as any).features) ? (p as any).features : [];
+              const isContact = tariff?.contact === true;
+              return (
+                <Card key={p.id} className="relative">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {p.name}
+                      <ShieldCheck className="w-5 h-5 text-primary" />
+                    </CardTitle>
+                    {p.description && <CardDescription>{p.description}</CardDescription>}
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="rounded-md bg-muted/40 p-2 text-center">
+                      {isContact ? (
+                        <div className="text-lg font-bold">تماس بگیرید</div>
+                      ) : (
+                        <>
+                          <div className="text-xs text-muted-foreground">نرخ هر واحد (سالانه)</div>
+                          <div className="text-lg font-bold">{fmt(perUnit)} <span className="text-xs font-normal">ریال</span></div>
+                        </>
+                      )}
+                    </div>
+
+                    <ul className="space-y-1.5 text-sm">
+                      {features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> {f}</li>
+                      ))}
+                      <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> اعتبار ۳۶۵ روز</li>
+                    </ul>
+
+                    {!isContact && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">تعداد واحد مورد نیاز</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={units}
+                          onChange={(e) =>
+                            setUnitCounts((prev) => ({ ...prev, [p.id]: Math.max(1, parseInt(e.target.value || "1", 10)) }))
+                          }
+                        />
+                        <div className="text-sm flex justify-between border-t pt-2">
+                          <span className="text-muted-foreground">مبلغ نهایی:</span>
+                          <span className="font-bold">{fmt(total)} ریال</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full"
+                      disabled={initPayment.isPending || isContact || perUnit <= 0}
+                      onClick={() => initPayment.mutate({ planId: p.id, unitCount: units })}
+                    >
+                      {initPayment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                        isContact ? "تماس با ما" : perUnit <= 0 ? "رایگان" : "خرید / تمدید"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* History */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">تاریخچه پرداخت‌ها</CardTitle>
@@ -136,9 +182,7 @@ export function SubscriptionPage() {
                     <TableCell>{fmt(p.amount_rial)}</TableCell>
                     <TableCell>{p.gateway}</TableCell>
                     <TableCell className="ltr text-xs">{p.ref_id || p.authority || "—"}</TableCell>
-                    <TableCell>
-                      <StatusBadge status={p.status} />
-                    </TableCell>
+                    <TableCell><StatusBadge status={p.status} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
