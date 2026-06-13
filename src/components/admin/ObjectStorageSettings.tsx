@@ -12,6 +12,7 @@ import { HardDrive } from "lucide-react";
  * Values shown are the customer's Liara bucket credentials as provided.
  */
 export function ObjectStorageSettings() {
+  const [enabled, setEnabled] = useState(false);
   const [form, setForm] = useState({
     provider: "liara",
     endpoint: "storage.c2.liara.site",
