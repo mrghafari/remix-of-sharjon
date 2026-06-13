@@ -1084,6 +1084,64 @@ export type Database = {
           },
         ]
       }
+      meeting_minute_signatures: {
+        Row: {
+          building_id: string
+          id: string
+          meeting_minute_id: string
+          person_name: string | null
+          person_phone: string | null
+          person_role: string | null
+          signed_at: string
+          unit_id: string | null
+          user_id: string
+        }
+        Insert: {
+          building_id: string
+          id?: string
+          meeting_minute_id: string
+          person_name?: string | null
+          person_phone?: string | null
+          person_role?: string | null
+          signed_at?: string
+          unit_id?: string | null
+          user_id: string
+        }
+        Update: {
+          building_id?: string
+          id?: string
+          meeting_minute_id?: string
+          person_name?: string | null
+          person_phone?: string | null
+          person_role?: string | null
+          signed_at?: string
+          unit_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_minute_signatures_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_minute_signatures_meeting_minute_id_fkey"
+            columns: ["meeting_minute_id"]
+            isOneToOne: false
+            referencedRelation: "building_meeting_minutes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_minute_signatures_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_reads: {
         Row: {
           building_id: string
