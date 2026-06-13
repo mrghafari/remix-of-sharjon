@@ -57,6 +57,16 @@ const BANK_META: { key: BankKey; name: string; fields: ("merchant_id" | "termina
   { key: "melli", name: "بانک ملی", fields: ["merchant_id", "terminal_id"] },
 ];
 
+const BANK_COLORS: Record<string, string> = {
+  saman: "border-blue-500 bg-blue-50/40",
+  blu_saman: "border-sky-500 bg-sky-50/40",
+  mellat: "border-red-500 bg-red-50/40",
+  parsian: "border-emerald-500 bg-emerald-50/40",
+  saderat: "border-amber-500 bg-amber-50/40",
+  pasargad: "border-violet-500 bg-violet-50/40",
+  melli: "border-teal-500 bg-teal-50/40",
+};
+
 const FIELD_LABELS: Record<string, string> = {
   merchant_id: "Merchant ID / شناسه پذیرنده",
   terminal_id: "Terminal ID / شماره ترمینال",
@@ -314,8 +324,9 @@ export function PaymentGatewaySettings({ userId }: Props) {
 
           {BANK_META.map((bank, idx) => {
             const cfg = state.banks[bank.key];
+            const colorClass = BANK_COLORS[bank.key] || "border-gray-300 bg-gray-50/30";
             return (
-              <div key={bank.key} className="space-y-3">
+              <div key={bank.key} className={`rounded-lg border p-3 space-y-3 ${colorClass}`}>
                 {idx > 0 && <Separator className="opacity-50" />}
                 <div className="flex items-center justify-between pt-2">
                   <div>
@@ -332,7 +343,7 @@ export function PaymentGatewaySettings({ userId }: Props) {
                   />
                 </div>
                 {cfg.enabled && (
-                  <div className="space-y-3 pr-4 border-r-2 border-primary/20">
+                  <div className="space-y-3 pr-4 border-r-2 border-current/30">
                     {bank.fields.map((field) => (
                       <div key={field} className="space-y-2">
                         <Label>{FIELD_LABELS[field]}</Label>
