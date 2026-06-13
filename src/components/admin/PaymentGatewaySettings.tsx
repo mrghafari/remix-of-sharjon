@@ -324,8 +324,9 @@ export function PaymentGatewaySettings({ userId }: Props) {
 
           {BANK_META.map((bank, idx) => {
             const cfg = state.banks[bank.key];
+            const colorClass = BANK_COLORS[bank.key] || "border-gray-300 bg-gray-50/30";
             return (
-              <div key={bank.key} className="space-y-3">
+              <div key={bank.key} className={`rounded-lg border p-3 space-y-3 ${colorClass}`}>
                 {idx > 0 && <Separator className="opacity-50" />}
                 <div className="flex items-center justify-between pt-2">
                   <div>
@@ -342,7 +343,7 @@ export function PaymentGatewaySettings({ userId }: Props) {
                   />
                 </div>
                 {cfg.enabled && (
-                  <div className="space-y-3 pr-4 border-r-2 border-primary/20">
+                  <div className="space-y-3 pr-4 border-r-2 border-current/30">
                     {bank.fields.map((field) => (
                       <div key={field} className="space-y-2">
                         <Label>{FIELD_LABELS[field]}</Label>
