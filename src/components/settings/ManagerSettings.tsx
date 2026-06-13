@@ -177,6 +177,21 @@ export function ManagerSettings() {
           </span>
         </div>
       </div>
+
+      {(manager.charge_discount_percent > 0 || manager.extra_charge_discount_percent > 0) && (
+        <div className="flex flex-wrap gap-2 text-sm">
+          {manager.charge_discount_percent > 0 && (
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+              تخفیف شارژ: {manager.charge_discount_percent}%
+            </Badge>
+          )}
+          {manager.extra_charge_discount_percent > 0 && (
+            <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+              تخفیف شارژ اضافی: {manager.extra_charge_discount_percent}%
+            </Badge>
+          )}
+        </div>
+      )}
     </div>
   );
 
