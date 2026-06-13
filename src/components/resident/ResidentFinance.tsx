@@ -567,6 +567,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                               {fundType === "charge" ? "شارژ" : "فوق‌شارژ"}
                             </Badge>
                           </TableCell>
+                          <TableCell className="font-semibold text-muted-foreground text-left whitespace-nowrap">
+                            {formatNumber(Number(expense?.amount || 0))} ریال
+                          </TableCell>
                           <TableCell className="font-semibold text-red-600 text-left whitespace-nowrap">
                             {formatNumber(Number(e.allocated_amount))} ریال
                           </TableCell>
