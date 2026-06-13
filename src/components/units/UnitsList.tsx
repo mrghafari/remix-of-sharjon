@@ -147,13 +147,13 @@ export function UnitsList({ onEdit }: UnitsListProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">پلاک</TableHead>
-                    <TableHead className="text-right">طبقه</TableHead>
-                    <TableHead className="text-right">متراژ</TableHead>
-                    <TableHead className="text-right">تعداد افراد</TableHead>
-                    <TableHead className="text-right">مالک</TableHead>
+                    <SortableHeader field="unit_number">پلاک</SortableHeader>
+                    <SortableHeader field="floor">طبقه</SortableHeader>
+                    <SortableHeader field="area">متراژ</SortableHeader>
+                    <SortableHeader field="resident_count">تعداد افراد</SortableHeader>
+                    <SortableHeader field="owner_name">مالک</SortableHeader>
                     <TableHead className="text-right">تلفن مالک</TableHead>
-                    <TableHead className="text-right">ساکن</TableHead>
+                    <SortableHeader field="resident_name">ساکن</SortableHeader>
                     <TableHead className="text-right">تلفن ساکن</TableHead>
                     <TableHead className="text-right">تلفن ثابت</TableHead>
                     <TableHead className="text-right">وضعیت</TableHead>
