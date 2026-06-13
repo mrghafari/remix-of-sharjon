@@ -379,7 +379,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     <div className="space-y-4 animate-fade-in" dir="rtl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold">جلسات آنلاین</h2>
+          <h2 className="text-lg font-bold">جلسه</h2>
           <p className="text-muted-foreground text-sm mt-1">
             جلسات از طریق سرویس رایگان meet.jit.si برگزار می‌شود. نیازی به نصب نرم‌افزار نیست.
           </p>
