@@ -114,6 +114,18 @@ export function UnitsList({ onEdit }: UnitsListProps) {
     );
   }
 
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
+    const isActive = sort.field === field;
+    return (
+      <TableHead className="text-right cursor-pointer select-none hover:text-primary transition-colors" onClick={() => toggleSort(field)}>
+        <span className="inline-flex items-center gap-1">
+          {children}
+          {isActive && (sort.dir === "asc" ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />)}
+        </span>
+      </TableHead>
+    );
+  };
+
   return (
     <>
       <Card variant="elevated" className="animate-fade-in">
