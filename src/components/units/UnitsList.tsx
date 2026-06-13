@@ -11,8 +11,10 @@ import {
   Building2,
   Ruler,
   PhoneCall,
-  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
+
 import {
   Table,
   TableBody,
@@ -21,13 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,13 +44,25 @@ const getFloorLabel = (floor: number | null) => {
   return `طبقه ${floor}`;
 };
 
-type SortKey = "unit_number_asc" | "unit_number_desc" | "floor_asc" | "floor_desc" | "area_asc" | "area_desc" | "owner_asc";
+type SortField = "unit_number" | "floor" | "area" | "resident_count" | "owner_name" | "resident_name";
+type SortDir = "asc" | "desc";
 
 export function UnitsList({ onEdit }: UnitsListProps) {
   const { data: units = [], isLoading } = useUnits();
   const deleteUnit = useDeleteUnit();
   const [unitToDelete, setUnitToDelete] = useState<Unit | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("unit_number_asc");
+  const [sort, setSort] = useState<{ field: SortField; dir: SortDir }>({ field: "unit_number", dir: "asc" });
+
+  const toggleSort = (field: SortField) => {
+    setSort((prev) => {
+      if (prev.field === field) {
+        if (prev.dir === "asc") return { field, dir: "desc" };
+        // cycling back to default sort by unit_number asc when turning off
+        return { field: "unit_number", dir: "asc" };
+      }
+      return { field, dir: "asc" };
+    });
+  };
 
   const sortedUnits = useMemo(() => {
     const arr = [...units];
@@ -63,25 +70,32 @@ export function UnitsList({ onEdit }: UnitsListProps) {
       const n = parseFloat(String(v ?? ""));
       return isNaN(n) ? d : n;
     };
-    switch (sortKey) {
-      case "unit_number_asc":
-        return arr.sort((a, b) => numOr(a.unit_number, Infinity) - numOr(b.unit_number, Infinity));
-      case "unit_number_desc":
-        return arr.sort((a, b) => numOr(b.unit_number, -Infinity) - numOr(a.unit_number, -Infinity));
-      case "floor_asc":
-        return arr.sort((a, b) => (a.floor ?? Infinity) - (b.floor ?? Infinity));
-      case "floor_desc":
-        return arr.sort((a, b) => (b.floor ?? -Infinity) - (a.floor ?? -Infinity));
-      case "area_asc":
-        return arr.sort((a, b) => numOr(a.area, Infinity) - numOr(b.area, Infinity));
-      case "area_desc":
-        return arr.sort((a, b) => numOr(b.area, -Infinity) - numOr(a.area, -Infinity));
-      case "owner_asc":
-        return arr.sort((a, b) => (a.owner_name || "").localeCompare(b.owner_name || "", "fa"));
-      default:
-        return arr;
-    }
-  }, [units, sortKey]);
+
+    const { field, dir } = sort;
+    const isAsc = dir === "asc";
+    const mult = isAsc ? 1 : -1;
+
+    const compare = (a: Unit, b: Unit) => {
+      switch (field) {
+        case "unit_number":
+          return (numOr(a.unit_number, Infinity) - numOr(b.unit_number, Infinity)) * mult;
+        case "floor":
+          return ((a.floor ?? Infinity) - (b.floor ?? Infinity)) * mult;
+        case "area":
+          return (numOr(a.area, Infinity) - numOr(b.area, Infinity)) * mult;
+        case "resident_count":
+          return ((a.resident_count || 1) - (b.resident_count || 1)) * mult;
+        case "owner_name":
+          return (a.owner_name || "").localeCompare(b.owner_name || "", "fa") * mult;
+        case "resident_name":
+          return (a.resident_name || "").localeCompare(b.resident_name || "", "fa") * mult;
+        default:
+          return 0;
+      }
+    };
+
+    return arr.sort(compare);
+  }, [units, sort]);
 
   const handleDelete = () => {
     if (unitToDelete) {
@@ -100,6 +114,18 @@ export function UnitsList({ onEdit }: UnitsListProps) {
     );
   }
 
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => {
+    const isActive = sort.field === field;
+    return (
+      <TableHead className="text-right cursor-pointer select-none hover:text-primary transition-colors" onClick={() => toggleSort(field)}>
+        <span className="inline-flex items-center gap-1">
+          {children}
+          {isActive && (sort.dir === "asc" ? <ArrowUp className="w-3 h-3 text-primary" /> : <ArrowDown className="w-3 h-3 text-primary" />)}
+        </span>
+      </TableHead>
+    );
+  };
+
   return (
     <>
       <Card variant="elevated" className="animate-fade-in">
@@ -108,23 +134,6 @@ export function UnitsList({ onEdit }: UnitsListProps) {
             <Building2 className="w-5 h-5 text-primary" />
             لیست واحدها ({units.length})
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
-            <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-              <SelectTrigger className="w-[200px] h-9">
-                <SelectValue placeholder="مرتب‌سازی" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="unit_number_asc">پلاک (صعودی)</SelectItem>
-                <SelectItem value="unit_number_desc">پلاک (نزولی)</SelectItem>
-                <SelectItem value="floor_asc">طبقه (صعودی)</SelectItem>
-                <SelectItem value="floor_desc">طبقه (نزولی)</SelectItem>
-                <SelectItem value="area_asc">متراژ (صعودی)</SelectItem>
-                <SelectItem value="area_desc">متراژ (نزولی)</SelectItem>
-                <SelectItem value="owner_asc">نام مالک</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
         </CardHeader>
         <CardContent>
           {units.length === 0 ? (
@@ -138,13 +147,13 @@ export function UnitsList({ onEdit }: UnitsListProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">پلاک</TableHead>
-                    <TableHead className="text-right">طبقه</TableHead>
-                    <TableHead className="text-right">متراژ</TableHead>
-                    <TableHead className="text-right">تعداد افراد</TableHead>
-                    <TableHead className="text-right">مالک</TableHead>
+                    <SortableHeader field="unit_number">پلاک</SortableHeader>
+                    <SortableHeader field="floor">طبقه</SortableHeader>
+                    <SortableHeader field="area">متراژ</SortableHeader>
+                    <SortableHeader field="resident_count">تعداد افراد</SortableHeader>
+                    <SortableHeader field="owner_name">مالک</SortableHeader>
                     <TableHead className="text-right">تلفن مالک</TableHead>
-                    <TableHead className="text-right">ساکن</TableHead>
+                    <SortableHeader field="resident_name">ساکن</SortableHeader>
                     <TableHead className="text-right">تلفن ساکن</TableHead>
                     <TableHead className="text-right">تلفن ثابت</TableHead>
                     <TableHead className="text-right">وضعیت</TableHead>
