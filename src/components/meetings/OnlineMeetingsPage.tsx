@@ -32,6 +32,7 @@ interface OnlineMeeting {
   title: string;
   description: string | null;
   scheduled_at: string;
+  ends_at: string | null;
   room_name: string | null;
   jitsi_domain: string | null;
   created_by: string | null;
