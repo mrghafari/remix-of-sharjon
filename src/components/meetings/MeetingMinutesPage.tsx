@@ -145,7 +145,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
     setDialogOpen(true);
   };
 
-  const notifyResidentsToSign = async (m: MeetingMinute) => {
+  const notifyResidentsToSign = async (m: MeetingMinute, isUpdate = false) => {
     try {
       const { data: units } = await supabase
         .from("units")
@@ -163,10 +163,15 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
         }
       });
 
+      const annTitle = isUpdate ? `ویرایش صورتجلسه: ${m.title}` : `صورتجلسه جدید: ${m.title}`;
+      const annContent = isUpdate
+        ? `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ویرایش شد. امضاهای قبلی باطل شدند.\nلطفاً پس از مطالعه نسخه جدید، نسبت به امضای مجدد در بخش «جلسات → صورتجلسات» اقدام فرمایید.`
+        : `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ثبت شد.\nلطفاً پس از مطالعه، نسبت به امضای الکترونیکی آن در بخش «جلسات → صورتجلسات» اقدام فرمایید.`;
+
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
-        title: `صورتجلسه جدید: ${m.title}`,
-        content: `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ثبت شد.\nلطفاً پس از مطالعه، نسبت به امضای الکترونیکی آن در بخش «جلسات → صورتجلسات» اقدام فرمایید.`,
+        title: annTitle,
+        content: annContent,
         is_pinned: true,
         created_by: user?.id,
       });
