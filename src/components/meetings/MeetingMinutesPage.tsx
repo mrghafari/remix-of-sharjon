@@ -234,12 +234,30 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
       };
 
       if (editing) {
-        const { error } = await supabase
+        if (editing.is_finalized) {
+          throw new Error("صورتجلسه نهایی شده است و قابل ویرایش نیست");
+        }
+        const hadSignatures = (signaturesByMinute.get(editing.id) || []).length > 0;
+        const contentChanged =
+          editing.title !== payload.title ||
+          editing.meeting_date !== payload.meeting_date ||
+          (editing.content || "") !== (payload.content || "") ||
+          (editing.pdf_file_path || "") !== (payload.pdf_file_path || "");
+
+        const { data: updated, error } = await supabase
           .from("building_meeting_minutes" as any)
           .update(payload)
-          .eq("id", editing.id);
+          .eq("id", editing.id)
+          .select()
+          .single();
         if (error) throw error;
-        toast.success("صورتجلسه به‌روزرسانی شد");
+
+        if (contentChanged && hadSignatures) {
+          toast.success("صورتجلسه به‌روزرسانی شد. امضاهای قبلی باطل شدند و اطلاع‌رسانی مجدد ارسال می‌شود.");
+          if (updated) await notifyResidentsToSign(updated as unknown as MeetingMinute, true);
+        } else {
+          toast.success("صورتجلسه به‌روزرسانی شد");
+        }
       } else {
         const { data, error } = await supabase
           .from("building_meeting_minutes" as any)
@@ -254,6 +272,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
       setDialogOpen(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["meeting_minutes", buildingId] });
+      queryClient.invalidateQueries({ queryKey: ["meeting_minute_signatures", buildingId] });
     } catch (e: any) {
       toast.error(e.message || "خطا در ثبت صورتجلسه");
     } finally {
