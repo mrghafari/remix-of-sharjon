@@ -1,4 +1,4 @@
 project_id = "pnswqgmujbarpucfjxmw"
 
-[functions.sms-payment-callback]
+[functions.subscription-payment-callback]
 verify_jwt = false
