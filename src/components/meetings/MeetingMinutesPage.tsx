@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "sonner";
-import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip, PenLine, CheckCircle2, Users } from "lucide-react";
+import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip, PenLine, CheckCircle2, Users, Lock, ShieldCheck } from "lucide-react";
 import { sendSmsBatch } from "@/hooks/useSms";
 
 interface MeetingMinute {
@@ -27,6 +27,8 @@ interface MeetingMinute {
   pdf_file_name: string | null;
   pdf_file_size: number;
   created_at: string;
+  is_finalized?: boolean;
+  finalized_at?: string | null;
 }
 
 interface Signature {
