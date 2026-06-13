@@ -14,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "sonner";
-import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip, PenLine, CheckCircle2, Users } from "lucide-react";
+import { FileText, Plus, Search, Download, Trash2, Pencil, Calendar, Loader2, Paperclip, PenLine, CheckCircle2, Users, Lock, ShieldCheck } from "lucide-react";
 import { sendSmsBatch } from "@/hooks/useSms";
 
 interface MeetingMinute {
@@ -27,6 +27,8 @@ interface MeetingMinute {
   pdf_file_name: string | null;
   pdf_file_size: number;
   created_at: string;
+  is_finalized?: boolean;
+  finalized_at?: string | null;
 }
 
 interface Signature {
@@ -65,6 +67,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
   const [deleteTarget, setDeleteTarget] = useState<MeetingMinute | null>(null);
   const [signersDialog, setSignersDialog] = useState<MeetingMinute | null>(null);
   const [signConfirmTarget, setSignConfirmTarget] = useState<MeetingMinute | null>(null);
+  const [finalizeTarget, setFinalizeTarget] = useState<MeetingMinute | null>(null);
   const [signing, setSigning] = useState(false);
 
   const [title, setTitle] = useState("");
@@ -142,7 +145,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
     setDialogOpen(true);
   };
 
-  const notifyResidentsToSign = async (m: MeetingMinute) => {
+  const notifyResidentsToSign = async (m: MeetingMinute, isUpdate = false) => {
     try {
       const { data: units } = await supabase
         .from("units")
@@ -160,10 +163,15 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
         }
       });
 
+      const annTitle = isUpdate ? `ویرایش صورتجلسه: ${m.title}` : `صورتجلسه جدید: ${m.title}`;
+      const annContent = isUpdate
+        ? `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ویرایش شد. امضاهای قبلی باطل شدند.\nلطفاً پس از مطالعه نسخه جدید، نسبت به امضای مجدد در بخش «جلسات → صورتجلسات» اقدام فرمایید.`
+        : `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ثبت شد.\nلطفاً پس از مطالعه، نسبت به امضای الکترونیکی آن در بخش «جلسات → صورتجلسات» اقدام فرمایید.`;
+
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
-        title: `صورتجلسه جدید: ${m.title}`,
-        content: `صورتجلسه «${m.title}» مربوط به تاریخ ${dateStr} ثبت شد.\nلطفاً پس از مطالعه، نسبت به امضای الکترونیکی آن در بخش «جلسات → صورتجلسات» اقدام فرمایید.`,
+        title: annTitle,
+        content: annContent,
         is_pinned: true,
         created_by: user?.id,
       });
@@ -226,12 +234,30 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
       };
 
       if (editing) {
-        const { error } = await supabase
+        if (editing.is_finalized) {
+          throw new Error("صورتجلسه نهایی شده است و قابل ویرایش نیست");
+        }
+        const hadSignatures = (signaturesByMinute.get(editing.id) || []).length > 0;
+        const contentChanged =
+          editing.title !== payload.title ||
+          editing.meeting_date !== payload.meeting_date ||
+          (editing.content || "") !== (payload.content || "") ||
+          (editing.pdf_file_path || "") !== (payload.pdf_file_path || "");
+
+        const { data: updated, error } = await supabase
           .from("building_meeting_minutes" as any)
           .update(payload)
-          .eq("id", editing.id);
+          .eq("id", editing.id)
+          .select()
+          .single();
         if (error) throw error;
-        toast.success("صورتجلسه به‌روزرسانی شد");
+
+        if (contentChanged && hadSignatures) {
+          toast.success("صورتجلسه به‌روزرسانی شد. امضاهای قبلی باطل شدند و اطلاع‌رسانی مجدد ارسال می‌شود.");
+          if (updated) await notifyResidentsToSign(updated as unknown as MeetingMinute, true);
+        } else {
+          toast.success("صورتجلسه به‌روزرسانی شد");
+        }
       } else {
         const { data, error } = await supabase
           .from("building_meeting_minutes" as any)
@@ -246,6 +272,7 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
       setDialogOpen(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["meeting_minutes", buildingId] });
+      queryClient.invalidateQueries({ queryKey: ["meeting_minute_signatures", buildingId] });
     } catch (e: any) {
       toast.error(e.message || "خطا در ثبت صورتجلسه");
     } finally {
@@ -270,6 +297,22 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
       setDeleteTarget(null);
     },
     onError: (e: any) => toast.error(e.message || "خطا در حذف"),
+  });
+
+  const finalizeMutation = useMutation({
+    mutationFn: async (m: MeetingMinute) => {
+      const { error } = await supabase
+        .from("building_meeting_minutes" as any)
+        .update({ is_finalized: true, finalized_at: new Date().toISOString(), finalized_by: user?.id })
+        .eq("id", m.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("صورتجلسه نهایی شد. دیگر قابل ویرایش نیست اما اهالی امضا نکرده می‌توانند امضا کنند.");
+      queryClient.invalidateQueries({ queryKey: ["meeting_minutes", buildingId] });
+      setFinalizeTarget(null);
+    },
+    onError: (e: any) => toast.error(e.message || "خطا در نهایی‌سازی"),
   });
 
   const handleSign = async (m: MeetingMinute) => {
@@ -388,6 +431,11 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
                         <FileText className="w-4 h-4 text-primary shrink-0" />
                         <span>{highlight(m.title, search)}</span>
                         {m.pdf_file_path && <Paperclip className="w-3.5 h-3.5 text-muted-foreground" />}
+                        {m.is_finalized && (
+                          <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-800 hover:bg-blue-100">
+                            <Lock className="w-3 h-3" /> نهایی شده
+                          </Badge>
+                        )}
                         {signed && (
                           <Badge variant="secondary" className="gap-1 bg-green-100 text-green-800 hover:bg-green-100">
                             <CheckCircle2 className="w-3 h-3" /> امضا شده توسط شما
@@ -424,10 +472,35 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
                       )}
                       {canEdit && (
                         <>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
+                          {!m.is_finalized && sigs.length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1 text-blue-700 border-blue-300 hover:bg-blue-50"
+                              onClick={() => setFinalizeTarget(m)}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              نهایی‌سازی امضاها
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => openEdit(m)}
+                            disabled={m.is_finalized}
+                            title={m.is_finalized ? "صورتجلسه نهایی شده و قابل ویرایش نیست" : "ویرایش"}
+                          >
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(m)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => setDeleteTarget(m)}
+                            disabled={m.is_finalized}
+                            title={m.is_finalized ? "صورتجلسه نهایی شده و قابل حذف نیست" : "حذف"}
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </>
@@ -565,6 +638,27 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!finalizeTarget} onOpenChange={(o) => !o && setFinalizeTarget(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>نهایی‌سازی امضاهای صورتجلسه</AlertDialogTitle>
+            <AlertDialogDescription>
+              با نهایی‌سازی «{finalizeTarget?.title}»، این صورتجلسه دیگر قابل ویرایش یا حذف نخواهد بود.
+              امضاهای ثبت‌شده تاکنون معتبر باقی می‌مانند و اهالی‌ای که هنوز امضا نکرده‌اند، می‌توانند پس از نهایی‌سازی نیز امضا کنند.
+              این عمل قابل بازگشت نیست.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>انصراف</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => finalizeTarget && finalizeMutation.mutate(finalizeTarget)}
+            >
+              نهایی‌سازی
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
