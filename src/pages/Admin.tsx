@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ShamsiDateDisplay } from "@/components/layout/ShamsiDateDisplay";
-import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2 } from "lucide-react";
+import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2, Wallet, Package } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminBuildings } from "@/components/admin/AdminBuildings";
 import { AdminPlatformSettings } from "@/components/admin/AdminPlatformSettings";
 import { AdminBankAccounts } from "@/components/admin/AdminBankAccounts";
 import { AdminSmsPackages } from "@/components/admin/AdminSmsPackages";
+import { AdminPlans } from "@/components/admin/AdminPlans";
+import { AdminRevenue } from "@/components/admin/AdminRevenue";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 
 export default function Admin() {
@@ -60,6 +62,14 @@ export default function Admin() {
               <Building2 className="h-4 w-4" />
               ساختمان‌ها
             </TabsTrigger>
+            <TabsTrigger value="plans" className="gap-2">
+              <Package className="h-4 w-4" />
+              پلن‌ها
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              درآمد
+            </TabsTrigger>
             <TabsTrigger value="bank-accounts" className="gap-2">
               <Landmark className="h-4 w-4" />
               حساب‌های بانکی
@@ -93,6 +103,14 @@ export default function Admin() {
 
           <TabsContent value="buildings">
             <AdminBuildings />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <AdminPlans />
+          </TabsContent>
+
+          <TabsContent value="revenue">
+            <AdminRevenue />
           </TabsContent>
 
           <TabsContent value="bank-accounts">

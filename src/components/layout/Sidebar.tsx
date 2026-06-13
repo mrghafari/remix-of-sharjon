@@ -1,4 +1,5 @@
 import { Building2, Home, Users, CreditCard, Settings, FileText, Bell, ChevronLeft, ChevronRight, Receipt, FolderOpen, Gauge, BookUser, Zap, FolderKanban, MessageSquare, LifeBuoy, X, ScrollText, Send, LogOut } from "lucide-react";
+import { SidebarSubscriptionCard } from "./SidebarSubscriptionCard";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -138,8 +139,9 @@ export function Sidebar({ activeTab, onTabChange, mobileOpen = false, onMobileOp
           })}
         </nav>
 
-        {/* Footer: Logout (mobile) + Collapse (desktop) */}
-        <div className="p-2 border-t border-sidebar-border space-y-1">
+        {/* Footer: Subscription + Logout + Collapse */}
+        <div className="p-2 border-t border-sidebar-border space-y-2">
+          <SidebarSubscriptionCard showLabels={showLabels} onClick={() => handleItemClick("subscription")} />
           <Button
             variant="ghost"
             onClick={handleSignOut}
