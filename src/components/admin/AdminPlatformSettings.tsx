@@ -1,8 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, MessageSquare, Tag } from "lucide-react";
+import { CreditCard, MessageSquare, Tag, HardDrive } from "lucide-react";
 import { PaymentGatewaySettings } from "./PaymentGatewaySettings";
 import { SmsSettings } from "./SmsSettings";
 import { AdminPricingSettings } from "./AdminPricingSettings";
+import { ObjectStorageSettings } from "./ObjectStorageSettings";
 
 interface Props {
   /** When provided, shows per-customer settings; otherwise platform-wide */
@@ -38,6 +39,12 @@ export function AdminPlatformSettings({ userId }: Props) {
               تعرفه‌ها
             </TabsTrigger>
           )}
+          {!userId && (
+            <TabsTrigger value="storage" className="gap-2">
+              <HardDrive className="h-4 w-4" />
+              فضای ذخیره‌سازی
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="payment" className="mt-4">
@@ -51,6 +58,12 @@ export function AdminPlatformSettings({ userId }: Props) {
         {!userId && (
           <TabsContent value="pricing" className="mt-4">
             <AdminPricingSettings />
+          </TabsContent>
+        )}
+
+        {!userId && (
+          <TabsContent value="storage" className="mt-4">
+            <ObjectStorageSettings />
           </TabsContent>
         )}
       </Tabs>
