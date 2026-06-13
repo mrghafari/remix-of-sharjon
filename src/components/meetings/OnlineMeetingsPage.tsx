@@ -87,6 +87,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const [hasOnline, setHasOnline] = useState(true);
   const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
   const [meetingTime, setMeetingTime] = useState("20:00");
+  const [endTime, setEndTime] = useState("22:00");
   const [audience, setAudience] = useState<Audience>("both");
   const [excludedOwners, setExcludedOwners] = useState<Set<string>>(new Set());
   const [excludedResidents, setExcludedResidents] = useState<Set<string>>(new Set());
