@@ -158,13 +158,6 @@ Deno.serve(async (req) => {
           paySum.set(p.unit_id, (paySum.get(p.unit_id) || 0) + Number(p.amount || 0));
         }
       }
-      const expSum = new Map<string, number>();
-      for (const s of shares || []) {
-        const d = expenseDateMap.get(s.expense_id) || String(s.created_at || "").split("T")[0];
-        if (d && d <= cutoffIso) {
-          expSum.set(s.unit_id, (expSum.get(s.unit_id) || 0) + Number(s.allocated_amount || 0));
-        }
-      }
       const chargeSum = new Map<string, number>();
       for (const c of charges || []) {
         const within = c.year < y || (c.year === y && c.month <= m);
@@ -172,6 +165,7 @@ Deno.serve(async (req) => {
         if (isPenaltyDescription(c.description)) continue;
         chargeSum.set(c.unit_id, (chargeSum.get(c.unit_id) || 0) + Number(c.amount || 0));
       }
+
 
       const records: any[] = [];
       for (const u of units) {
@@ -181,9 +175,9 @@ Deno.serve(async (req) => {
         );
         if (already) continue;
         const paid = paySum.get(u.id) || 0;
-        const exp = expSum.get(u.id) || 0;
         const ch = chargeSum.get(u.id) || 0;
-        const balance = paid - (exp + ch);
+        const balance = paid - ch;
+
         if (balance >= 0) continue;
         const debt = Math.abs(balance);
         const penalty = Math.round((debt * pct) / 100);

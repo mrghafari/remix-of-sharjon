@@ -130,16 +130,6 @@ export function LatePenaltyApplier() {
           }
         }
 
-        let expenseTotal = 0;
-        for (const s of shares as any[]) {
-          if (s.unit_id !== u.id) continue;
-          const expense = (expenses as any[]).find((e) => e.id === s.expense_id);
-          const expenseFund = expense?.fund_type ?? "charge";
-          if (expenseFund !== fundType) continue;
-          const dateRef = expenseDateMap.get(s.expense_id) || (s.created_at?.split("T")[0]);
-          if (dateRef && dateRef <= cutoffIso) expenseTotal += Number(s.allocated_amount || 0);
-        }
-
         let chargeTotal = 0;
         for (const c of existingCharges as any[]) {
           if (c.unit_id !== u.id || c.fund_type !== fundType) continue;
@@ -148,7 +138,8 @@ export function LatePenaltyApplier() {
           chargeTotal += Number(c.amount || 0);
         }
 
-        const debt = Math.max(0, -(paid - (expenseTotal + chargeTotal)));
+        const debt = Math.max(0, -(paid - chargeTotal));
+
         const penalty = Math.round((debt * policy.late_penalty_percent_per_month) / 100);
         if (penalty <= 0) continue;
         const alreadyApplied = (existingCharges as any[]).some((c) =>

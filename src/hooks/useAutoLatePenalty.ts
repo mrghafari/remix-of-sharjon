@@ -145,17 +145,8 @@ export function useAutoLatePenalty() {
               charged += Number(c.amount || 0);
             }
 
-            // Sum expense shares (charge fund only) up to cutoff
-            let expSum = 0;
-            if (fundType === "charge") {
-              for (const s of shares as any[]) {
-                if (s.unit_id !== u.id) continue;
-                const d = expDateMap.get(s.expense_id) || s.created_at?.split("T")[0];
-                if (d && d <= cutoffIso) expSum += Number(s.allocated_amount || 0);
-              }
-            }
+            const balance = paid - charged;
 
-            const balance = paid - (charged + expSum);
             if (balance >= 0) continue;
             const debt = Math.abs(balance);
             const penalty = Math.round((debt * policy.late_penalty_percent_per_month) / 100);
