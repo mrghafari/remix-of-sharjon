@@ -81,7 +81,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     queryFn: async () => {
       const { data, error } = await supabase
         .from("expense_unit_shares")
-        .select("*, expenses(title, expense_date, category, fund_type, allocation_type)")
+        .select("*, expenses(title, expense_date, category, fund_type, allocation_type, amount)")
         .eq("unit_id", unitId)
         .eq("building_id", buildingId);
       if (error) throw error;
