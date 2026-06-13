@@ -515,15 +515,18 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                     <p className="text-xs text-muted-foreground">ساکن با شماره تماس مستقل از مالک وجود ندارد</p>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
-                      {residentCandidates.map(u => (
-                        <label key={`r-${u.id}`} className="flex items-center gap-2 text-sm cursor-pointer">
-                          <Checkbox
-                            checked={excludedResidents.has(u.id)}
-                            onCheckedChange={() => toggleExcl(excludedResidents, setExcludedResidents, u.id)}
-                          />
-                          <span className="truncate">واحد {u.unit_number} — {u.resident_name || "—"}</span>
-                        </label>
-                      ))}
+                      {residentCandidates.map(u => {
+                        const isExcluded = excludedResidents.has(u.id);
+                        return (
+                          <label key={`r-${u.id}`} className={`flex items-center gap-2 text-sm cursor-pointer rounded px-1 py-0.5 transition-colors ${isExcluded ? "bg-destructive/10 text-destructive" : ""}`}>
+                            <Checkbox
+                              checked={isExcluded}
+                              onCheckedChange={() => toggleExcl(excludedResidents, setExcludedResidents, u.id)}
+                            />
+                            <span className="truncate">واحد {u.unit_number} — {u.resident_name || "—"}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
