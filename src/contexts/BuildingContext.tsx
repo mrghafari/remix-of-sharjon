@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -152,10 +152,25 @@ export function useDeleteBuilding() {
 
 export function BuildingProvider({ children, filterBuildingIds, adminForUserId }: { children: ReactNode; filterBuildingIds?: string[]; adminForUserId?: string }) {
   const { data: allBuildings = [], isLoading } = useBuildings();
-  const [currentBuildingId, setCurrentBuildingId] = useState<string | null>(null);
+  const [currentBuildingId, setCurrentBuildingId] = useState<string | null>(() => localStorage.getItem("currentBuildingId"));
+
+  const managerSessionBuildingIds = useMemo(() => {
+    if (typeof window === "undefined" || window.location.pathname !== "/dashboard") return null;
+    try {
+      const allMatches = JSON.parse(localStorage.getItem("resident_matches_all") || "[]") as Array<{ building_id?: string; isManager?: boolean }>;
+      const ids = allMatches
+        .filter((match) => match.isManager && match.building_id)
+        .map((match) => match.building_id as string);
+      return ids.length > 0 ? ids : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const buildings = filterBuildingIds
     ? allBuildings.filter((b) => filterBuildingIds.includes(b.id))
+    : managerSessionBuildingIds
+      ? allBuildings.filter((b) => managerSessionBuildingIds.includes(b.id))
     : allBuildings;
 
   useEffect(() => {
@@ -167,18 +182,33 @@ export function BuildingProvider({ children, filterBuildingIds, adminForUserId }
       return;
     }
 
-    const saved = localStorage.getItem("currentBuildingId");
+    const selectedManagerBuildingId = (() => {
+      try {
+        const selected = JSON.parse(localStorage.getItem("resident_matches") || "[]")?.[0];
+        return selected?.isManager ? selected.building_id as string | undefined : undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+    const saved = selectedManagerBuildingId || localStorage.getItem("currentBuildingId");
     const foundSaved = buildings.find((b) => b.id === saved);
     const foundCurrent = buildings.find((b) => b.id === currentBuildingId);
 
     if (!currentBuildingId || !foundCurrent) {
-      setCurrentBuildingId(foundSaved ? foundSaved.id : buildings[0].id);
+      const nextId = foundSaved ? foundSaved.id : buildings[0].id;
+      localStorage.setItem("currentBuildingId", nextId);
+      setCurrentBuildingId(nextId);
     }
   }, [buildings, currentBuildingId, isLoading]);
 
   const handleSetBuilding = (id: string) => {
     const prev = localStorage.getItem("currentBuildingId");
     localStorage.setItem("currentBuildingId", id);
+    try {
+      const allMatches = JSON.parse(localStorage.getItem("resident_matches_all") || "[]") as Array<{ building_id?: string; isManager?: boolean }>;
+      const managerMatch = allMatches.find((match) => match.isManager && match.building_id === id);
+      if (managerMatch) localStorage.setItem("resident_matches", JSON.stringify([managerMatch]));
+    } catch { /* ignore stale localStorage */ }
     setCurrentBuildingId(id);
     // If the building actually changed, force a full reload so every hook,
     // query and context reinitializes for the newly selected building.
