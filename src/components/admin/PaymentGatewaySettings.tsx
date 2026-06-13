@@ -57,7 +57,15 @@ const BANK_META: { key: BankKey; name: string; fields: ("merchant_id" | "termina
   { key: "melli", name: "بانک ملی", fields: ["merchant_id", "terminal_id"] },
 ];
 
-const FIELD_LABELS: Record<string, string> = {
+const BANK_COLORS: Record<string, string> = {
+  saman: "border-blue-500 bg-blue-50/40",
+  blu_saman: "border-sky-500 bg-sky-50/40",
+  mellat: "border-red-500 bg-red-50/40",
+  parsian: "border-emerald-500 bg-emerald-50/40",
+  saderat: "border-amber-500 bg-amber-50/40",
+  pasargad: "border-violet-500 bg-violet-50/40",
+  melli: "border-teal-500 bg-teal-50/40",
+};
   merchant_id: "Merchant ID / شناسه پذیرنده",
   terminal_id: "Terminal ID / شماره ترمینال",
   username: "نام کاربری",
