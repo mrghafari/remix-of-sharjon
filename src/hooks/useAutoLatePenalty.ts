@@ -91,14 +91,15 @@ export function useAutoLatePenalty() {
 
         ranRef.current.add(periodKey);
 
-        const records: any[] = [];
+        const inserts: any[] = [];
+        const updates: Array<{ id: string; amount: number }> = [];
 
         for (const u of units as any[]) {
           if (u.late_penalty_exempt) continue;
 
           for (const fundType of funds) {
-            // Skip if a penalty row already exists for this unit/period/fund
-            const alreadyApplied = (existingCharges as any[]).some(
+            // Existing penalty row for this unit/period/fund
+            const existingPenalty = (existingCharges as any[]).find(
               (c) =>
                 c.unit_id === u.id &&
                 c.month === m &&
@@ -106,7 +107,6 @@ export function useAutoLatePenalty() {
                 c.fund_type === fundType &&
                 isPenaltyDescription(c.description)
             );
-            if (alreadyApplied) continue;
 
             // applyBase: latest non-penalty same-fund unit_charge created_at
             const fundDates = (existingCharges as any[])
@@ -121,20 +121,19 @@ export function useAutoLatePenalty() {
               .map((c) => new Date(c.created_at).getTime());
             if (fundDates.length === 0) continue; // no charge this period -> no penalty
             const applyBase = Math.max(...fundDates);
-            if (nowMs < applyBase + graceMs) continue;
+            const graceEnd = applyBase + graceMs;
+            if (nowMs < graceEnd) continue;
 
-            const cutoffIso = new Date(applyBase + graceMs).toISOString().slice(0, 10);
+            const daysLate = Math.floor((nowMs - graceEnd) / 86400000) + 1;
+            if (daysLate <= 0) continue;
 
-            // Sum payments of this fund up to cutoff
+            // Current debt of this fund up to (y, m) using ALL payments to date
             let paid = 0;
             for (const p of payments as any[]) {
               if (p.unit_id !== u.id) continue;
               if (p.fund_type !== fundType) continue;
-              if (!p.payment_date) continue;
-              if (p.payment_date <= cutoffIso) paid += Number(p.amount || 0);
+              paid += Number(p.amount || 0);
             }
-
-            // Sum charges of this fund up to (y, m), excluding penalties
             let charged = 0;
             for (const c of existingCharges as any[]) {
               if (c.unit_id !== u.id) continue;
@@ -145,36 +144,50 @@ export function useAutoLatePenalty() {
               charged += Number(c.amount || 0);
             }
 
-            const balance = paid - charged;
+            const debt = charged - paid;
+            // If debt is cleared, leave existing penalty row untouched (snapshot at clearance)
+            if (debt <= 0) continue;
 
-            if (balance >= 0) continue;
-            const debt = Math.abs(balance);
-            const penalty = Math.round((debt * policy.late_penalty_percent_per_month) / 100);
+            const penalty = Math.round(
+              (debt * policy.late_penalty_percent_per_month * daysLate) / (100 * 30)
+            );
             if (penalty <= 0) continue;
 
-            records.push({
-              building_id: currentBuildingId,
-              unit_id: u.id,
-              amount: penalty,
-              fund_type: fundType,
-              month: m,
-              year: y,
-              description: `جریمه ${persianMonths[m - 1]} ${y}`,
-              owner_name: u.owner_name || null,
-              resident_name: u.resident_name || null,
-            });
+            if (existingPenalty) {
+              if (Number(existingPenalty.amount) !== penalty) {
+                updates.push({ id: existingPenalty.id, amount: penalty });
+              }
+            } else {
+              inserts.push({
+                building_id: currentBuildingId,
+                unit_id: u.id,
+                amount: penalty,
+                fund_type: fundType,
+                month: m,
+                year: y,
+                description: `جریمه ${persianMonths[m - 1]} ${y}`,
+                owner_name: u.owner_name || null,
+                resident_name: u.resident_name || null,
+              });
+            }
           }
         }
 
-        if (records.length > 0) {
-          const { error } = await supabase.from("unit_charges").insert(records);
+        if (inserts.length > 0) {
+          const { error } = await supabase.from("unit_charges").insert(inserts);
           if (!error) {
             qc.invalidateQueries({ queryKey: ["unit-charges"] });
             toast({
               title: "جریمه خودکار اعمال شد",
-              description: `${records.length} رکورد جریمه برای ${persianMonths[m - 1]} ${y} ثبت شد.`,
+              description: `${inserts.length} رکورد جریمه برای ${persianMonths[m - 1]} ${y} ثبت شد.`,
             });
           }
+        }
+        for (const upd of updates) {
+          await supabase.from("unit_charges").update({ amount: upd.amount }).eq("id", upd.id);
+        }
+        if (updates.length > 0) {
+          qc.invalidateQueries({ queryKey: ["unit-charges"] });
         }
       }
     })();
