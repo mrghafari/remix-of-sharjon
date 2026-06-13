@@ -62,6 +62,14 @@ export default function Admin() {
               <Building2 className="h-4 w-4" />
               ساختمان‌ها
             </TabsTrigger>
+            <TabsTrigger value="plans" className="gap-2">
+              <Package className="h-4 w-4" />
+              پلن‌ها
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              درآمد
+            </TabsTrigger>
             <TabsTrigger value="bank-accounts" className="gap-2">
               <Landmark className="h-4 w-4" />
               حساب‌های بانکی
@@ -95,6 +103,14 @@ export default function Admin() {
 
           <TabsContent value="buildings">
             <AdminBuildings />
+          </TabsContent>
+
+          <TabsContent value="plans">
+            <AdminPlans />
+          </TabsContent>
+
+          <TabsContent value="revenue">
+            <AdminRevenue />
           </TabsContent>
 
           <TabsContent value="bank-accounts">
