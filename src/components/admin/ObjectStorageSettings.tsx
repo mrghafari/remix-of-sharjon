@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { HardDrive } from "lucide-react";
 
 /**
@@ -11,6 +12,7 @@ import { HardDrive } from "lucide-react";
  * Values shown are the customer's Liara bucket credentials as provided.
  */
 export function ObjectStorageSettings() {
+  const [enabled, setEnabled] = useState(false);
   const [form, setForm] = useState({
     provider: "liara",
     endpoint: "storage.c2.liara.site",
@@ -33,32 +35,45 @@ export function ObjectStorageSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <Label className="text-base">استفاده از Object Storage</Label>
+            <p className="text-xs text-muted-foreground">
+              با فعال‌سازی، فایل‌های آپلودی در باکت S3 ذخیره می‌شوند.
+            </p>
+          </div>
+          <Switch
+            checked={enabled}
+            onCheckedChange={setEnabled}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-100">
           <div className="space-y-2">
             <Label>ارائه‌دهنده</Label>
-            <Input value={form.provider} onChange={(e) => update("provider", e.target.value)} />
+            <Input disabled={!enabled} value={form.provider} onChange={(e) => update("provider", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>API Endpoint</Label>
-            <Input dir="ltr" value={form.endpoint} onChange={(e) => update("endpoint", e.target.value)} />
+            <Input disabled={!enabled} dir="ltr" value={form.endpoint} onChange={(e) => update("endpoint", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>نام باکت (Bucket)</Label>
-            <Input dir="ltr" value={form.bucket} onChange={(e) => update("bucket", e.target.value)} />
+            <Input disabled={!enabled} dir="ltr" value={form.bucket} onChange={(e) => update("bucket", e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Access Key</Label>
-            <Input dir="ltr" value={form.accessKey} onChange={(e) => update("accessKey", e.target.value)} />
+            <Input disabled={!enabled} dir="ltr" value={form.accessKey} onChange={(e) => update("accessKey", e.target.value)} />
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Secret Key</Label>
-            <Input dir="ltr" type="password" value={form.secretKey} onChange={(e) => update("secretKey", e.target.value)} />
+            <Input disabled={!enabled} dir="ltr" type="password" value={form.secretKey} onChange={(e) => update("secretKey", e.target.value)} />
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t">
           <p className="text-xs text-muted-foreground">
-            اتصال به این سرویس هنوز فعال نشده است. پس از تأیید نهایی، دکمه ذخیره فعال می‌شود.
+            {!enabled ? "Object Storage غیرفعال است. فایل‌ها در سیستم فعلی ذخیره می‌شوند." : "اتصال به این سرویس هنوز فعال نشده است. پس از تأیید نهایی، دکمه ذخیره فعال می‌شود."}
           </p>
           <Button disabled title="به‌زودی فعال می‌شود">
             ذخیره تنظیمات
