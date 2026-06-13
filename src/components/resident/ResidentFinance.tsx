@@ -423,7 +423,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="debts" className="gap-2">
             <CreditCard className="w-4 h-4 text-orange-500" />
-            بدهی شارژ ماهانه
+            شارژ ماهانه و تخفیف
             {charges.length > 0 && (
               <Badge variant="secondary" className="text-xs">{charges.length}</Badge>
             )}
