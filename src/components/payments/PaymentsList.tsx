@@ -41,6 +41,8 @@ import { useUnits } from "@/hooks/useUnits";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { NumericInput } from "@/components/ui/numeric-input";
 
+const OPENING_MARKER = "مبلغ اولیه";
+
 const persianMonths: Record<number, string> = {
   1: "فروردین",
   2: "اردیبهشت",
@@ -169,6 +171,10 @@ export function PaymentsList() {
                   {payment.unit_id ? (
                     <Badge variant="outline">
                       واحد {payment.units?.unit_number || "-"}
+                    </Badge>
+                  ) : payment.description === OPENING_MARKER ? (
+                    <Badge variant="outline" className="text-amber-600 border-amber-600">
+                      ورودی اولیه
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-green-600 border-green-600">
