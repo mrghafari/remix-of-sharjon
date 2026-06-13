@@ -472,10 +472,35 @@ export function MeetingMinutesPage({ buildingId: propBuildingId, canEdit = true,
                       )}
                       {canEdit && (
                         <>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(m)}>
+                          {!m.is_finalized && sigs.length > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="gap-1 text-blue-700 border-blue-300 hover:bg-blue-50"
+                              onClick={() => setFinalizeTarget(m)}
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              نهایی‌سازی امضاها
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => openEdit(m)}
+                            disabled={m.is_finalized}
+                            title={m.is_finalized ? "صورتجلسه نهایی شده و قابل ویرایش نیست" : "ویرایش"}
+                          >
                             <Pencil className="w-3.5 h-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(m)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => setDeleteTarget(m)}
+                            disabled={m.is_finalized}
+                            title={m.is_finalized ? "صورتجلسه نهایی شده و قابل حذف نیست" : "حذف"}
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </>
