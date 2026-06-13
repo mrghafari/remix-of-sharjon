@@ -334,9 +334,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                   <Users className="w-3 h-3" />
                   {audienceLabel(m.audience || "both")}
                 </Badge>
-                {canEdit && (
-                  <span>مدعوین: {inviteeCount(m)}{exCount > 0 ? ` (${exCount} استثنا)` : ""}</span>
-                )}
+                <span>مدعوین: {inviteeCount(m)} نفر{exCount > 0 ? ` • ${exCount} استثنا` : ""}</span>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-wrap">
