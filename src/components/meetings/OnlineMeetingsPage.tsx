@@ -116,7 +116,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const d = new Date(meeting.scheduled_at);
       const vars = {
         "عنوان": meeting.title,
-        "تاریخ": formatJalaliDate(d),
+        "تاریخ": formatJalaliDate(d.toISOString()),
         "ساعت": `${pad(d.getHours())}:${pad(d.getMinutes())}`,
         "لینک": link,
         "ساختمان": "",
@@ -132,7 +132,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
         title: `جلسه آنلاین: ${meeting.title}`,
-        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d)} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
         is_pinned: true,
         created_by: user?.id,
       });
@@ -243,7 +243,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                 {isLive && <span className="text-xs bg-primary text-primary-foreground rounded px-2 py-0.5">در حال برگزاری/نزدیک</span>}
               </CardTitle>
               <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d)}</span>
+                <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d.toISOString())}</span>
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
               </div>
             </div>
