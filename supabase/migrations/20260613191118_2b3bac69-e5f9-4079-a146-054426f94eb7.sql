@@ -1,0 +1,1 @@
+ALTER TABLE public.building_online_meetings ADD COLUMN IF NOT EXISTS ends_at timestamptz;

@@ -358,6 +358,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          ends_at: string | null
           excluded_owner_unit_ids: string[]
           excluded_resident_unit_ids: string[]
           has_online: boolean
@@ -375,6 +376,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          ends_at?: string | null
           excluded_owner_unit_ids?: string[]
           excluded_resident_unit_ids?: string[]
           has_online?: boolean
@@ -392,6 +394,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          ends_at?: string | null
           excluded_owner_unit_ids?: string[]
           excluded_resident_unit_ids?: string[]
           has_online?: boolean

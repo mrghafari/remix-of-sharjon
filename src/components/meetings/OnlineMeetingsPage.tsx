@@ -32,6 +32,7 @@ interface OnlineMeeting {
   title: string;
   description: string | null;
   scheduled_at: string;
+  ends_at: string | null;
   room_name: string | null;
   jitsi_domain: string | null;
   created_by: string | null;
@@ -86,6 +87,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const [hasOnline, setHasOnline] = useState(true);
   const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
   const [meetingTime, setMeetingTime] = useState("20:00");
+  const [endTime, setEndTime] = useState("22:00");
   const [audience, setAudience] = useState<Audience>("both");
   const [excludedOwners, setExcludedOwners] = useState<Set<string>>(new Set());
   const [excludedResidents, setExcludedResidents] = useState<Set<string>>(new Set());
@@ -132,7 +134,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const resetForm = () => {
     setTitle(""); setDescription("");
     setLocation(""); setHasOnline(true);
-    setMeetingDate(new Date()); setMeetingTime("20:00");
+    setMeetingDate(new Date()); setMeetingTime("20:00"); setEndTime("22:00");
     setAudience("both");
     setExcludedOwners(new Set());
     setExcludedResidents(new Set());
@@ -149,6 +151,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     const d = new Date(m.scheduled_at);
     setMeetingDate(d);
     setMeetingTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    if (m.ends_at) {
+      const e = new Date(m.ends_at);
+      setEndTime(`${pad(e.getHours())}:${pad(e.getMinutes())}`);
+    } else {
+      setEndTime("22:00");
+    }
     setAudience(m.audience || "both");
     setExcludedOwners(new Set(m.excluded_owner_unit_ids || []));
     setExcludedResidents(new Set(m.excluded_resident_unit_ids || []));
@@ -180,10 +188,16 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const recipients: any[] = [];
       const link = meeting.has_online ? buildLink(meeting.jitsi_domain, meeting.room_name) : "";
       const d = new Date(meeting.scheduled_at);
+      const e = meeting.ends_at ? new Date(meeting.ends_at) : null;
+      const startStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      const endStr = e ? `${pad(e.getHours())}:${pad(e.getMinutes())}` : "";
+      const timeRange = endStr ? `${startStr} تا ${endStr}` : startStr;
       const vars = {
         "عنوان": meeting.title,
         "تاریخ": formatJalaliDate(d.toISOString()),
-        "ساعت": `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+        "ساعت": timeRange,
+        "ساعت‌شروع": startStr,
+        "ساعت‌پایان": endStr,
         "لینک": link,
         "مکان": meeting.location || "",
         "ساختمان": "",
@@ -206,12 +220,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const audienceText = audienceLabel(meeting.audience);
       const locLine = meeting.location ? `\nمکان: ${meeting.location}` : "";
       const onlineLine = meeting.has_online && link
-        ? `\n\nبرای کسانی که نمی‌توانند حضوری شرکت کنند، امکان حضور آنلاین فراهم است:\n${link}`
+        ? `\n\nبرای کسانی که نمی‌توانند حضوری شرکت کنند، امکان حضور آنلاین فراهم است (لینک تا پایان ساعت جلسه فعال است):\n${link}`
         : "";
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
         title: `جلسه: ${meeting.title}`,
-        content: `جلسه در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.${locLine}\nمدعوین: ${audienceText}${onlineLine}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        content: `جلسه در تاریخ ${formatJalaliDate(d.toISOString())} از ساعت ${startStr}${endStr ? ` تا ${endStr}` : ""} برگزار می‌شود.${locLine}\nمدعوین: ${audienceText}${onlineLine}${meeting.description ? `\n\n${meeting.description}` : ""}`,
         is_pinned: true,
         created_by: user?.id,
       });
@@ -239,18 +253,29 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     }
     const [hh, mm] = meetingTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) {
-      toast.error("ساعت نامعتبر است");
+      toast.error("ساعت شروع نامعتبر است");
+      return;
+    }
+    const [eh, em] = endTime.split(":").map(Number);
+    if (isNaN(eh) || isNaN(em)) {
+      toast.error("ساعت پایان نامعتبر است");
       return;
     }
     setSubmitting(true);
     try {
       const dt = new Date(meetingDate);
       dt.setHours(hh, mm, 0, 0);
+      const et = new Date(meetingDate);
+      et.setHours(eh, em, 0, 0);
+      if (et.getTime() <= dt.getTime()) {
+        et.setDate(et.getDate() + 1);
+      }
 
       const payload: any = {
         title: title.trim(),
         description: description.trim() || null,
         scheduled_at: dt.toISOString(),
+        ends_at: et.toISOString(),
         audience,
         excluded_owner_unit_ids: Array.from(excludedOwners),
         excluded_resident_unit_ids: Array.from(excludedResidents),
@@ -341,10 +366,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
 
   const renderCard = (m: OnlineMeeting) => {
     const d = new Date(m.scheduled_at);
+    const e = m.ends_at ? new Date(m.ends_at) : null;
     const link = buildLink(m.jitsi_domain, m.room_name);
     const isLive = Math.abs(d.getTime() - now) < 2 * 3600 * 1000;
     const exCount = (m.excluded_owner_unit_ids?.length || 0) + (m.excluded_resident_unit_ids?.length || 0);
-    const onlineAvailable = m.has_online !== false && !!link;
+    const onlineExpired = !!e && e.getTime() < now;
+    const onlineAvailable = m.has_online !== false && !!link && !onlineExpired;
     return (
       <Card key={m.id} className={isLive ? "border-primary/40 bg-primary/5" : ""}>
         <CardHeader className="pb-2">
@@ -357,7 +384,11 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
               </CardTitle>
               <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d.toISOString())}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {pad(d.getHours())}:{pad(d.getMinutes())}
+                  {e && <> تا {pad(e.getHours())}:{pad(e.getMinutes())}</>}
+                </span>
                 {m.location && (
                   <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{m.location}</span>
                 )}
@@ -365,10 +396,10 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                   <Users className="w-3 h-3" />
                   {audienceLabel(m.audience || "both")}
                 </Badge>
-                {onlineAvailable && (
-                  <Badge variant="outline" className="gap-1 border-primary/40 text-primary">
+                {m.has_online && !!link && (
+                  <Badge variant="outline" className={`gap-1 ${onlineExpired ? "border-muted text-muted-foreground line-through" : "border-primary/40 text-primary"}`}>
                     <Video className="w-3 h-3" />
-                    حضور آنلاین
+                    {onlineExpired ? "آنلاین (پایان‌یافته)" : "حضور آنلاین"}
                   </Badge>
                 )}
                 <span>مدعوین: {inviteeCount(m)} نفر{exCount > 0 ? ` • ${exCount} استثنا` : ""}</span>
@@ -469,16 +500,23 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
               <Label>عنوان جلسه *</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="مثال: جلسه عمومی هیئت‌مدیره" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="space-y-2">
                 <Label>تاریخ *</Label>
                 <JalaliDatePicker value={meetingDate} onChange={setMeetingDate} />
               </div>
               <div className="space-y-2">
-                <Label>ساعت *</Label>
+                <Label>ساعت شروع *</Label>
                 <Input type="time" value={meetingTime} onChange={e => setMeetingTime(e.target.value)} dir="ltr" />
               </div>
+              <div className="space-y-2">
+                <Label>ساعت پایان *</Label>
+                <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} dir="ltr" />
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              لینک ورود آنلاین پس از ساعت پایان به صورت خودکار غیرفعال می‌شود.
+            </p>
 
             <div className="space-y-2">
               <Label className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> مکان برگزاری *</Label>
