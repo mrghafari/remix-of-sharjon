@@ -11,8 +11,10 @@ import {
   Building2,
   Ruler,
   PhoneCall,
-  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
+
 import {
   Table,
   TableBody,
