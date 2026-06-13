@@ -360,9 +360,11 @@ export type Database = {
           description: string | null
           excluded_owner_unit_ids: string[]
           excluded_resident_unit_ids: string[]
+          has_online: boolean
           id: string
-          jitsi_domain: string
-          room_name: string
+          jitsi_domain: string | null
+          location: string | null
+          room_name: string | null
           scheduled_at: string
           title: string
           updated_at: string
@@ -375,9 +377,11 @@ export type Database = {
           description?: string | null
           excluded_owner_unit_ids?: string[]
           excluded_resident_unit_ids?: string[]
+          has_online?: boolean
           id?: string
-          jitsi_domain?: string
-          room_name: string
+          jitsi_domain?: string | null
+          location?: string | null
+          room_name?: string | null
           scheduled_at: string
           title: string
           updated_at?: string
@@ -390,9 +394,11 @@ export type Database = {
           description?: string | null
           excluded_owner_unit_ids?: string[]
           excluded_resident_unit_ids?: string[]
+          has_online?: boolean
           id?: string
-          jitsi_domain?: string
-          room_name?: string
+          jitsi_domain?: string | null
+          location?: string | null
+          room_name?: string | null
           scheduled_at?: string
           title?: string
           updated_at?: string
