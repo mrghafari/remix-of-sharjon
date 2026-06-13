@@ -331,44 +331,50 @@ export function LatePenaltyApplier() {
         )}
 
         {!dismissed && newOnes.length > 0 && (
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setDismissed(true);
-                try { window.localStorage.setItem(dismissKey, "1"); } catch {}
-              }}
-              disabled={submitting}
-            >
-              حذف
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  disabled={submitting || readyNewOnes.length === 0}
-                  variant="destructive"
-                  size="sm"
-                  className="gap-2"
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
-                  اعمال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent dir="rtl">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    مجموع {formatNumber(totalPenalty)} ریال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>انصراف</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleApply}>تأیید و ثبت</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          policy?.late_penalty_auto_apply ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              اعمال خودکار جریمه تأخیر فعال است. جریمه‌ها به صورت خودکار محاسبه و ثبت می‌شوند و نیازی به اعمال دستی نیست.
+            </div>
+          ) : (
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDismissed(true);
+                  try { window.localStorage.setItem(dismissKey, "1"); } catch {}
+                }}
+                disabled={submitting}
+              >
+                حذف
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    disabled={submitting || readyNewOnes.length === 0}
+                    variant="destructive"
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                    اعمال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent dir="rtl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>تأیید اعمال جریمه</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      مجموع {formatNumber(totalPenalty)} ریال جریمه برای {readyNewOnes.length.toLocaleString("fa-IR")} رکورد در دوره {persianMonths[Number(month) - 1]} {year} ثبت می‌شود. این عملیات قابل بازگشت نیست (مگر با حذف دستی هر رکورد).
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>انصراف</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleApply}>تأیید و ثبت</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )
         )}
         {dismissed && (
           <div className="flex items-center justify-between gap-2">
