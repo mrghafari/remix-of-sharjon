@@ -334,9 +334,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                   <Users className="w-3 h-3" />
                   {audienceLabel(m.audience || "both")}
                 </Badge>
-                {canEdit && (
-                  <span>مدعوین: {inviteeCount(m)}{exCount > 0 ? ` (${exCount} استثنا)` : ""}</span>
-                )}
+                <span>مدعوین: {inviteeCount(m)} نفر{exCount > 0 ? ` • ${exCount} استثنا` : ""}</span>
               </div>
             </div>
             <div className="flex items-center gap-1 flex-wrap">
@@ -379,7 +377,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     <div className="space-y-4 animate-fade-in" dir="rtl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-lg font-bold">جلسات آنلاین</h2>
+          <h2 className="text-lg font-bold">جلسه</h2>
           <p className="text-muted-foreground text-sm mt-1">
             جلسات از طریق سرویس رایگان meet.jit.si برگزار می‌شود. نیازی به نصب نرم‌افزار نیست.
           </p>
@@ -484,15 +482,18 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                     <p className="text-xs text-muted-foreground">مالک با شماره تماس ثبت‌شده‌ای وجود ندارد</p>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
-                      {ownerCandidates.map(u => (
-                        <label key={`o-${u.id}`} className="flex items-center gap-2 text-sm cursor-pointer">
-                          <Checkbox
-                            checked={excludedOwners.has(u.id)}
-                            onCheckedChange={() => toggleExcl(excludedOwners, setExcludedOwners, u.id)}
-                          />
-                          <span className="truncate">واحد {u.unit_number} — {u.owner_name || "—"}</span>
-                        </label>
-                      ))}
+                      {ownerCandidates.map(u => {
+                        const isExcluded = excludedOwners.has(u.id);
+                        return (
+                          <label key={`o-${u.id}`} className={`flex items-center gap-2 text-sm cursor-pointer rounded px-1 py-0.5 transition-colors ${isExcluded ? "bg-destructive/10 text-destructive" : ""}`}>
+                            <Checkbox
+                              checked={isExcluded}
+                              onCheckedChange={() => toggleExcl(excludedOwners, setExcludedOwners, u.id)}
+                            />
+                            <span className="truncate">واحد {u.unit_number} — {u.owner_name || "—"}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -512,15 +513,18 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                     <p className="text-xs text-muted-foreground">ساکن با شماره تماس مستقل از مالک وجود ندارد</p>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
-                      {residentCandidates.map(u => (
-                        <label key={`r-${u.id}`} className="flex items-center gap-2 text-sm cursor-pointer">
-                          <Checkbox
-                            checked={excludedResidents.has(u.id)}
-                            onCheckedChange={() => toggleExcl(excludedResidents, setExcludedResidents, u.id)}
-                          />
-                          <span className="truncate">واحد {u.unit_number} — {u.resident_name || "—"}</span>
-                        </label>
-                      ))}
+                      {residentCandidates.map(u => {
+                        const isExcluded = excludedResidents.has(u.id);
+                        return (
+                          <label key={`r-${u.id}`} className={`flex items-center gap-2 text-sm cursor-pointer rounded px-1 py-0.5 transition-colors ${isExcluded ? "bg-destructive/10 text-destructive" : ""}`}>
+                            <Checkbox
+                              checked={isExcluded}
+                              onCheckedChange={() => toggleExcl(excludedResidents, setExcludedResidents, u.id)}
+                            />
+                            <span className="truncate">واحد {u.unit_number} — {u.resident_name || "—"}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

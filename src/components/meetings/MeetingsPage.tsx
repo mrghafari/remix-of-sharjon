@@ -36,7 +36,7 @@ export function MeetingsPage({ buildingId: propBuildingId, canEdit = true, resid
           </TabsTrigger>
           <TabsTrigger value="online" className="gap-2">
             <Video className="w-4 h-4" />
-            جلسات آنلاین
+            جلسه
           </TabsTrigger>
         </TabsList>
 
