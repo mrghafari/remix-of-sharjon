@@ -177,8 +177,15 @@ export function BuildingProvider({ children, filterBuildingIds, adminForUserId }
   }, [buildings, currentBuildingId, isLoading]);
 
   const handleSetBuilding = (id: string) => {
-    setCurrentBuildingId(id);
+    const prev = localStorage.getItem("currentBuildingId");
     localStorage.setItem("currentBuildingId", id);
+    setCurrentBuildingId(id);
+    // If the building actually changed, force a full reload so every hook,
+    // query and context reinitializes for the newly selected building.
+    // This is critical for managers who oversee multiple buildings.
+    if (prev && prev !== id) {
+      window.location.reload();
+    }
   };
 
   const currentBuilding = buildings.find((b) => b.id === currentBuildingId);
