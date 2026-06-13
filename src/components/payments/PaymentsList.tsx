@@ -41,6 +41,8 @@ import { useUnits } from "@/hooks/useUnits";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { NumericInput } from "@/components/ui/numeric-input";
 
+const OPENING_MARKER = "مبلغ اولیه";
+
 const persianMonths: Record<number, string> = {
   1: "فروردین",
   2: "اردیبهشت",
