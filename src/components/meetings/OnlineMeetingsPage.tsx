@@ -134,7 +134,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const resetForm = () => {
     setTitle(""); setDescription("");
     setLocation(""); setHasOnline(true);
-    setMeetingDate(new Date()); setMeetingTime("20:00");
+    setMeetingDate(new Date()); setMeetingTime("20:00"); setEndTime("22:00");
     setAudience("both");
     setExcludedOwners(new Set());
     setExcludedResidents(new Set());
@@ -151,6 +151,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     const d = new Date(m.scheduled_at);
     setMeetingDate(d);
     setMeetingTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    if (m.ends_at) {
+      const e = new Date(m.ends_at);
+      setEndTime(`${pad(e.getHours())}:${pad(e.getMinutes())}`);
+    } else {
+      setEndTime("22:00");
+    }
     setAudience(m.audience || "both");
     setExcludedOwners(new Set(m.excluded_owner_unit_ids || []));
     setExcludedResidents(new Set(m.excluded_resident_unit_ids || []));
