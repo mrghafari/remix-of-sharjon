@@ -120,6 +120,13 @@ export function PaymentPolicySettings() {
       return { ...f, [k]: v } as PaymentPolicy;
     });
 
+  const toggleAndSave = (key: keyof PaymentPolicy, value: boolean) => {
+    if (!form) return;
+    const next = { ...form, [key]: value } as PaymentPolicy;
+    setForm(next);
+    save.mutate(next);
+  };
+
   const handleEarlyDaysChange = (raw: string) => {
     // allow empty
     if (raw === "") {
