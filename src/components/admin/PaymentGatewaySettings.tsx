@@ -66,6 +66,8 @@ const BANK_COLORS: Record<string, string> = {
   pasargad: "border-violet-500 bg-violet-50/40",
   melli: "border-teal-500 bg-teal-50/40",
 };
+
+const FIELD_LABELS: Record<string, string> = {
   merchant_id: "Merchant ID / شناسه پذیرنده",
   terminal_id: "Terminal ID / شماره ترمینال",
   username: "نام کاربری",
