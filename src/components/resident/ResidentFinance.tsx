@@ -657,7 +657,11 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                     </TableCell>
                     <TableCell>
                       {discount ? (
-                        <Badge className="text-xs bg-emerald-600 hover:bg-emerald-600">دریافت شده</Badge>
+                        (paid > 0 || c.paid_at) ? (
+                          <Badge className="text-xs bg-emerald-600 hover:bg-emerald-600">دریافت شده</Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-xs">دریافت نشده</Badge>
+                        )
                       ) : isFullyPaid ? (
                         <Badge className="text-xs bg-emerald-600 hover:bg-emerald-600">پرداخت شده</Badge>
                       ) : isPartiallyPaid ? (
