@@ -129,91 +129,115 @@ Deno.serve(async (req) => {
     }
 
     // Load data once per building
-    const [{ data: units }, { data: payments }, { data: shares }, { data: expenses }, { data: charges }] = await Promise.all([
+    const [{ data: units }, { data: payments }, { data: charges }, { data: policy2 }] = await Promise.all([
       supabase.from("units").select("id, owner_name, resident_name, late_penalty_exempt").eq("building_id", buildingId),
-      supabase.from("payments").select("unit_id, amount, payment_date").eq("building_id", buildingId),
-      supabase.from("expense_unit_shares").select("unit_id, expense_id, allocated_amount, created_at").eq("building_id", buildingId),
-      supabase.from("expenses").select("id, expense_date").eq("building_id", buildingId),
-      supabase.from("unit_charges").select("unit_id, amount, month, year, description").eq("building_id", buildingId),
+      supabase.from("payments").select("unit_id, amount, payment_date, fund_type").eq("building_id", buildingId),
+      supabase.from("unit_charges").select("id, unit_id, amount, fund_type, month, year, description, created_at").eq("building_id", buildingId),
+      supabase.from("building_payment_policies").select("late_grace_days").eq("building_id", buildingId).maybeSingle(),
     ]);
 
     if (!units || units.length === 0) {
       results.push({ buildingId, skipped: "no units" }); continue;
     }
 
-    const expenseDateMap = new Map<string, string>();
-    for (const e of expenses || []) {
-      if (e.expense_date) expenseDateMap.set(e.id, String(e.expense_date).split("T")[0]);
-    }
+    const graceMs = Math.max(0, Number(policy2?.late_grace_days || 0)) * 86400000;
+    const nowMs = Date.now();
+    const funds: ("charge" | "extra_charge")[] = ["charge", "extra_charge"];
 
     let inserted = 0;
+    let updated = 0;
     const perPeriod: any[] = [];
 
     for (const { y, m } of periods) {
-      const cutoffIso = endOfJalaliMonthIso(y, m);
+      const recordsIns: any[] = [];
+      const recordsUpd: { id: string; amount: number }[] = [];
 
-      const paySum = new Map<string, number>();
-      for (const p of payments || []) {
-        if (p.payment_date && String(p.payment_date) <= cutoffIso) {
-          paySum.set(p.unit_id, (paySum.get(p.unit_id) || 0) + Number(p.amount || 0));
-        }
-      }
-      const chargeSum = new Map<string, number>();
-      for (const c of charges || []) {
-        const within = c.year < y || (c.year === y && c.month <= m);
-        if (!within) continue;
-        if (isPenaltyDescription(c.description)) continue;
-        chargeSum.set(c.unit_id, (chargeSum.get(c.unit_id) || 0) + Number(c.amount || 0));
-      }
-
-
-      const records: any[] = [];
       for (const u of units) {
         if (u.late_penalty_exempt) continue;
-        const already = (charges || []).some((c: any) =>
-          c.unit_id === u.id && c.month === m && c.year === y && isPenaltyDescription(c.description)
-        );
-        if (already) continue;
-        const paid = paySum.get(u.id) || 0;
-        const ch = chargeSum.get(u.id) || 0;
-        const balance = paid - ch;
 
-        if (balance >= 0) continue;
-        const debt = Math.abs(balance);
-        const penalty = Math.round((debt * pct) / 100);
-        if (penalty <= 0) continue;
-        records.push({
-          building_id: buildingId,
-          unit_id: u.id,
-          amount: penalty,
-          fund_type: "charge",
-          month: m,
-          year: y,
-          description: `جریمه ${JALALI_MONTHS[m - 1]} ${y}`,
-          owner_name: u.owner_name || null,
-          resident_name: u.resident_name || null,
-        });
-      }
+        for (const fundType of funds) {
+          const existingPenalty = (charges || []).find((c: any) =>
+            c.unit_id === u.id && c.month === m && c.year === y &&
+            c.fund_type === fundType && isPenaltyDescription(c.description)
+          );
 
-      if (records.length > 0) {
-        const { error: insErr } = await supabase.from("unit_charges").insert(records);
-        if (insErr) {
-          perPeriod.push({ y, m, error: insErr.message });
-        } else {
-          inserted += records.length;
-          perPeriod.push({ y, m, applied: records.length });
-          // also mirror into local `charges` array so subsequent periods see them
-          for (const r of records) {
-            (charges as any[]).push({
-              unit_id: r.unit_id, amount: r.amount,
-              month: r.month, year: r.year, description: r.description,
+          const fundDates = (charges || [])
+            .filter((c: any) =>
+              c.unit_id === u.id && c.year === y && c.month === m &&
+              c.fund_type === fundType && !isPenaltyDescription(c.description)
+            )
+            .map((c: any) => new Date(c.created_at).getTime());
+          if (fundDates.length === 0) continue;
+          const applyBase = Math.max(...fundDates);
+          const graceEnd = applyBase + graceMs;
+          if (nowMs < graceEnd) continue;
+          const daysLate = Math.floor((nowMs - graceEnd) / 86400000) + 1;
+          if (daysLate <= 0) continue;
+
+          let paid = 0;
+          for (const p of payments || []) {
+            if (p.unit_id !== u.id) continue;
+            if ((p as any).fund_type !== fundType) continue;
+            paid += Number(p.amount || 0);
+          }
+          let charged = 0;
+          for (const c of charges || []) {
+            if (c.unit_id !== u.id) continue;
+            if ((c as any).fund_type !== fundType) continue;
+            const within = c.year < y || (c.year === y && c.month <= m);
+            if (!within) continue;
+            if (isPenaltyDescription(c.description)) continue;
+            charged += Number(c.amount || 0);
+          }
+          const debt = charged - paid;
+          if (debt <= 0) continue;
+
+          const penalty = Math.round((debt * pct * daysLate) / (100 * 30));
+          if (penalty <= 0) continue;
+
+          if (existingPenalty) {
+            if (Number((existingPenalty as any).amount) !== penalty) {
+              recordsUpd.push({ id: (existingPenalty as any).id, amount: penalty });
+            }
+          } else {
+            recordsIns.push({
+              building_id: buildingId,
+              unit_id: u.id,
+              amount: penalty,
+              fund_type: fundType,
+              month: m,
+              year: y,
+              description: `جریمه ${JALALI_MONTHS[m - 1]} ${y}`,
+              owner_name: u.owner_name || null,
+              resident_name: u.resident_name || null,
             });
           }
         }
       }
+
+      if (recordsIns.length > 0) {
+        const { error: insErr, data: insData } = await supabase.from("unit_charges").insert(recordsIns).select("id, unit_id, amount, fund_type, month, year, description, created_at");
+        if (insErr) {
+          perPeriod.push({ y, m, error: insErr.message });
+        } else {
+          inserted += recordsIns.length;
+          for (const r of (insData || [])) (charges as any[]).push(r);
+        }
+      }
+      for (const upd of recordsUpd) {
+        const { error: uErr } = await supabase.from("unit_charges").update({ amount: upd.amount }).eq("id", upd.id);
+        if (!uErr) {
+          updated += 1;
+          const ix = (charges as any[]).findIndex((c) => c.id === upd.id);
+          if (ix >= 0) (charges as any[])[ix].amount = upd.amount;
+        }
+      }
+      if (recordsIns.length > 0 || recordsUpd.length > 0) {
+        perPeriod.push({ y, m, inserted: recordsIns.length, updated: recordsUpd.length });
+      }
     }
 
-    results.push({ buildingId, inserted, perPeriod });
+    results.push({ buildingId, inserted, updated, perPeriod });
   }
 
   return new Response(
