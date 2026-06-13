@@ -263,9 +263,9 @@ export function ManagerFormDialog({ open, onOpenChange, manager }: ManagerFormDi
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>واحد</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={!!manager}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className={cn(!!manager && "bg-muted text-muted-foreground cursor-not-allowed")}>
                             <SelectValue placeholder="واحد را انتخاب کنید" />
                           </SelectTrigger>
                         </FormControl>
