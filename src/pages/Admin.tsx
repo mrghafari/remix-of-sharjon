@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ShamsiDateDisplay } from "@/components/layout/ShamsiDateDisplay";
-import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2 } from "lucide-react";
+import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2, Wallet, Package } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminBuildings } from "@/components/admin/AdminBuildings";
 import { AdminPlatformSettings } from "@/components/admin/AdminPlatformSettings";
 import { AdminBankAccounts } from "@/components/admin/AdminBankAccounts";
 import { AdminSmsPackages } from "@/components/admin/AdminSmsPackages";
+import { AdminPlans } from "@/components/admin/AdminPlans";
+import { AdminRevenue } from "@/components/admin/AdminRevenue";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 
 export default function Admin() {

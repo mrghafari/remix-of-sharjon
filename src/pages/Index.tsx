@@ -19,6 +19,7 @@ import { MessagesPage } from "@/components/messages/MessagesPage";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 import { MeetingsPage } from "@/components/meetings/MeetingsPage";
 import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
+import { SubscriptionPage } from "@/components/subscription/SubscriptionPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
 import { useAutoApplyCharges } from "@/hooks/useAutoApplyCharges";
 import { useAutoEarlyPay } from "@/hooks/useAutoEarlyPay";
@@ -237,6 +238,8 @@ const Index = () => {
         return <MeetingsPage />;
       case "sms":
         return <SmsManagementPage />;
+      case "subscription":
+        return <SubscriptionPage />;
       default:
         return <Dashboard onTabChange={setActiveTab} />;
     }
