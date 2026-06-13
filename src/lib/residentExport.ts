@@ -94,6 +94,7 @@ export const exportExpensesExcel = (
       نقش: role,
       مدیر: e.manager_name || "-",
       نوع: fundLabel(e.expenses?.fund_type),
+      "کل هزینه (ریال)": Math.round(Number(e.expenses?.amount || 0)),
       "سهم شما (ریال)": Math.round(Number(e.allocated_amount)),
     };
   });
@@ -106,10 +107,11 @@ export const exportExpensesExcel = (
     نقش: "",
     مدیر: "",
     نوع: "",
+    "کل هزینه (ریال)": "" as any,
     "سهم شما (ریال)": Math.round(total),
   });
   const ws = XLSX.utils.json_to_sheet(data);
-  ws["!cols"] = [{ width: 6 }, { width: 14 }, { width: 24 }, { width: 18 }, { width: 8 }, { width: 18 }, { width: 12 }, { width: 16 }];
+  ws["!cols"] = [{ width: 6 }, { width: 14 }, { width: 24 }, { width: 18 }, { width: 8 }, { width: 18 }, { width: 12 }, { width: 16 }, { width: 16 }];
   (ws as any)["!dir"] = "rtl";
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "هزینه‌های تسهیم‌شده");
