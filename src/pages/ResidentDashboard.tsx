@@ -128,7 +128,18 @@ const ResidentDashboard = () => {
       case "managers":
         return <ManagersHistoryReport buildingId={currentBuildingId} hideEmpty />;
       case "meetings":
-        return <MeetingsPage buildingId={currentBuildingId} canEdit={false} />;
+        return (
+          <MeetingsPage
+            buildingId={currentBuildingId}
+            canEdit={false}
+            residentContext={{
+              unitId: currentUnitId,
+              role: currentMatch?.role === "owner" ? "owner" : "resident",
+              personName,
+              personPhone: localStorage.getItem("resident_matches_phone") || undefined,
+            }}
+          />
+        );
       case "all_expenses":
         return grantedModules.includes("all_expenses")
           ? <ResidentAllExpenses buildingId={currentBuildingId} />
