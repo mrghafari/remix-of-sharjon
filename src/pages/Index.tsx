@@ -17,7 +17,7 @@ import { UtilitiesPage } from "@/components/utilities/UtilitiesPage";
 import { PhoneBookPage } from "@/components/phonebook/PhoneBookPage";
 import { MessagesPage } from "@/components/messages/MessagesPage";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
-import { MeetingMinutesPage } from "@/components/meetings/MeetingMinutesPage";
+import { MeetingsPage } from "@/components/meetings/MeetingsPage";
 import { SmsManagementPage } from "@/components/sms/SmsManagementPage";
 import { useBuilding, useCreateBuilding } from "@/contexts/BuildingContext";
 import { useAutoApplyCharges } from "@/hooks/useAutoApplyCharges";
@@ -234,7 +234,7 @@ const Index = () => {
       case "tickets":
         return <TicketsPage />;
       case "meetings":
-        return <MeetingMinutesPage />;
+        return <MeetingsPage />;
       case "sms":
         return <SmsManagementPage />;
       default:

@@ -19,7 +19,7 @@ import { ManagersHistoryReport } from "@/components/reports/ManagersHistoryRepor
 import { ReservationsList } from "@/components/announcements/ReservationsList";
 import { MessagesPanel } from "@/components/messages/MessagesPanel";
 import { NotificationBell } from "@/components/layout/NotificationBell";
-import { MeetingMinutesPage } from "@/components/meetings/MeetingMinutesPage";
+import { MeetingsPage } from "@/components/meetings/MeetingsPage";
 import { useMyUnitModules } from "@/hooks/useUnitModuleAccess";
 
 
@@ -128,7 +128,7 @@ const ResidentDashboard = () => {
       case "managers":
         return <ManagersHistoryReport buildingId={currentBuildingId} hideEmpty />;
       case "meetings":
-        return <MeetingMinutesPage buildingId={currentBuildingId} canEdit={false} />;
+        return <MeetingsPage buildingId={currentBuildingId} canEdit={false} />;
       case "all_expenses":
         return grantedModules.includes("all_expenses")
           ? <ResidentAllExpenses buildingId={currentBuildingId} />

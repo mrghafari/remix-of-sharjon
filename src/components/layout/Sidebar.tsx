@@ -29,7 +29,7 @@ const menuItems = [
   { id: "documents", label: "اسناد ساختمان", icon: FolderOpen },
   { id: "utilities", label: "مصارف", icon: Gauge },
   { id: "phonebook", label: "دفترچه تلفن", icon: BookUser },
-  { id: "meetings", label: "صورتجلسات", icon: ScrollText },
+  { id: "meetings", label: "جلسات", icon: ScrollText },
   { id: "tickets", label: "پشتیبانی", icon: LifeBuoy },
   { id: "settings", label: "تنظیمات", icon: Settings },
 ];
