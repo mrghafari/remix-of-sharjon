@@ -253,18 +253,29 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     }
     const [hh, mm] = meetingTime.split(":").map(Number);
     if (isNaN(hh) || isNaN(mm)) {
-      toast.error("ساعت نامعتبر است");
+      toast.error("ساعت شروع نامعتبر است");
+      return;
+    }
+    const [eh, em] = endTime.split(":").map(Number);
+    if (isNaN(eh) || isNaN(em)) {
+      toast.error("ساعت پایان نامعتبر است");
       return;
     }
     setSubmitting(true);
     try {
       const dt = new Date(meetingDate);
       dt.setHours(hh, mm, 0, 0);
+      const et = new Date(meetingDate);
+      et.setHours(eh, em, 0, 0);
+      if (et.getTime() <= dt.getTime()) {
+        et.setDate(et.getDate() + 1);
+      }
 
       const payload: any = {
         title: title.trim(),
         description: description.trim() || null,
         scheduled_at: dt.toISOString(),
+        ends_at: et.toISOString(),
         audience,
         excluded_owner_unit_ids: Array.from(excludedOwners),
         excluded_resident_unit_ids: Array.from(excludedResidents),
