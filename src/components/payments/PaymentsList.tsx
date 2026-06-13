@@ -250,16 +250,22 @@ export function PaymentsList() {
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>واحد</Label>
-              <Select value={editData.unit_id} onValueChange={(v) => setEditData({ ...editData, unit_id: v })}>
-                <SelectTrigger><SelectValue placeholder="انتخاب واحد" /></SelectTrigger>
-                <SelectContent>
-                  {units?.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.id}>
-                      واحد {unit.unit_number} - {unit.owner_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {editPayment && !editPayment.unit_id ? (
+                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground items-center">
+                  درآمد / مبالغ اولیه صندوق (بدون واحد)
+                </div>
+              ) : (
+                <Select value={editData.unit_id} onValueChange={(v) => setEditData({ ...editData, unit_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="انتخاب واحد" /></SelectTrigger>
+                  <SelectContent>
+                    {units?.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>
+                        واحد {unit.unit_number} - {unit.owner_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="space-y-2">
               <Label>مبلغ (ریال)</Label>
