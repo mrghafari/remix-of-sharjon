@@ -342,6 +342,53 @@ export type Database = {
           },
         ]
       }
+      building_online_meetings: {
+        Row: {
+          building_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          jitsi_domain: string
+          room_name: string
+          scheduled_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          building_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          jitsi_domain?: string
+          room_name: string
+          scheduled_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          building_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          jitsi_domain?: string
+          room_name?: string
+          scheduled_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "building_online_meetings_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       building_payment_policies: {
         Row: {
           building_id: string
