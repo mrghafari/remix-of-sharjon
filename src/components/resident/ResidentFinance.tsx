@@ -81,7 +81,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
     queryFn: async () => {
       const { data, error } = await supabase
         .from("expense_unit_shares")
-        .select("*, expenses(title, expense_date, category, fund_type, allocation_type)")
+        .select("*, expenses(title, expense_date, category, fund_type, allocation_type, amount)")
         .eq("unit_id", unitId)
         .eq("building_id", buildingId);
       if (error) throw error;
@@ -536,6 +536,7 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                       <TableHead className="text-right">نقش</TableHead>
                       <TableHead className="text-right">مدیر</TableHead>
                       <TableHead className="text-right">نوع</TableHead>
+                      <TableHead className="text-left">کل هزینه</TableHead>
                       <TableHead className="text-left">سهم شما</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -565,6 +566,9 @@ export function ResidentFinance({ buildingId, unitId, viewerRole = "resident" }:
                             <Badge variant="outline" className="text-xs">
                               {fundType === "charge" ? "شارژ" : "فوق‌شارژ"}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="font-semibold text-muted-foreground text-left whitespace-nowrap">
+                            {formatNumber(Number(expense?.amount || 0))} ریال
                           </TableCell>
                           <TableCell className="font-semibold text-red-600 text-left whitespace-nowrap">
                             {formatNumber(Number(e.allocated_amount))} ریال
