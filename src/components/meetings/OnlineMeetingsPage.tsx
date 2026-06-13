@@ -366,10 +366,12 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
 
   const renderCard = (m: OnlineMeeting) => {
     const d = new Date(m.scheduled_at);
+    const e = m.ends_at ? new Date(m.ends_at) : null;
     const link = buildLink(m.jitsi_domain, m.room_name);
     const isLive = Math.abs(d.getTime() - now) < 2 * 3600 * 1000;
     const exCount = (m.excluded_owner_unit_ids?.length || 0) + (m.excluded_resident_unit_ids?.length || 0);
-    const onlineAvailable = m.has_online !== false && !!link;
+    const onlineExpired = !!e && e.getTime() < now;
+    const onlineAvailable = m.has_online !== false && !!link && !onlineExpired;
     return (
       <Card key={m.id} className={isLive ? "border-primary/40 bg-primary/5" : ""}>
         <CardHeader className="pb-2">
@@ -382,7 +384,11 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
               </CardTitle>
               <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d.toISOString())}</span>
-                <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  {pad(d.getHours())}:{pad(d.getMinutes())}
+                  {e && <> تا {pad(e.getHours())}:{pad(e.getMinutes())}</>}
+                </span>
                 {m.location && (
                   <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{m.location}</span>
                 )}
@@ -390,10 +396,10 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
                   <Users className="w-3 h-3" />
                   {audienceLabel(m.audience || "both")}
                 </Badge>
-                {onlineAvailable && (
-                  <Badge variant="outline" className="gap-1 border-primary/40 text-primary">
+                {m.has_online && !!link && (
+                  <Badge variant="outline" className={`gap-1 ${onlineExpired ? "border-muted text-muted-foreground line-through" : "border-primary/40 text-primary"}`}>
                     <Video className="w-3 h-3" />
-                    حضور آنلاین
+                    {onlineExpired ? "آنلاین (پایان‌یافته)" : "حضور آنلاین"}
                   </Badge>
                 )}
                 <span>مدعوین: {inviteeCount(m)} نفر{exCount > 0 ? ` • ${exCount} استثنا` : ""}</span>
