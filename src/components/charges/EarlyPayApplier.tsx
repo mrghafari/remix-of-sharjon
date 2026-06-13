@@ -266,7 +266,11 @@ export function EarlyPayApplier() {
           </div>
         )}
 
-        {newOnes.length > 0 && (
+        {policy?.early_pay_auto_apply ? (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            اعمال خودکار تخفیف خوش‌حسابی فعال است. تخفیف‌ها به صورت خودکار محاسبه و ثبت می‌شوند و نیازی به اعمال دستی نیست.
+          </div>
+        ) : newOnes.length > 0 && (
           <div className="flex items-center justify-end">
             <AlertDialog>
               <AlertDialogTrigger asChild>
