@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -17,8 +20,10 @@ import {
 import { JalaliDatePicker } from "@/components/ui/jalali-date-picker";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "sonner";
-import { Video, Plus, Trash2, Pencil, Calendar, Clock, Loader2, ExternalLink, Copy } from "lucide-react";
+import { Video, Plus, Trash2, Pencil, Calendar, Clock, Loader2, ExternalLink, Copy, Users } from "lucide-react";
 import { sendSmsBatch } from "@/hooks/useSms";
+
+type Audience = "owners" | "residents" | "both";
 
 interface OnlineMeeting {
   id: string;
@@ -30,6 +35,18 @@ interface OnlineMeeting {
   jitsi_domain: string;
   created_by: string | null;
   created_at: string;
+  audience: Audience;
+  excluded_owner_unit_ids: string[];
+  excluded_resident_unit_ids: string[];
+}
+
+interface UnitRow {
+  id: string;
+  unit_number: string;
+  owner_name: string | null;
+  resident_name: string | null;
+  phone: string | null;
+  resident_phone: string | null;
 }
 
 interface Props {
@@ -48,6 +65,9 @@ function generateRoom(buildingId: string) {
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
 
+const audienceLabel = (a: Audience) =>
+  a === "owners" ? "مالکین" : a === "residents" ? "ساکنین" : "مالکین و ساکنین";
+
 export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -60,7 +80,24 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const [description, setDescription] = useState("");
   const [meetingDate, setMeetingDate] = useState<Date | undefined>(new Date());
   const [meetingTime, setMeetingTime] = useState("20:00");
+  const [audience, setAudience] = useState<Audience>("both");
+  const [excludedOwners, setExcludedOwners] = useState<Set<string>>(new Set());
+  const [excludedResidents, setExcludedResidents] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
+
+  const { data: units = [] } = useQuery({
+    queryKey: ["units_for_meetings", buildingId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("units")
+        .select("id, unit_number, owner_name, resident_name, phone, resident_phone")
+        .eq("building_id", buildingId)
+        .order("unit_number");
+      if (error) throw error;
+      return (data || []) as UnitRow[];
+    },
+    enabled: !!buildingId && canEdit,
+  });
 
   const { data: meetings = [], isLoading } = useQuery({
     queryKey: ["online_meetings", buildingId],
@@ -89,6 +126,9 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
   const resetForm = () => {
     setTitle(""); setDescription("");
     setMeetingDate(new Date()); setMeetingTime("20:00");
+    setAudience("both");
+    setExcludedOwners(new Set());
+    setExcludedResidents(new Set());
     setEditing(null);
   };
 
@@ -100,13 +140,30 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     const d = new Date(m.scheduled_at);
     setMeetingDate(d);
     setMeetingTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    setAudience(m.audience || "both");
+    setExcludedOwners(new Set(m.excluded_owner_unit_ids || []));
+    setExcludedResidents(new Set(m.excluded_resident_unit_ids || []));
     setDialogOpen(true);
   };
 
+  const toggleExcl = (set: Set<string>, setter: (s: Set<string>) => void, id: string) => {
+    const next = new Set(set);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setter(next);
+  };
+
+  const ownerCandidates = useMemo(
+    () => units.filter(u => u.phone && (u.phone.trim().length > 0)),
+    [units]
+  );
+  const residentCandidates = useMemo(
+    () => units.filter(u => u.resident_phone && u.resident_phone !== u.phone),
+    [units]
+  );
+
   const notifyResidents = async (meeting: OnlineMeeting) => {
     try {
-      // Get all phones for the building (owners + residents)
-      const { data: units } = await supabase
+      const { data: unitsAll } = await supabase
         .from("units")
         .select("id, unit_number, owner_name, resident_name, phone, resident_phone")
         .eq("building_id", buildingId);
@@ -121,18 +178,26 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
         "لینک": link,
         "ساختمان": "",
       };
-      (units || []).forEach((u: any) => {
-        if (u.phone) recipients.push({ phone: u.phone, name: u.owner_name || "همسایه گرامی", role: "owner", unit_id: u.id, variables: { ...vars, "نام": u.owner_name || "" } });
-        if (u.resident_phone && u.resident_phone !== u.phone) {
+
+      const exOwners = new Set(meeting.excluded_owner_unit_ids || []);
+      const exResidents = new Set(meeting.excluded_resident_unit_ids || []);
+      const includeOwners = meeting.audience === "owners" || meeting.audience === "both";
+      const includeResidents = meeting.audience === "residents" || meeting.audience === "both";
+
+      (unitsAll || []).forEach((u: any) => {
+        if (includeOwners && u.phone && !exOwners.has(u.id)) {
+          recipients.push({ phone: u.phone, name: u.owner_name || "همسایه گرامی", role: "owner", unit_id: u.id, variables: { ...vars, "نام": u.owner_name || "" } });
+        }
+        if (includeResidents && u.resident_phone && u.resident_phone !== u.phone && !exResidents.has(u.id)) {
           recipients.push({ phone: u.resident_phone, name: u.resident_name || "همسایه گرامی", role: "resident", unit_id: u.id, variables: { ...vars, "نام": u.resident_name || "" } });
         }
       });
 
-      // In-app announcement
+      const audienceText = audienceLabel(meeting.audience);
       await (supabase as any).from("building_announcements").insert({
         building_id: buildingId,
         title: `جلسه آنلاین: ${meeting.title}`,
-        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
+        content: `جلسه آنلاین در تاریخ ${formatJalaliDate(d.toISOString())} ساعت ${pad(d.getHours())}:${pad(d.getMinutes())} برگزار می‌شود.\nمدعوین: ${audienceText}\n\nلینک ورود: ${link}${meeting.description ? `\n\n${meeting.description}` : ""}`,
         is_pinned: true,
         created_by: user?.id,
       });
@@ -164,26 +229,32 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       const dt = new Date(meetingDate);
       dt.setHours(hh, mm, 0, 0);
 
+      const payload: any = {
+        title: title.trim(),
+        description: description.trim() || null,
+        scheduled_at: dt.toISOString(),
+        audience,
+        excluded_owner_unit_ids: Array.from(excludedOwners),
+        excluded_resident_unit_ids: Array.from(excludedResidents),
+      };
+
       if (editing) {
-        const { error } = await supabase
+        const { data: updated, error } = await supabase
           .from("building_online_meetings" as any)
-          .update({
-            title: title.trim(),
-            description: description.trim() || null,
-            scheduled_at: dt.toISOString(),
-          })
-          .eq("id", editing.id);
+          .update(payload)
+          .eq("id", editing.id)
+          .select()
+          .single();
         if (error) throw error;
-        toast.success("جلسه به‌روزرسانی شد");
+        toast.success("جلسه به‌روزرسانی شد و اطلاع‌رسانی مجدد ارسال می‌شود");
+        if (updated) await notifyResidents(updated as unknown as OnlineMeeting);
       } else {
         const room = generateRoom(buildingId);
         const { data, error } = await supabase
           .from("building_online_meetings" as any)
           .insert({
+            ...payload,
             building_id: buildingId,
-            title: title.trim(),
-            description: description.trim() || null,
-            scheduled_at: dt.toISOString(),
             room_name: room,
             jitsi_domain: "meet.jit.si",
             created_by: user.id,
@@ -228,10 +299,24 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
     );
   };
 
+  const inviteeCount = (m: OnlineMeeting) => {
+    const exO = new Set(m.excluded_owner_unit_ids || []);
+    const exR = new Set(m.excluded_resident_unit_ids || []);
+    const includeO = m.audience === "owners" || m.audience === "both";
+    const includeR = m.audience === "residents" || m.audience === "both";
+    let count = 0;
+    units.forEach(u => {
+      if (includeO && u.phone && !exO.has(u.id)) count++;
+      if (includeR && u.resident_phone && u.resident_phone !== u.phone && !exR.has(u.id)) count++;
+    });
+    return count;
+  };
+
   const renderCard = (m: OnlineMeeting) => {
     const d = new Date(m.scheduled_at);
     const link = buildLink(m.jitsi_domain, m.room_name);
     const isLive = Math.abs(d.getTime() - now) < 2 * 3600 * 1000;
+    const exCount = (m.excluded_owner_unit_ids?.length || 0) + (m.excluded_resident_unit_ids?.length || 0);
     return (
       <Card key={m.id} className={isLive ? "border-primary/40 bg-primary/5" : ""}>
         <CardHeader className="pb-2">
@@ -245,6 +330,13 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
               <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatJalaliDate(d.toISOString())}</span>
                 <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{pad(d.getHours())}:{pad(d.getMinutes())}</span>
+                <Badge variant="secondary" className="gap-1">
+                  <Users className="w-3 h-3" />
+                  {audienceLabel(m.audience || "both")}
+                </Badge>
+                {canEdit && (
+                  <span>مدعوین: {inviteeCount(m)}{exCount > 0 ? ` (${exCount} استثنا)` : ""}</span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1 flex-wrap">
@@ -279,6 +371,9 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       </Card>
     );
   };
+
+  const showOwnersList = audience === "owners" || audience === "both";
+  const showResidentsList = audience === "residents" || audience === "both";
 
   return (
     <div className="space-y-4 animate-fade-in" dir="rtl">
@@ -326,7 +421,7 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg" dir="rtl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-auto" dir="rtl">
           <DialogHeader>
             <DialogTitle>{editing ? "ویرایش جلسه آنلاین" : "ایجاد جلسه آنلاین"}</DialogTitle>
           </DialogHeader>
@@ -347,13 +442,94 @@ export function OnlineMeetingsPage({ buildingId, canEdit = true }: Props) {
             </div>
             <div className="space-y-2">
               <Label>توضیحات (اختیاری)</Label>
-              <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="دستور جلسه، نکات و..." className="min-h-24" />
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="دستور جلسه، نکات و..." className="min-h-20" />
             </div>
-            {!editing && (
-              <p className="text-xs text-muted-foreground bg-muted/40 rounded p-2">
-                با ثبت جلسه، یک اعلان سنجاق‌شده در داشبورد ساکنین درج می‌شود و در صورت فعال‌بودن سرویس پیامک، لینک ورود به جلسه برای همه ارسال خواهد شد.
-              </p>
-            )}
+
+            <div className="space-y-2">
+              <Label>دعوت‌شدگان *</Label>
+              <RadioGroup
+                value={audience}
+                onValueChange={(v) => setAudience(v as Audience)}
+                className="flex gap-4 flex-wrap"
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="both" id="aud-both" />
+                  <span className="text-sm">مالکین و ساکنین</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="owners" id="aud-owners" />
+                  <span className="text-sm">فقط مالکین</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="residents" id="aud-residents" />
+                  <span className="text-sm">فقط ساکنین</span>
+                </label>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="block">استثناها (تیک‌خورده‌ها از دعوت حذف می‌شوند)</Label>
+
+              {showOwnersList && (
+                <div className="border rounded-md p-3 bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">مالکین ({ownerCandidates.length})</div>
+                    <div className="flex gap-2 text-xs">
+                      <button type="button" className="text-primary hover:underline" onClick={() => setExcludedOwners(new Set())}>پاک‌کردن استثنا</button>
+                      <span className="text-muted-foreground">•</span>
+                      <button type="button" className="text-destructive hover:underline" onClick={() => setExcludedOwners(new Set(ownerCandidates.map(u => u.id)))}>استثنای همه</button>
+                    </div>
+                  </div>
+                  {ownerCandidates.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">مالک با شماره تماس ثبت‌شده‌ای وجود ندارد</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
+                      {ownerCandidates.map(u => (
+                        <label key={`o-${u.id}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={excludedOwners.has(u.id)}
+                            onCheckedChange={() => toggleExcl(excludedOwners, setExcludedOwners, u.id)}
+                          />
+                          <span className="truncate">واحد {u.unit_number} — {u.owner_name || "—"}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {showResidentsList && (
+                <div className="border rounded-md p-3 bg-muted/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">ساکنین ({residentCandidates.length})</div>
+                    <div className="flex gap-2 text-xs">
+                      <button type="button" className="text-primary hover:underline" onClick={() => setExcludedResidents(new Set())}>پاک‌کردن استثنا</button>
+                      <span className="text-muted-foreground">•</span>
+                      <button type="button" className="text-destructive hover:underline" onClick={() => setExcludedResidents(new Set(residentCandidates.map(u => u.id)))}>استثنای همه</button>
+                    </div>
+                  </div>
+                  {residentCandidates.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">ساکن با شماره تماس مستقل از مالک وجود ندارد</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
+                      {residentCandidates.map(u => (
+                        <label key={`r-${u.id}`} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={excludedResidents.has(u.id)}
+                            onCheckedChange={() => toggleExcl(excludedResidents, setExcludedResidents, u.id)}
+                          />
+                          <span className="truncate">واحد {u.unit_number} — {u.resident_name || "—"}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-muted-foreground bg-muted/40 rounded p-2">
+              با ذخیره جلسه، یک اعلان سنجاق‌شده درج می‌شود و در صورت فعال‌بودن سرویس پیامک، دعوتنامه فقط برای گروه انتخابی (به‌جز افراد استثنا) ارسال می‌شود.
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={submitting}>انصراف</Button>

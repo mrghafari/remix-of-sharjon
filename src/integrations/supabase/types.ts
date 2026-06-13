@@ -353,10 +353,13 @@ export type Database = {
       }
       building_online_meetings: {
         Row: {
+          audience: string
           building_id: string
           created_at: string
           created_by: string | null
           description: string | null
+          excluded_owner_unit_ids: string[]
+          excluded_resident_unit_ids: string[]
           id: string
           jitsi_domain: string
           room_name: string
@@ -365,10 +368,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audience?: string
           building_id: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          excluded_owner_unit_ids?: string[]
+          excluded_resident_unit_ids?: string[]
           id?: string
           jitsi_domain?: string
           room_name: string
@@ -377,10 +383,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audience?: string
           building_id?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          excluded_owner_unit_ids?: string[]
+          excluded_resident_unit_ids?: string[]
           id?: string
           jitsi_domain?: string
           room_name?: string
