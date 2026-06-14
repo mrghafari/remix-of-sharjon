@@ -1,18 +1,23 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, Loader2, LogIn } from "lucide-react";
+import { Building2, Loader2, LogIn, UserPlus } from "lucide-react";
 import { useAdminBuildings } from "@/hooks/useAdmin";
+import { AssignManagerDialog } from "./AssignManagerDialog";
 
 function formatDate(d: string) {
   try { return new Date(d).toLocaleDateString("fa-IR"); } catch { return d; }
 }
 
+
 export function AdminBuildings() {
   const navigate = useNavigate();
   const { data: buildings, isLoading } = useAdminBuildings();
+  const [assignTarget, setAssignTarget] = useState<{ id: string; name: string } | null>(null);
+
 
   return (
     <Card>
@@ -55,21 +60,32 @@ export function AdminBuildings() {
                     <TableCell className="text-xs ltr">{b.manager_email || "—"}</TableCell>
                     <TableCell>{formatDate(b.created_at)}</TableCell>
                     <TableCell>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        className="gap-1"
-                        disabled={!b.manager_user_id}
-                        onClick={() => {
-                          if (!b.manager_user_id) return;
-                          localStorage.setItem("currentBuildingId", b.id);
-                          navigate(`/admin/customer/${b.manager_user_id}`);
-                        }}
-                      >
-                        <LogIn className="h-4 w-4" />
-                        ورود
-                      </Button>
+                      {b.manager_user_id ? (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="gap-1"
+                          onClick={() => {
+                            localStorage.setItem("currentBuildingId", b.id);
+                            navigate(`/admin/customer/${b.manager_user_id}`);
+                          }}
+                        >
+                          <LogIn className="h-4 w-4" />
+                          ورود
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="gap-1"
+                          onClick={() => setAssignTarget({ id: b.id, name: b.name })}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          اختصاص مدیر
+                        </Button>
+                      )}
                     </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>
@@ -77,6 +93,15 @@ export function AdminBuildings() {
           </div>
         )}
       </CardContent>
+      {assignTarget && (
+        <AssignManagerDialog
+          open={!!assignTarget}
+          onOpenChange={(o) => !o && setAssignTarget(null)}
+          buildingId={assignTarget.id}
+          buildingName={assignTarget.name}
+        />
+      )}
     </Card>
   );
 }
+
