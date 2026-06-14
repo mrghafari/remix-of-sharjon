@@ -1,8 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, MessageSquare, Tag, HardDrive } from "lucide-react";
+import { CreditCard, MessageSquare, HardDrive } from "lucide-react";
 import { PaymentGatewaySettings } from "./PaymentGatewaySettings";
 import { SmsSettings } from "./SmsSettings";
-import { AdminPricingSettings } from "./AdminPricingSettings";
 import { ObjectStorageSettings } from "./ObjectStorageSettings";
 
 interface Props {
@@ -17,8 +16,7 @@ export function AdminPlatformSettings({ userId }: Props) {
         <div className="bg-muted/50 border rounded-lg p-4">
           <p className="text-sm text-muted-foreground">
             این تنظیمات به‌عنوان <strong className="text-foreground">پیش‌فرض سراسری</strong> برای
-            همه مشتریان پلتفرم اعمال می‌شود. در صفحه ویرایش هر مشتری می‌توانید تنظیمات اختصاصی
-            متفاوتی تعریف کنید.
+            همه مشتریان پلتفرم اعمال می‌شود. قیمت‌گذاری پلن‌ها در بخش «پلن‌ها» مدیریت می‌شود.
           </p>
         </div>
       )}
@@ -34,12 +32,6 @@ export function AdminPlatformSettings({ userId }: Props) {
             سرویس پیامک
           </TabsTrigger>
           {!userId && (
-            <TabsTrigger value="pricing" className="gap-2">
-              <Tag className="h-4 w-4" />
-              تعرفه‌ها
-            </TabsTrigger>
-          )}
-          {!userId && (
             <TabsTrigger value="storage" className="gap-2">
               <HardDrive className="h-4 w-4" />
               فضای ذخیره‌سازی
@@ -54,12 +46,6 @@ export function AdminPlatformSettings({ userId }: Props) {
         <TabsContent value="sms" className="mt-4">
           <SmsSettings userId={userId} />
         </TabsContent>
-
-        {!userId && (
-          <TabsContent value="pricing" className="mt-4">
-            <AdminPricingSettings />
-          </TabsContent>
-        )}
 
         {!userId && (
           <TabsContent value="storage" className="mt-4">

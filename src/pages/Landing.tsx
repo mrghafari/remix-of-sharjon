@@ -1,4 +1,4 @@
-import { Building2, Shield, BarChart3, Users, CreditCard, Bell, ArrowLeft, CheckCircle2, Sparkles, Zap, Globe } from "lucide-react";
+import { Building2, Shield, BarChart3, Users, CreditCard, Bell, ArrowLeft, CheckCircle2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -6,41 +6,29 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsSuperAdmin } from "@/hooks/useAdmin";
-import { DEFAULT_PRICING, type PricingPlanConfig } from "@/components/admin/AdminPricingSettings";
 import blueTehran from "@/assets/blue-tehran.png";
 import sharjanLogo from "@/assets/sharjan-logo.png";
 
+const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
+
+interface LandingPlan {
+  id: string;
+  name: string;
+  description: string | null;
+  features: string[];
+  price_per_unit_rial: number;
+  is_contact_only: boolean;
+  tier_key: string | null;
+  sort_order: number;
+}
+
 const features = [
-  {
-    icon: Building2,
-    title: "مدیریت چند ساختمان",
-    description: "هر ساختمان به صورت مجزا با واحدها، هزینه‌ها و پرداخت‌های مستقل مدیریت می‌شود.",
-  },
-  {
-    icon: CreditCard,
-    title: "مدیریت مالی هوشمند",
-    description: "ثبت خودکار شارژ و فوق‌العاده، تسهیم هزینه‌ها بر اساس متراژ، تعداد ساکنین یا مساوی.",
-  },
-  {
-    icon: BarChart3,
-    title: "گزارش‌گیری جامع",
-    description: "گزارش مالی هر واحد، صندوق شارژ و فوق‌العاده با قابلیت چاپ و خروجی PDF.",
-  },
-  {
-    icon: Users,
-    title: "نقش‌های کاربری",
-    description: "سوپر ادمین، مدیر ساختمان و ساکن — هر کدام با سطح دسترسی مشخص.",
-  },
-  {
-    icon: Shield,
-    title: "امنیت و حریم خصوصی",
-    description: "داده‌های هر ساختمان کاملاً ایزوله و دسترسی بر اساس نقش کاربری کنترل می‌شود.",
-  },
-  {
-    icon: Bell,
-    title: "اطلاع‌رسانی خودکار",
-    description: "ارسال نوتیفیکیشن به ساکنین برای شارژ، تعمیرات و اعلانات مهم ساختمان.",
-  },
+  { icon: Building2, title: "مدیریت چند ساختمان", description: "هر ساختمان به صورت مجزا با واحدها، هزینه‌ها و پرداخت‌های مستقل مدیریت می‌شود." },
+  { icon: CreditCard, title: "مدیریت مالی هوشمند", description: "ثبت خودکار شارژ و فوق‌العاده، تسهیم هزینه‌ها بر اساس متراژ، تعداد ساکنین یا مساوی." },
+  { icon: BarChart3, title: "گزارش‌گیری جامع", description: "گزارش مالی هر واحد، صندوق شارژ و فوق‌العاده با قابلیت چاپ و خروجی PDF." },
+  { icon: Users, title: "نقش‌های کاربری", description: "سوپر ادمین، مدیر ساختمان و ساکن — هر کدام با سطح دسترسی مشخص." },
+  { icon: Shield, title: "امنیت و حریم خصوصی", description: "داده‌های هر ساختمان کاملاً ایزوله و دسترسی بر اساس نقش کاربری کنترل می‌شود." },
+  { icon: Bell, title: "اطلاع‌رسانی خودکار", description: "ارسال نوتیفیکیشن به ساکنین برای شارژ، تعمیرات و اعلانات مهم ساختمان." },
 ];
 
 
@@ -48,33 +36,41 @@ export default function Landing() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { data: isSuperAdmin } = useIsSuperAdmin(user?.id);
-  const [pricingPlans, setPricingPlans] = useState<PricingPlanConfig[]>(DEFAULT_PRICING);
+  const [pricingPlans, setPricingPlans] = useState<LandingPlan[]>([]);
 
-  // Auto-redirect authed users so PWA install (start_url=/) lands them in their app, not marketing
   useEffect(() => {
     if (loading || !user) return;
     if (isSuperAdmin) { navigate("/admin", { replace: true }); return; }
     const hasResident = !!localStorage.getItem("resident_matches");
     if (hasResident) { navigate("/resident", { replace: true }); return; }
-    // Manager (no resident match) → manager dashboard
     navigate("/dashboard", { replace: true });
   }, [user, loading, isSuperAdmin, navigate]);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase
-        .from("platform_settings")
-        .select("setting_value")
-        .eq("setting_key", "pricing_plans")
-        .maybeSingle();
-      const plans = (data?.setting_value as any)?.plans;
-      if (Array.isArray(plans) && plans.length > 0) setPricingPlans(plans);
+        .from("subscription_plans")
+        .select("id,name,description,features,price_per_unit_rial,is_contact_only,tier_key,sort_order")
+        .eq("is_active", true)
+        .not("tier_key", "is", null)
+        .order("sort_order", { ascending: true });
+      if (Array.isArray(data)) {
+        setPricingPlans(data.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          description: d.description,
+          features: Array.isArray(d.features) ? d.features : [],
+          price_per_unit_rial: Number(d.price_per_unit_rial ?? 0),
+          is_contact_only: Boolean(d.is_contact_only),
+          tier_key: d.tier_key,
+          sort_order: d.sort_order,
+        })));
+      }
     })();
   }, []);
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -87,9 +83,7 @@ export default function Landing() {
             <a href="#faq" className="hover:text-foreground transition-colors">سوالات متداول</a>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate("/resident-auth")}>
-              ورود
-            </Button>
+            <Button variant="ghost" onClick={() => navigate("/resident-auth")}>ورود</Button>
             <Button onClick={() => navigate("/resident-auth")} className="bg-gradient-primary hover:opacity-90 shadow-glow">
               دمو
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -98,17 +92,13 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="relative overflow-hidden pt-12 pb-12">
-        {/* Background image */}
         <div className="absolute inset-0 -z-10">
           <img src={blueTehran} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px]" />
         </div>
       </section>
 
-
-      {/* Features */}
       <section id="features" className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,7 +120,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
       <section id="pricing" className="py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -142,54 +131,54 @@ export default function Landing() {
             <p className="mt-3 text-muted-foreground">با پلن رایگان شروع کنید و هر زمان خواستید ارتقا دهید</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {pricingPlans.map((plan, i) => (
-              <Card
-                key={i}
-                className={`relative overflow-hidden transition-all duration-300 ${
-                  plan.highlighted
-                    ? "border-primary shadow-glow scale-[1.02]"
-                    : "border-border/50 hover:border-primary/30"
-                }`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-primary" />
-                )}
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
-                  <div className="mt-6 mb-6">
-                    {plan.contact || plan.price === "تماس" ? (
-                      <span className="text-3xl font-extrabold text-foreground">تماس بگیرید</span>
-                    ) : (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-extrabold text-foreground">{plan.price}</span>
-                        <span className="text-muted-foreground text-sm">هزار ریال / واحد / سال</span>
-                      </div>
-                    )}
-                  </div>
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((f, j) => (
-                      <li key={j} className="flex items-center gap-2 text-sm text-foreground">
-                        <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className={`w-full ${plan.highlighted ? "bg-gradient-primary hover:opacity-90 shadow-glow" : ""}`}
-                    variant={plan.highlighted ? "default" : "outline"}
-                    onClick={() => navigate("/resident-auth")}
-                  >
-                    {plan.contact || plan.price === "تماس" ? "تماس با ما" : "شروع کنید"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+            {pricingPlans.map((plan, i) => {
+              const highlighted = plan.tier_key === "pro";
+              return (
+                <Card
+                  key={plan.id}
+                  className={`relative overflow-hidden transition-all duration-300 ${
+                    highlighted ? "border-primary shadow-glow scale-[1.02]" : "border-border/50 hover:border-primary/30"
+                  }`}
+                >
+                  {highlighted && <div className="absolute top-0 inset-x-0 h-1 bg-gradient-primary" />}
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
+                    {plan.description && <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>}
+                    <div className="mt-6 mb-6">
+                      {plan.is_contact_only ? (
+                        <span className="text-3xl font-extrabold text-foreground">تماس بگیرید</span>
+                      ) : plan.price_per_unit_rial === 0 ? (
+                        <span className="text-3xl font-extrabold text-foreground">رایگان</span>
+                      ) : (
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-extrabold text-foreground">{fmt(plan.price_per_unit_rial)}</span>
+                          <span className="text-muted-foreground text-sm">ریال / واحد / سال</span>
+                        </div>
+                      )}
+                    </div>
+                    <ul className="space-y-3 mb-8">
+                      {plan.features.map((f, j) => (
+                        <li key={j} className="flex items-center gap-2 text-sm text-foreground">
+                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      className={`w-full ${highlighted ? "bg-gradient-primary hover:opacity-90 shadow-glow" : ""}`}
+                      variant={highlighted ? "default" : "outline"}
+                      onClick={() => navigate("/resident-auth")}
+                    >
+                      {plan.is_contact_only ? "تماس با ما" : "شروع کنید"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <div className="rounded-3xl bg-gradient-primary p-12 md:p-16 shadow-glow relative overflow-hidden">
@@ -214,7 +203,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border py-12 bg-muted/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
