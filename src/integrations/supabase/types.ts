@@ -1858,7 +1858,9 @@ export type Database = {
           features: Json
           id: string
           is_active: boolean
+          is_contact_only: boolean
           name: string
+          price_per_unit_rial: number
           price_rial: number
           sort_order: number
           tier_key: string | null
@@ -1872,7 +1874,9 @@ export type Database = {
           features?: Json
           id?: string
           is_active?: boolean
+          is_contact_only?: boolean
           name: string
+          price_per_unit_rial?: number
           price_rial: number
           sort_order?: number
           tier_key?: string | null
@@ -1886,7 +1890,9 @@ export type Database = {
           features?: Json
           id?: string
           is_active?: boolean
+          is_contact_only?: boolean
           name?: string
+          price_per_unit_rial?: number
           price_rial?: number
           sort_order?: number
           tier_key?: string | null

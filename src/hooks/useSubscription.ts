@@ -13,6 +13,8 @@ export interface SubscriptionPlan {
   sort_order: number;
   tier_key: string | null;
   features: string[];
+  price_per_unit_rial: number;
+  is_contact_only: boolean;
 }
 
 export interface MySubscription {

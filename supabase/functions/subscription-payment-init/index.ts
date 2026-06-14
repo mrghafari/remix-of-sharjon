@@ -7,25 +7,6 @@ const corsHeaders = {
 
 const DURATION_DAYS = 365;
 
-function parsePersianNumber(s: any): number {
-  if (s == null) return 0;
-  if (typeof s === "number") return s;
-  const map: Record<string, string> = {
-    "۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9",
-    "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9",
-  };
-  const ascii = String(s).replace(/[۰-۹٠-٩]/g, (c) => map[c] ?? c).replace(/[^\d.]/g, "");
-  const n = Number(ascii);
-  return isNaN(n) ? 0 : n;
-}
-
-function tierIndex(tierKey: string | null): number {
-  if (tierKey === "free") return 0;
-  if (tierKey === "pro") return 1;
-  if (tierKey === "enterprise") return 2;
-  return -1;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -53,16 +34,11 @@ Deno.serve(async (req) => {
       .from("subscription_plans").select("*").eq("id", plan_id).eq("is_active", true).single();
     if (planErr || !plan) return new Response(JSON.stringify({ error: "plan not found" }), { status: 404, headers: corsHeaders });
 
-    // Read tariff from platform_settings
-    const { data: psRow } = await supabase
-      .from("platform_settings").select("setting_value").eq("setting_key", "pricing_plans").maybeSingle();
-    const tariffs = (psRow?.setting_value as any)?.plans ?? [];
-    const idx = tierIndex(plan.tier_key);
-    const tariff = idx >= 0 ? tariffs[idx] : null;
-    if (!tariff) return new Response(JSON.stringify({ error: "tariff not configured" }), { status: 400, headers: corsHeaders });
-    if (tariff.contact) return new Response(JSON.stringify({ error: "این پلن نیازمند تماس با پشتیبانی است" }), { status: 400, headers: corsHeaders });
+    if (plan.is_contact_only) {
+      return new Response(JSON.stringify({ error: "این پلن نیازمند تماس با پشتیبانی است" }), { status: 400, headers: corsHeaders });
+    }
 
-    const perUnitRial = Math.round(parsePersianNumber(tariff.price) * 1000);
+    const perUnitRial = Math.round(Number(plan.price_per_unit_rial ?? 0));
     const amountRial = perUnitRial * units;
 
     if (amountRial <= 0) {

@@ -14,8 +14,6 @@ import {
 } from "@/hooks/useSubscription";
 import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "@/hooks/use-toast";
-import { loadPricingPlans, tariffForTier, tariffPerUnitRial } from "@/lib/tariff";
-import type { PricingPlanConfig } from "@/components/admin/AdminPricingSettings";
 
 const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
 
@@ -24,12 +22,7 @@ export function SubscriptionPage() {
   const { data: plans, isLoading: plansLoading } = useSubscriptionPlans(true);
   const { data: payments } = useMySubscriptionPayments();
   const initPayment = useInitSubscriptionPayment();
-  const [pricing, setPricing] = useState<PricingPlanConfig[]>([]);
   const [unitCounts, setUnitCounts] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    loadPricingPlans().then(setPricing);
-  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -44,7 +37,7 @@ export function SubscriptionPage() {
     }
   }, []);
 
-  const tierPlans = (plans ?? []).filter((p) => (p as any).tier_key);
+  const tierPlans = (plans ?? []).filter((p: any) => p.tier_key);
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl">
@@ -88,13 +81,12 @@ export function SubscriptionPage() {
           <Loader2 className="w-5 h-5 animate-spin" />
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
-            {tierPlans.map((p) => {
-              const tariff = tariffForTier(pricing, (p as any).tier_key);
-              const perUnit = tariff ? tariffPerUnitRial(tariff) : 0;
+            {tierPlans.map((p: any) => {
+              const perUnit = Number(p.price_per_unit_rial ?? 0);
+              const isContact = Boolean(p.is_contact_only);
               const units = unitCounts[p.id] ?? Math.max(sub?.unit_quota || 0, 10);
               const total = perUnit * units;
-              const features: string[] = Array.isArray((p as any).features) ? (p as any).features : [];
-              const isContact = tariff?.contact === true;
+              const features: string[] = Array.isArray(p.features) ? p.features : [];
               return (
                 <Card key={p.id} className="relative">
                   <CardHeader>
@@ -134,20 +126,22 @@ export function SubscriptionPage() {
                             setUnitCounts((prev) => ({ ...prev, [p.id]: Math.max(1, parseInt(e.target.value || "1", 10)) }))
                           }
                         />
-                        <div className="text-sm flex justify-between border-t pt-2">
-                          <span className="text-muted-foreground">مبلغ نهایی:</span>
-                          <span className="font-bold">{fmt(total)} ریال</span>
-                        </div>
+                        {perUnit > 0 && (
+                          <div className="text-sm flex justify-between border-t pt-2">
+                            <span className="text-muted-foreground">مبلغ نهایی:</span>
+                            <span className="font-bold">{fmt(total)} ریال</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
                     <Button
                       className="w-full"
-                      disabled={initPayment.isPending || isContact || perUnit <= 0}
+                      disabled={initPayment.isPending || isContact}
                       onClick={() => initPayment.mutate({ planId: p.id, unitCount: units })}
                     >
                       {initPayment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                        isContact ? "تماس با ما" : perUnit <= 0 ? "رایگان" : "خرید / تمدید"}
+                        isContact ? "تماس با ما" : perUnit <= 0 ? "فعال‌سازی رایگان" : "خرید / تمدید"}
                     </Button>
                   </CardContent>
                 </Card>
