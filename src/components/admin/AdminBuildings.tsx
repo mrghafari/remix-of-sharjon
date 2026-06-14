@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Building2, Loader2, LogIn } from "lucide-react";
+import { Building2, Loader2, LogIn, UserPlus } from "lucide-react";
 import { useAdminBuildings } from "@/hooks/useAdmin";
+import { AssignManagerDialog } from "./AssignManagerDialog";
 
 function formatDate(d: string) {
   try { return new Date(d).toLocaleDateString("fa-IR"); } catch { return d; }
 }
+
 
 export function AdminBuildings() {
   const navigate = useNavigate();
