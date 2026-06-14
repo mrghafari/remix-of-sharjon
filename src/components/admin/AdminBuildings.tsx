@@ -16,6 +16,8 @@ function formatDate(d: string) {
 export function AdminBuildings() {
   const navigate = useNavigate();
   const { data: buildings, isLoading } = useAdminBuildings();
+  const [assignTarget, setAssignTarget] = useState<{ id: string; name: string } | null>(null);
+
 
   return (
     <Card>
