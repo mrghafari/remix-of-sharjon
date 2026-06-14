@@ -93,6 +93,15 @@ export function AdminBuildings() {
           </div>
         )}
       </CardContent>
+      {assignTarget && (
+        <AssignManagerDialog
+          open={!!assignTarget}
+          onOpenChange={(o) => !o && setAssignTarget(null)}
+          buildingId={assignTarget.id}
+          buildingName={assignTarget.name}
+        />
+      )}
     </Card>
   );
 }
+
