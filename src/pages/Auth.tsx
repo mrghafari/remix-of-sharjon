@@ -129,14 +129,21 @@ const Auth = () => {
                 </Button>
               </form>
 
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center space-y-2">
                 <button
                   onClick={() => setView("forgot")}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline block w-full"
                 >
                   رمز عبور خود را فراموش کرده‌اید؟
                 </button>
+                <a
+                  href="/resident-auth"
+                  className="text-sm text-primary hover:underline block w-full"
+                >
+                  ورود با شماره موبایل و کد یکبارمصرف
+                </a>
               </div>
+
             </CardContent>
           </Card>
         )}

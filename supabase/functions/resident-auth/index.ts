@@ -255,6 +255,46 @@ serve(async (req) => {
         );
       }
 
+      // PRIORITY: if this phone belongs to a super_admin, log in as that admin.
+      {
+        const { data: adminProfiles } = await adminClient
+          .from("profiles")
+          .select("user_id")
+          .eq("phone", normalizedPhone);
+        for (const ap of (adminProfiles || [])) {
+          const { data: roleRow } = await adminClient
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", ap.user_id)
+            .eq("role", "super_admin")
+            .maybeSingle();
+          if (roleRow) {
+            const { data: adminUser } = await adminClient.auth.admin.getUserById(ap.user_id);
+            const adminEmail = adminUser?.user?.email;
+            if (adminEmail) {
+              const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
+                type: "magiclink",
+                email: adminEmail,
+              });
+              if (linkErr) throw linkErr;
+              const tokenHash = linkData.properties?.hashed_token;
+              if (!tokenHash) throw new Error("خطا در ایجاد توکن ورود");
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  token_hash: tokenHash,
+                  email: adminEmail,
+                  is_admin: true,
+                  matches: [],
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+          }
+        }
+      }
+
+
       const units = await lookupUnits();
       const [managersFromTable, adminAssignedManagers] = await Promise.all([
         lookupManagers(units.map((u: any) => u.id)),
