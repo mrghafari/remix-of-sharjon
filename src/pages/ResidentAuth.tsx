@@ -216,10 +216,17 @@ const ResidentAuth = () => {
       });
       if (otpErr) throw otpErr;
 
+      if (data.is_admin) {
+        clearResidentSessionState();
+        window.location.href = "/admin";
+        return;
+      }
+
       if (data.is_new_user && verifiedMatches.length === 0) {
         navigate("/dashboard", { replace: true });
         return;
       }
+
 
       // If multiple roles/units, let the user choose
       if (verifiedMatches.length > 1) {
