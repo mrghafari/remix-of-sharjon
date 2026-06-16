@@ -7,6 +7,22 @@ const corsHeaders = {
 
 const DURATION_DAYS = 365;
 
+// Compute remaining credit in rial. For downgrade, use new (lower) plan rate.
+// For renewal/upgrade, use the original (current) plan rate.
+function computeCredit(args: {
+  current_per_unit_rial: number;
+  current_quota: number;
+  new_per_unit_rial: number;
+  days_remaining: number;
+}): number {
+  const { current_per_unit_rial, current_quota, new_per_unit_rial, days_remaining } = args;
+  if (days_remaining <= 0 || current_quota <= 0) return 0;
+  const isDowngrade = new_per_unit_rial < current_per_unit_rial;
+  const ratePerUnit = isDowngrade ? new_per_unit_rial : current_per_unit_rial;
+  const credit = (days_remaining / DURATION_DAYS) * ratePerUnit * current_quota;
+  return Math.max(0, Math.round(credit));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -38,30 +54,66 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "این پلن نیازمند تماس با پشتیبانی است" }), { status: 400, headers: corsHeaders });
     }
 
-    const perUnitRial = Math.round(Number(plan.price_per_unit_rial ?? 0));
-    const amountRial = perUnitRial * units;
+    const newPerUnit = Math.round(Number(plan.price_per_unit_rial ?? 0));
 
-    if (amountRial <= 0) {
-      // Free plan: activate directly
+    // Load current active subscription to compute credit & validate downgrade rules
+    const { data: existing } = await supabase.from("customer_subscriptions")
+      .select("*, subscription_plans(price_per_unit_rial)")
+      .eq("user_id", user.id).order("expires_at", { ascending: false }).limit(1).maybeSingle();
+
+    const now = new Date();
+    const hasActive = existing && existing.is_active && new Date(existing.expires_at) > now;
+    const currentPerUnit = hasActive
+      ? Math.round(Number((existing as any).subscription_plans?.price_per_unit_rial ?? 0))
+      : 0;
+    const currentQuota = hasActive ? Number(existing.unit_quota || 0) : 0;
+    const daysRemaining = hasActive
+      ? Math.max(0, Math.floor((new Date(existing.expires_at).getTime() - now.getTime()) / 86400000))
+      : 0;
+
+    // Block downgrade to free
+    if (hasActive && currentPerUnit > 0 && newPerUnit <= 0) {
+      return new Response(JSON.stringify({ error: "امکان تنزل به پلن رایگان وجود ندارد" }), { status: 400, headers: corsHeaders });
+    }
+
+    const newAmount = newPerUnit * units;
+    const creditRial = hasActive
+      ? computeCredit({
+          current_per_unit_rial: currentPerUnit,
+          current_quota: currentQuota,
+          new_per_unit_rial: newPerUnit,
+          days_remaining: daysRemaining,
+        })
+      : 0;
+    const payable = Math.max(0, newAmount - creditRial);
+
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "";
+
+    // Zero payable (free plan OR fully covered by credit) → activate immediately
+    if (payable <= 0) {
       const { data: payRow } = await supabase.from("subscription_payments").insert([{
-        user_id: user.id, plan_id: plan.id, amount_rial: 0, gateway: "free", status: "pending",
-        meta: { unit_count: units },
+        user_id: user.id, plan_id: plan.id,
+        amount_rial: 0,
+        gateway: newAmount > 0 ? "credit" : "free",
+        status: "pending",
+        meta: { unit_count: units, per_unit_rial: newPerUnit, credit_used_rial: creditRial, gross_rial: newAmount },
       }]).select().single();
-      await activateSubscription(supabase, user.id, plan, units, payRow!.id, "FREE-" + payRow!.id.slice(0, 8));
-      const origin = req.headers.get("origin") || "";
-      return new Response(JSON.stringify({ redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`, free: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      await activateSubscription(supabase, user.id, plan, units, payRow!.id,
+        (newAmount > 0 ? "CR-" : "FREE-") + payRow!.id.slice(0, 8));
+      return new Response(JSON.stringify({
+        redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`,
+        free: true, credit_used_rial: creditRial,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const merchantId = Deno.env.get("ZARINPAL_MERCHANT_ID");
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "";
     const callbackUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/subscription-payment-callback?return=${encodeURIComponent(origin)}`;
 
     const { data: payRow, error: payErr } = await supabase
       .from("subscription_payments").insert([{
-        user_id: user.id, plan_id: plan.id, amount_rial: amountRial,
+        user_id: user.id, plan_id: plan.id, amount_rial: payable,
         gateway: "zarinpal", status: "pending",
-        meta: { unit_count: units, per_unit_rial: perUnitRial },
+        meta: { unit_count: units, per_unit_rial: newPerUnit, credit_used_rial: creditRial, gross_rial: newAmount },
       }]).select().single();
     if (payErr) throw payErr;
 
@@ -69,6 +121,7 @@ Deno.serve(async (req) => {
       await activateSubscription(supabase, user.id, plan, units, payRow.id, "TEST-" + payRow.id.slice(0, 8));
       return new Response(JSON.stringify({
         redirect_url: `${origin}/dashboard?tab=subscription&payment=ok`, sandbox: true,
+        credit_used_rial: creditRial,
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -77,15 +130,15 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         merchant_id: merchantId,
-        amount: amountRial,
+        amount: payable,
         callback_url: callbackUrl,
-        description: `خرید پلن ${plan.name} - ${units} واحد`,
+        description: `پلن ${plan.name} - ${units} واحد` + (creditRial > 0 ? ` (اعتبار قبلی: ${creditRial} ریال)` : ""),
         metadata: { payment_id: payRow.id, user_id: user.id },
       }),
     });
     const zpData = await zpRes.json();
     if (!zpData?.data?.authority) {
-      await supabase.from("subscription_payments").update({ status: "failed", meta: zpData }).eq("id", payRow.id);
+      await supabase.from("subscription_payments").update({ status: "failed", meta: { ...(payRow.meta as any), zp: zpData } }).eq("id", payRow.id);
       return new Response(JSON.stringify({ error: "zarinpal request failed", details: zpData }),
         { status: 500, headers: corsHeaders });
     }
@@ -94,33 +147,30 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       redirect_url: `https://www.zarinpal.com/pg/StartPay/${zpData.data.authority}`,
       authority: zpData.data.authority,
+      credit_used_rial: creditRial,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: corsHeaders });
   }
 });
 
+// Always reset expiry to today + 365 days. Deactivate any existing subscription
+// (credit already deducted on the new payment row).
 async function activateSubscription(supabase: any, userId: string, plan: any, units: number, paymentId: string, refId: string) {
-  const { data: existing } = await supabase.from("customer_subscriptions")
-    .select("*").eq("user_id", userId).order("expires_at", { ascending: false }).limit(1).maybeSingle();
   const now = new Date();
-  if (existing && existing.is_active && new Date(existing.expires_at) > now) {
-    const expiresAt = new Date(new Date(existing.expires_at).getTime() + DURATION_DAYS * 86400000);
-    await supabase.from("customer_subscriptions").update({
-      plan_id: plan.id, unit_quota: Math.max(existing.unit_quota, units),
-      expires_at: expiresAt.toISOString(), is_active: true,
-    }).eq("id", existing.id);
-    await supabase.from("subscription_payments").update({
-      status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: existing.id,
-    }).eq("id", paymentId);
-  } else {
-    const expiresAt = new Date(now.getTime() + DURATION_DAYS * 86400000);
-    const { data: subNew } = await supabase.from("customer_subscriptions").insert([{
-      user_id: userId, plan_id: plan.id, unit_quota: units,
-      starts_at: now.toISOString(), expires_at: expiresAt.toISOString(), is_active: true,
-    }]).select().single();
-    await supabase.from("subscription_payments").update({
-      status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: subNew?.id,
-    }).eq("id", paymentId);
-  }
+  const expiresAt = new Date(now.getTime() + DURATION_DAYS * 86400000);
+
+  // Deactivate any prior subscription
+  await supabase.from("customer_subscriptions")
+    .update({ is_active: false })
+    .eq("user_id", userId)
+    .eq("is_active", true);
+
+  const { data: subNew } = await supabase.from("customer_subscriptions").insert([{
+    user_id: userId, plan_id: plan.id, unit_quota: units,
+    starts_at: now.toISOString(), expires_at: expiresAt.toISOString(), is_active: true,
+  }]).select().single();
+  await supabase.from("subscription_payments").update({
+    status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: subNew?.id,
+  }).eq("id", paymentId);
 }
