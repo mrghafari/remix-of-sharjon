@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
   const verifyData = await verifyRes.json();
   if (verifyData?.data?.code !== 100 && verifyData?.data?.code !== 101) {
     await supabase.from("subscription_payments")
-      .update({ status: "failed", meta: verifyData }).eq("id", payRow.id);
+      .update({ status: "failed", meta: { ...(payRow.meta as any), verify: verifyData } }).eq("id", payRow.id);
     return fail("verify_failed");
   }
 
@@ -49,31 +49,22 @@ Deno.serve(async (req) => {
   if (!plan) return fail("plan_missing");
 
   const units = Math.max(1, parseInt(String((payRow.meta as any)?.unit_count ?? 1), 10));
-
-  const { data: existing } = await supabase.from("customer_subscriptions")
-    .select("*").eq("user_id", payRow.user_id).order("expires_at", { ascending: false }).limit(1).maybeSingle();
   const now = new Date();
-  let subId: string;
-  if (existing && existing.is_active && new Date(existing.expires_at) > now) {
-    const newExp = new Date(new Date(existing.expires_at).getTime() + DURATION_DAYS * 86400000);
-    await supabase.from("customer_subscriptions").update({
-      plan_id: plan.id,
-      unit_quota: Math.max(existing.unit_quota, units),
-      expires_at: newExp.toISOString(),
-      is_active: true,
-    }).eq("id", existing.id);
-    subId = existing.id;
-  } else {
-    const exp = new Date(now.getTime() + DURATION_DAYS * 86400000);
-    const { data: newSub } = await supabase.from("customer_subscriptions").insert([{
-      user_id: payRow.user_id, plan_id: plan.id, unit_quota: units,
-      starts_at: now.toISOString(), expires_at: exp.toISOString(), is_active: true,
-    }]).select().single();
-    subId = newSub!.id;
-  }
+  const expiresAt = new Date(now.getTime() + DURATION_DAYS * 86400000);
+
+  // Deactivate prior, then insert fresh subscription (always reset to 365 days)
+  await supabase.from("customer_subscriptions")
+    .update({ is_active: false })
+    .eq("user_id", payRow.user_id)
+    .eq("is_active", true);
+
+  const { data: newSub } = await supabase.from("customer_subscriptions").insert([{
+    user_id: payRow.user_id, plan_id: plan.id, unit_quota: units,
+    starts_at: now.toISOString(), expires_at: expiresAt.toISOString(), is_active: true,
+  }]).select().single();
 
   await supabase.from("subscription_payments").update({
-    status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: subId,
+    status: "paid", payment_date: now.toISOString(), ref_id: refId, subscription_id: newSub!.id,
   }).eq("id", payRow.id);
 
   return ok();

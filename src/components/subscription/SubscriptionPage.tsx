@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Check, Zap, Clock, ShieldCheck } from "lucide-react";
+import { Loader2, Check, Zap, Clock, ShieldCheck, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
 import {
   useMySubscription,
   useSubscriptionPlans,
@@ -16,6 +16,19 @@ import { formatJalaliDate } from "@/lib/jalaliDate";
 import { toast } from "@/hooks/use-toast";
 
 const fmt = (n: number) => new Intl.NumberFormat("fa-IR").format(Math.round(n));
+const DURATION_DAYS = 365;
+
+type Mode = "buy" | "renew" | "upgrade" | "downgrade" | "blocked_free";
+
+function describeMode(m: Mode) {
+  switch (m) {
+    case "buy": return { label: "خرید", icon: ShieldCheck, color: "" };
+    case "renew": return { label: "تمدید", icon: RefreshCw, color: "text-blue-600" };
+    case "upgrade": return { label: "ارتقاء", icon: ArrowUpRight, color: "text-emerald-600" };
+    case "downgrade": return { label: "تنزل", icon: ArrowDownRight, color: "text-amber-600" };
+    case "blocked_free": return { label: "غیرمجاز", icon: ArrowDownRight, color: "text-destructive" };
+  }
+}
 
 export function SubscriptionPage() {
   const { data: sub, isLoading: subLoading } = useMySubscription();
@@ -38,6 +51,13 @@ export function SubscriptionPage() {
   }, []);
 
   const tierPlans = (plans ?? []).filter((p: any) => p.tier_key);
+  const hasActive = !!(sub && sub.is_active && sub.subscription_id);
+  const currentPlanId = hasActive ? sub!.plan_id : null;
+  const currentPerUnit = hasActive
+    ? Number(((plans ?? []).find((p: any) => p.id === currentPlanId) as any)?.price_per_unit_rial ?? 0)
+    : 0;
+  const currentQuota = hasActive ? Number(sub!.unit_quota || 0) : 0;
+  const daysRemaining = hasActive ? Number(sub!.days_remaining || 0) : 0;
 
   return (
     <div className="space-y-6 animate-fade-in max-w-6xl">
@@ -47,7 +67,7 @@ export function SubscriptionPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">اعتبار و اشتراک</h1>
-          <p className="text-sm text-muted-foreground">مدیریت اشتراک، خرید و تمدید اعتبار</p>
+          <p className="text-sm text-muted-foreground">مدیریت اشتراک، خرید، تمدید و ارتقاء پلن</p>
         </div>
       </div>
 
@@ -58,18 +78,18 @@ export function SubscriptionPage() {
         <CardContent>
           {subLoading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
-          ) : !sub || !sub.subscription_id ? (
+          ) : !hasActive ? (
             <p className="text-muted-foreground">اشتراک فعالی ندارید. لطفاً یک پلن خریداری کنید.</p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Stat label="پلن" value={sub.plan_name || "—"} />
+              <Stat label="پلن" value={sub!.plan_name || "—"} />
               <Stat
                 label="روزهای باقی‌مانده"
-                value={`${fmt(sub.days_remaining)} روز`}
-                accent={sub.days_remaining <= 15 ? "danger" : "ok"}
+                value={`${fmt(daysRemaining)} روز`}
+                accent={daysRemaining <= 15 ? "danger" : "ok"}
               />
-              <Stat label="واحد مصرفی" value={`${fmt(sub.units_used)} از ${fmt(sub.unit_quota || 0)}`} />
-              <Stat label="انقضا" value={sub.expires_at ? formatJalaliDate(sub.expires_at) : "—"} />
+              <Stat label="واحد مصرفی" value={`${fmt(sub!.units_used)} از ${fmt(currentQuota)}`} />
+              <Stat label="انقضا" value={sub!.expires_at ? formatJalaliDate(sub!.expires_at) : "—"} />
             </div>
           )}
         </CardContent>
@@ -84,11 +104,43 @@ export function SubscriptionPage() {
             {tierPlans.map((p: any) => {
               const perUnit = Number(p.price_per_unit_rial ?? 0);
               const isContact = Boolean(p.is_contact_only);
-              const units = unitCounts[p.id] ?? Math.max(sub?.unit_quota || 0, 10);
+              const units = unitCounts[p.id] ?? Math.max(currentQuota || 0, 10);
               const total = perUnit * units;
+
+              // Determine mode
+              let mode: Mode = "buy";
+              if (hasActive) {
+                if (p.id === currentPlanId) mode = "renew";
+                else if (perUnit > currentPerUnit) mode = "upgrade";
+                else if (perUnit < currentPerUnit) mode = perUnit <= 0 ? "blocked_free" : "downgrade";
+                else mode = "renew";
+              }
+
+              // Compute credit (mirrors server logic)
+              let creditRial = 0;
+              if (hasActive && currentPerUnit > 0 && daysRemaining > 0 && mode !== "blocked_free") {
+                const rate = mode === "downgrade" ? perUnit : currentPerUnit;
+                creditRial = Math.max(0, Math.round((daysRemaining / DURATION_DAYS) * rate * currentQuota));
+              }
+              const payable = Math.max(0, total - creditRial);
+
               const features: string[] = Array.isArray(p.features) ? p.features : [];
+              const md = describeMode(mode);
+              const Icon = md.icon;
+              const isBlocked = mode === "blocked_free";
+              const isCurrent = mode === "renew" && hasActive && p.id === currentPlanId;
+
               return (
-                <Card key={p.id} className="relative">
+                <Card key={p.id} className={`relative ${isCurrent ? "border-primary" : ""}`}>
+                  {hasActive && !isContact && (
+                    <Badge
+                      className={`absolute top-2 left-2 ${isBlocked ? "bg-destructive" : ""}`}
+                      variant={mode === "upgrade" ? "default" : "outline"}
+                    >
+                      <Icon className={`w-3 h-3 ml-1 ${md.color}`} />
+                      {md.label}
+                    </Badge>
+                  )}
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       {p.name}
@@ -112,7 +164,7 @@ export function SubscriptionPage() {
                       {features.map((f, i) => (
                         <li key={i} className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> {f}</li>
                       ))}
-                      <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> اعتبار ۳۶۵ روز</li>
+                      <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> اعتبار ۳۶۵ روز از تاریخ خرید</li>
                     </ul>
 
                     {!isContact && (
@@ -122,26 +174,44 @@ export function SubscriptionPage() {
                           type="number"
                           min={1}
                           value={units}
+                          disabled={isBlocked}
                           onChange={(e) =>
                             setUnitCounts((prev) => ({ ...prev, [p.id]: Math.max(1, parseInt(e.target.value || "1", 10)) }))
                           }
                         />
-                        {perUnit > 0 && (
-                          <div className="text-sm flex justify-between border-t pt-2">
-                            <span className="text-muted-foreground">مبلغ نهایی:</span>
-                            <span className="font-bold">{fmt(total)} ریال</span>
+
+                        {perUnit > 0 && !isBlocked && (
+                          <div className="space-y-1 text-sm border-t pt-2">
+                            <Row label="قیمت پلن" value={`${fmt(total)} ریال`} />
+                            {creditRial > 0 && (
+                              <Row label="اعتبار باقی‌مانده فعلی" value={`- ${fmt(creditRial)} ریال`} accent="ok" />
+                            )}
+                            <Row
+                              label="مبلغ قابل پرداخت"
+                              value={`${fmt(payable)} ریال`}
+                              bold
+                            />
                           </div>
+                        )}
+
+                        {isBlocked && (
+                          <p className="text-xs text-destructive border-t pt-2">
+                            امکان تنزل از پلن فعلی به پلن رایگان وجود ندارد.
+                          </p>
                         )}
                       </div>
                     )}
 
                     <Button
                       className="w-full"
-                      disabled={initPayment.isPending || isContact}
+                      disabled={initPayment.isPending || isContact || isBlocked}
                       onClick={() => initPayment.mutate({ planId: p.id, unitCount: units })}
                     >
                       {initPayment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                        isContact ? "تماس با ما" : perUnit <= 0 ? "فعال‌سازی رایگان" : "خرید / تمدید"}
+                        isContact ? "تماس با ما" :
+                        isBlocked ? "غیرفعال" :
+                        payable <= 0 ? (perUnit <= 0 ? "فعال‌سازی رایگان" : "فعال‌سازی با اعتبار") :
+                        md.label}
                     </Button>
                   </CardContent>
                 </Card>
@@ -193,6 +263,15 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
     <div className="p-3 rounded-lg bg-muted/40">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className={`text-base font-bold mt-1 ${accent === "danger" ? "text-destructive" : ""}`}>{value}</div>
+    </div>
+  );
+}
+
+function Row({ label, value, accent, bold }: { label: string; value: string; accent?: "ok"; bold?: boolean }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className={`${bold ? "font-bold" : ""} ${accent === "ok" ? "text-emerald-600" : ""}`}>{value}</span>
     </div>
   );
 }

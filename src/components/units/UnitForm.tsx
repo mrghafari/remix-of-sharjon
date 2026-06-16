@@ -145,10 +145,25 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="area">متراژ (متر)</Label>
-                <NumericInput
+                <Input
                   id="area"
+                  type="text"
+                  inputMode="decimal"
+                  dir="ltr"
                   value={area}
-                  onChange={setArea}
+                  onChange={(e) => {
+                    // Normalize Persian/Arabic digits and decimal separators, keep one dot
+                    const normalized = e.target.value
+                      .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+                      .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+                      .replace(/[،,٫]/g, ".")
+                      .replace(/[^0-9.]/g, "");
+                    const parts = normalized.split(".");
+                    const clean = parts.length > 1
+                      ? parts[0] + "." + parts.slice(1).join("").slice(0, 2)
+                      : parts[0];
+                    setArea(clean);
+                  }}
                 />
               </div>
 

@@ -33,6 +33,10 @@ const TEMPLATE_LABELS: Record<string, string> = {
   reservation_approved: "تأیید رزرو",
   reservation_rejected: "رد رزرو",
   balance_reminder: "یادآوری مانده بدهی",
+  online_meeting_invite: "دعوت به جلسه آنلاین",
+  meeting_minute_sign_invite: "دعوت به امضای صورتجلسه",
+  manager_transfer_otp: "کد تأیید انتقال مدیریت",
+  otp_login: "کد ورود به سامانه",
 };
 
 function formatJalaliDateTime(iso: string) {
