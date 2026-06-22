@@ -15,6 +15,10 @@ export interface Building {
   default_extra_charge_amount: number;
   auto_charge_enabled?: boolean;
   auto_charge_day?: number;
+  charge_allocation_type?: "equal" | "by_area" | "by_residents" | "by_area_residents";
+  extra_charge_allocation_type?: "equal" | "by_area" | "by_residents" | "by_area_residents";
+  charge_area_ratio?: number;
+  extra_charge_area_ratio?: number;
   latitude?: number | null;
   longitude?: number | null;
   created_at: string;
