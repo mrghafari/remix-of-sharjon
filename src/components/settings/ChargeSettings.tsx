@@ -44,6 +44,10 @@ export function ChargeSettings() {
   const [extraChargeAmount, setExtraChargeAmount] = useState("0");
   const [autoEnabled, setAutoEnabled] = useState(false);
   const [autoDay, setAutoDay] = useState("1");
+  const [chargeAllocType, setChargeAllocType] = useState<string>("equal");
+  const [extraAllocType, setExtraAllocType] = useState<string>("equal");
+  const [chargeAreaRatio, setChargeAreaRatio] = useState("50");
+  const [extraAreaRatio, setExtraAreaRatio] = useState("50");
 
   // Sync with building defaults when loaded/changed
   useEffect(() => {
@@ -52,8 +56,12 @@ export function ChargeSettings() {
       setExtraChargeAmount(String(currentBuilding.default_extra_charge_amount || 0));
       setAutoEnabled(Boolean(currentBuilding.auto_charge_enabled));
       setAutoDay(String(currentBuilding.auto_charge_day || 1));
+      setChargeAllocType(currentBuilding.charge_allocation_type || "equal");
+      setExtraAllocType(currentBuilding.extra_charge_allocation_type || "equal");
+      setChargeAreaRatio(String(currentBuilding.charge_area_ratio ?? 50));
+      setExtraAreaRatio(String(currentBuilding.extra_charge_area_ratio ?? 50));
     }
-  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount, currentBuilding?.auto_charge_enabled, currentBuilding?.auto_charge_day]);
+  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount, currentBuilding?.auto_charge_enabled, currentBuilding?.auto_charge_day, currentBuilding?.charge_allocation_type, currentBuilding?.extra_charge_allocation_type, currentBuilding?.charge_area_ratio, currentBuilding?.extra_charge_area_ratio]);
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
   // Current Jalali month/year
