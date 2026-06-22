@@ -86,16 +86,45 @@ export function useAutoApplyCharges() {
         const monthLabel = `${JALALI_MONTHS[jMonth - 1]} ${jYear}`;
         const records: any[] = [];
 
-        const buildRecords = (baseAmount: number, fundType: "charge" | "extra_charge") => {
-          if (baseAmount <= 0) return;
-          const vacantDisc = fundType === "charge" ? vacantChargeDisc : vacantExtraDisc;
-          const mDisc = fundType === "charge" ? mgrChargeDisc : mgrExtraDisc;
-          const desc = (fundType === "charge" ? "شارژ " : "فوق‌شارژ ") + monthLabel + " (اعمال خودکار)";
+        const managerDiscount: ManagerDiscount | null = mgrUnitId
+          ? {
+              unitId: mgrUnitId,
+              chargeDiscountPercent: mgrChargeDisc,
+              extraChargeDiscountPercent: mgrExtraDisc,
+            }
+          : null;
+        const vacantDiscount: VacantDiscount | null =
+          vacantChargeDisc === 0 && vacantExtraDisc === 0
+            ? null
+            : { chargeDiscountPercent: vacantChargeDisc, extraChargeDiscountPercent: vacantExtraDisc };
 
+        const buildRecords = (totalAmount: number, fundType: "charge" | "extra_charge") => {
+          if (totalAmount <= 0) return;
+          const desc = (fundType === "charge" ? "شارژ " : "فوق‌شارژ ") + monthLabel + " (اعمال خودکار)";
+          const allocationType: AllocationType =
+            ((fundType === "charge" ? b.charge_allocation_type : b.extra_charge_allocation_type) as AllocationType) ||
+            "equal";
+          const areaRatio =
+            (fundType === "charge" ? b.charge_area_ratio : b.extra_charge_area_ratio) ?? 50;
+          const syntheticExpense = {
+            id: "synthetic",
+            building_id: b.id,
+            amount: totalAmount,
+            fund_type: fundType,
+            allocation_type: allocationType,
+            area_ratio: areaRatio,
+            unit_id: null,
+            project_id: null,
+          } as unknown as Expense;
+          const allocations = calculateAllUnitAllocations(
+            syntheticExpense,
+            units as any,
+            managerDiscount,
+            vacantDiscount,
+            null
+          );
           units.forEach((u: any) => {
-            let amount = baseAmount;
-            if (!u.is_occupied && vacantDisc > 0) amount = amount * (1 - vacantDisc / 100);
-            if (mgrUnitId && u.id === mgrUnitId && mDisc > 0) amount = amount * (1 - mDisc / 100);
+            const amount = allocations.get(u.id) || 0;
             if (amount > 0) {
               records.push({
                 building_id: b.id,
