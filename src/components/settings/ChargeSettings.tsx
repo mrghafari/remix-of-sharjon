@@ -151,20 +151,86 @@ export function ChargeSettings() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض شارژ (ریال)</Label>
+              <Label>مبلغ کل شارژ (ریال)</Label>
               <NumericInput
                 value={chargeAmount}
                 onChange={setChargeAmount}
-                placeholder="مثال: 500,000"
+                placeholder="مثال: 5,000,000"
               />
+              <p className="text-xs text-muted-foreground">
+                مبلغ کل ساختمان — بر اساس روش تسهیم انتخابی بین واحدها تقسیم می‌شود.
+              </p>
             </div>
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض فوق‌شارژ (ریال)</Label>
+              <Label>مبلغ کل فوق‌شارژ (ریال)</Label>
               <NumericInput
                 value={extraChargeAmount}
                 onChange={setExtraChargeAmount}
-                placeholder="مثال: 200,000"
+                placeholder="مثال: 2,000,000"
               />
+              <p className="text-xs text-muted-foreground">
+                مبلغ کل ساختمان — بر اساس روش تسهیم انتخابی بین واحدها تقسیم می‌شود.
+              </p>
+            </div>
+          </div>
+
+          {/* Allocation method per fund */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>روش تسهیم شارژ</Label>
+              <Select value={chargeAllocType} onValueChange={setChargeAllocType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equal">مساوی بین واحدها</SelectItem>
+                  <SelectItem value="by_area">بر اساس متراژ</SelectItem>
+                  <SelectItem value="by_residents">بر اساس نفرات</SelectItem>
+                  <SelectItem value="by_area_residents">متراژ و نفرات</SelectItem>
+                </SelectContent>
+              </Select>
+              {chargeAllocType === "by_area_residents" && (
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs whitespace-nowrap">سهم متراژ (٪):</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={chargeAreaRatio}
+                    onChange={(e) => setChargeAreaRatio(e.target.value)}
+                    className="w-24"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    سهم نفرات: {Math.max(0, 100 - (Number(chargeAreaRatio) || 0))}٪
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>روش تسهیم فوق‌شارژ</Label>
+              <Select value={extraAllocType} onValueChange={setExtraAllocType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equal">مساوی بین واحدها</SelectItem>
+                  <SelectItem value="by_area">بر اساس متراژ</SelectItem>
+                  <SelectItem value="by_residents">بر اساس نفرات</SelectItem>
+                  <SelectItem value="by_area_residents">متراژ و نفرات</SelectItem>
+                </SelectContent>
+              </Select>
+              {extraAllocType === "by_area_residents" && (
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs whitespace-nowrap">سهم متراژ (٪):</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={extraAreaRatio}
+                    onChange={(e) => setExtraAreaRatio(e.target.value)}
+                    className="w-24"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    سهم نفرات: {Math.max(0, 100 - (Number(extraAreaRatio) || 0))}٪
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
