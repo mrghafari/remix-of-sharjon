@@ -365,18 +365,16 @@ export function ChargeSettings() {
               <div className="font-medium">خلاصه:</div>
               {Number(chargeAmount) > 0 && (
                 <div>
-                  شارژ: {Number(chargeAmount).toLocaleString("fa-IR")} ریال ×{" "}
-                  {units.length} واحد
+                  شارژ کل: {Number(chargeAmount).toLocaleString("fa-IR")} ریال — تسهیم بین {units.length} واحد
                 </div>
               )}
               {Number(extraChargeAmount) > 0 && (
                 <div>
-                  فوق‌شارژ: {Number(extraChargeAmount).toLocaleString("fa-IR")}{" "}
-                  ریال × {units.length} واحد
+                  فوق‌شارژ کل: {Number(extraChargeAmount).toLocaleString("fa-IR")} ریال — تسهیم بین {units.length} واحد
                 </div>
               )}
               <div className="text-muted-foreground text-xs mt-1">
-                تخفیفات مدیر و واحدهای خالی به صورت خودکار اعمال می‌شود.
+                مبلغ کل بر اساس روش تسهیم انتخابی بین واحدها تقسیم و سپس تخفیفات مدیر و خانه خالی اعمال می‌شود.
               </div>
             </div>
 
