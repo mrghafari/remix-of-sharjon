@@ -4,6 +4,8 @@ import { useBuilding } from "@/contexts/BuildingContext";
 import { format, endOfMonth, getDate } from "date-fns-jalali";
 import { faIR } from "date-fns-jalali/locale";
 import { toast } from "@/hooks/use-toast";
+import { calculateAllUnitAllocations, type ManagerDiscount, type VacantDiscount } from "@/hooks/useUnitBalanceFiltered";
+import type { AllocationType, Expense } from "@/hooks/useExpenses";
 
 const JALALI_MONTHS = [
   "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
