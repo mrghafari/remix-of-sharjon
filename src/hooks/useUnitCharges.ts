@@ -4,7 +4,12 @@ import { toast } from "@/hooks/use-toast";
 import { useBuilding } from "@/contexts/BuildingContext";
 import { useUnits } from "./useUnits";
 import { useActiveManager } from "./useManagers";
-import type { FundType } from "./useExpenses";
+import type { AllocationType, FundType, Expense } from "./useExpenses";
+import {
+  calculateAllUnitAllocations,
+  type ManagerDiscount,
+  type VacantDiscount,
+} from "./useUnitBalanceFiltered";
 
 export interface UnitCharge {
   id: string;
