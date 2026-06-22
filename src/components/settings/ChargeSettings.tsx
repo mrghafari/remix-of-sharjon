@@ -85,6 +85,10 @@ export function ChargeSettings() {
       default_extra_charge_amount: Number(extraChargeAmount) || 0,
       auto_charge_enabled: autoEnabled,
       auto_charge_day: dayNum,
+      charge_allocation_type: chargeAllocType,
+      extra_charge_allocation_type: extraAllocType,
+      charge_area_ratio: Math.max(0, Math.min(100, Number(chargeAreaRatio) || 50)),
+      extra_charge_area_ratio: Math.max(0, Math.min(100, Number(extraAreaRatio) || 50)),
     });
   };
 
