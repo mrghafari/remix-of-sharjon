@@ -83,6 +83,21 @@ export function useApplyCharges() {
       const managerChargeDiscount = activeManager?.charge_discount_percent || 0;
       const managerExtraDiscount = activeManager?.extra_charge_discount_percent || 0;
 
+      const managerDiscount: ManagerDiscount | null = managerUnitId
+        ? {
+            unitId: managerUnitId,
+            chargeDiscountPercent: managerChargeDiscount,
+            extraChargeDiscountPercent: managerExtraDiscount,
+          }
+        : null;
+      const vacantDiscount: VacantDiscount | null =
+        vacantChargeDiscount === 0 && vacantExtraDiscount === 0
+          ? null
+          : {
+              chargeDiscountPercent: vacantChargeDiscount,
+              extraChargeDiscountPercent: vacantExtraDiscount,
+            };
+
       const records: {
         building_id: string;
         unit_id: string;
@@ -95,10 +110,10 @@ export function useApplyCharges() {
         resident_name: string | null;
       }[] = [];
 
-      const applyForFund = (baseAmount: number, fundType: FundType) => {
-        if (baseAmount <= 0) return;
+      const applyForFund = (totalAmount: number, fundType: FundType) => {
+        if (totalAmount <= 0) return;
 
-        // Build set of unit ids that already have a charge row for this period+fund_type
+        // Existing charges (skip units already charged for the period)
         const existingSet = new Set(
           (existingCharges as any[])
             .filter(
@@ -107,31 +122,44 @@ export function useApplyCharges() {
             .map((c) => c.unit_id)
         );
 
-        const vacantDiscount = fundType === "charge" ? vacantChargeDiscount : vacantExtraDiscount;
-
-        const mgrDiscount = fundType === "charge" ? managerChargeDiscount : managerExtraDiscount;
         const fundDescription =
           fundType === "charge"
             ? chargeDescription || description || null
             : extraChargeDescription || description || null;
 
-        // Calculate each unit's amount
+        const allocationType: AllocationType =
+          (fundType === "charge"
+            ? (currentBuilding?.charge_allocation_type as AllocationType)
+            : (currentBuilding?.extra_charge_allocation_type as AllocationType)) ||
+          "equal";
+        const areaRatio =
+          (fundType === "charge"
+            ? currentBuilding?.charge_area_ratio
+            : currentBuilding?.extra_charge_area_ratio) ?? 50;
+
+        // Build a synthetic "expense" representing the total to allocate
+        const syntheticExpense = {
+          id: "synthetic",
+          building_id: currentBuildingId,
+          amount: totalAmount,
+          fund_type: fundType,
+          allocation_type: allocationType,
+          area_ratio: areaRatio,
+          unit_id: null,
+          project_id: null,
+        } as unknown as Expense;
+
+        const allocations = calculateAllUnitAllocations(
+          syntheticExpense,
+          units as any,
+          managerDiscount,
+          vacantDiscount,
+          null
+        );
+
         units.forEach((unit) => {
-          // Skip units that already have a charge for this period/fund_type (so re-apply only fills missing ones)
           if (existingSet.has(unit.id)) return;
-          let amount = baseAmount;
-
-
-          // Vacant discount
-          if (!unit.is_occupied && vacantDiscount > 0) {
-            amount = amount * (1 - vacantDiscount / 100);
-          }
-
-          // Manager discount
-          if (managerUnitId && unit.id === managerUnitId && mgrDiscount > 0) {
-            amount = amount * (1 - mgrDiscount / 100);
-          }
-
+          const amount = allocations.get(unit.id) || 0;
           if (amount > 0) {
             records.push({
               building_id: currentBuildingId,
