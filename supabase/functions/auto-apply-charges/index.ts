@@ -160,21 +160,120 @@ Deno.serve(async (req) => {
     const JALALI_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
     const monthLabel = `${JALALI_MONTHS[jm - 1]} ${jy}`;
 
+    const allocate = (
+      totalAmount: number,
+      allocationType: string,
+      areaRatio: number,
+      fundType: "charge" | "extra_charge"
+    ): Map<string, number> => {
+      const result = new Map<string, number>();
+      const validUnits = (units || []).filter((u: any) => {
+        switch (allocationType) {
+          case "by_area": return u.area !== null && Number(u.area) > 0;
+          case "by_residents": return u.resident_count !== null && Number(u.resident_count) > 0;
+          case "by_area_residents":
+            return u.area !== null && Number(u.area) > 0 &&
+                   u.resident_count !== null && Number(u.resident_count) > 0;
+          default: return true;
+        }
+      });
+      if (validUnits.length === 0) return result;
+
+      const baseAmounts = new Map<string, number>();
+      const totalArea = validUnits.reduce((s: number, u: any) => s + Number(u.area || 0), 0);
+      const totalRes = validUnits.reduce((s: number, u: any) => s + Number(u.resident_count || 0), 0);
+      const areaW = areaRatio / 100;
+      const resW = 1 - areaW;
+
+      validUnits.forEach((u: any) => {
+        let base = 0;
+        switch (allocationType) {
+          case "equal":
+            base = totalAmount / validUnits.length;
+            break;
+          case "by_area":
+            base = totalArea > 0 ? (totalAmount * Number(u.area)) / totalArea : 0;
+            break;
+          case "by_residents":
+            base = totalRes > 0 ? (totalAmount * Number(u.resident_count)) / totalRes : 0;
+            break;
+          case "by_area_residents":
+            if (totalArea > 0 && totalRes > 0) {
+              const aS = (Number(u.area) / totalArea) * areaW;
+              const rS = (Number(u.resident_count) / totalRes) * resW;
+              base = totalAmount * (aS + rS);
+            }
+            break;
+        }
+        baseAmounts.set(u.id, base);
+      });
+
+      // Vacant discount + redistribute
+      const vDiscPct = fundType === "charge" ? vacChargeDisc : vacExtraDisc;
+      let totalVacant = 0;
+      const occupiedIds = new Set<string>();
+      validUnits.forEach((u: any) => {
+        if (u.is_occupied === false && vDiscPct > 0) {
+          const base = baseAmounts.get(u.id) || 0;
+          const d = base * (vDiscPct / 100);
+          totalVacant += d;
+          baseAmounts.set(u.id, base - d);
+        } else {
+          occupiedIds.add(u.id);
+        }
+      });
+      if (totalVacant > 0 && occupiedIds.size > 0) {
+        let totOccBase = 0;
+        occupiedIds.forEach((id) => { totOccBase += baseAmounts.get(id) || 0; });
+        if (totOccBase > 0) {
+          occupiedIds.forEach((id) => {
+            const b = baseAmounts.get(id) || 0;
+            baseAmounts.set(id, b + (b / totOccBase) * totalVacant);
+          });
+        }
+      }
+
+      // Manager discount + redistribute
+      const mDiscPct = fundType === "charge" ? mgrChargeDisc : mgrExtraDisc;
+      if (mgrUnitId && mDiscPct > 0) {
+        const mBase = baseAmounts.get(mgrUnitId) || 0;
+        if (mBase > 0) {
+          const mDisc = mBase * (mDiscPct / 100);
+          baseAmounts.set(mgrUnitId, mBase - mDisc);
+          const otherIds = [...baseAmounts.keys()].filter((id) => id !== mgrUnitId);
+          let totOther = 0;
+          otherIds.forEach((id) => { totOther += baseAmounts.get(id) || 0; });
+          if (totOther > 0) {
+            otherIds.forEach((id) => {
+              const bb = baseAmounts.get(id) || 0;
+              baseAmounts.set(id, bb + (bb / totOther) * mDisc);
+            });
+          }
+        }
+      }
+
+      baseAmounts.forEach((v, k) => result.set(k, Math.round(v)));
+      return result;
+    };
+
     const records: any[] = [];
-    const buildRecords = (baseAmount: number, fundType: "charge" | "extra_charge") => {
-      if (baseAmount <= 0) return;
-      const vDisc = fundType === "charge" ? vacChargeDisc : vacExtraDisc;
-      const mDisc = fundType === "charge" ? mgrChargeDisc : mgrExtraDisc;
+    const buildRecords = (totalAmount: number, fundType: "charge" | "extra_charge") => {
+      if (totalAmount <= 0) return;
+      const allocType =
+        (fundType === "charge" ? b.charge_allocation_type : b.extra_charge_allocation_type) || "equal";
+      const areaRatio = Number(
+        fundType === "charge" ? b.charge_area_ratio : b.extra_charge_area_ratio
+      );
+      const ratio = Number.isFinite(areaRatio) ? areaRatio : 50;
       const desc = (fundType === "charge" ? "شارژ " : "فوق‌شارژ ") + monthLabel + " (اعمال خودکار)";
+      const allocations = allocate(totalAmount, allocType, ratio, fundType);
       for (const u of units) {
-        let amount = baseAmount;
-        if (!u.is_occupied && vDisc > 0) amount = amount * (1 - vDisc / 100);
-        if (mgrUnitId && u.id === mgrUnitId && mDisc > 0) amount = amount * (1 - mDisc / 100);
+        const amount = allocations.get(u.id) || 0;
         if (amount > 0) {
           records.push({
             building_id: b.id,
             unit_id: u.id,
-            amount: Math.round(amount),
+            amount,
             fund_type: fundType,
             month: jm,
             year: jy,
