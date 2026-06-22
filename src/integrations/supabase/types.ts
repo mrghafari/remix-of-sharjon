@@ -588,9 +588,13 @@ export type Database = {
           address: string | null
           auto_charge_day: number
           auto_charge_enabled: boolean
+          charge_allocation_type: string
+          charge_area_ratio: number
           created_at: string
           default_charge_amount: number
           default_extra_charge_amount: number
+          extra_charge_allocation_type: string
+          extra_charge_area_ratio: number
           id: string
           latitude: number | null
           longitude: number | null
@@ -604,9 +608,13 @@ export type Database = {
           address?: string | null
           auto_charge_day?: number
           auto_charge_enabled?: boolean
+          charge_allocation_type?: string
+          charge_area_ratio?: number
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number
+          extra_charge_allocation_type?: string
+          extra_charge_area_ratio?: number
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -620,9 +628,13 @@ export type Database = {
           address?: string | null
           auto_charge_day?: number
           auto_charge_enabled?: boolean
+          charge_allocation_type?: string
+          charge_area_ratio?: number
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number
+          extra_charge_allocation_type?: string
+          extra_charge_area_ratio?: number
           id?: string
           latitude?: number | null
           longitude?: number | null

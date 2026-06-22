@@ -44,6 +44,10 @@ export function ChargeSettings() {
   const [extraChargeAmount, setExtraChargeAmount] = useState("0");
   const [autoEnabled, setAutoEnabled] = useState(false);
   const [autoDay, setAutoDay] = useState("1");
+  const [chargeAllocType, setChargeAllocType] = useState<string>("equal");
+  const [extraAllocType, setExtraAllocType] = useState<string>("equal");
+  const [chargeAreaRatio, setChargeAreaRatio] = useState("50");
+  const [extraAreaRatio, setExtraAreaRatio] = useState("50");
 
   // Sync with building defaults when loaded/changed
   useEffect(() => {
@@ -52,8 +56,12 @@ export function ChargeSettings() {
       setExtraChargeAmount(String(currentBuilding.default_extra_charge_amount || 0));
       setAutoEnabled(Boolean(currentBuilding.auto_charge_enabled));
       setAutoDay(String(currentBuilding.auto_charge_day || 1));
+      setChargeAllocType(currentBuilding.charge_allocation_type || "equal");
+      setExtraAllocType(currentBuilding.extra_charge_allocation_type || "equal");
+      setChargeAreaRatio(String(currentBuilding.charge_area_ratio ?? 50));
+      setExtraAreaRatio(String(currentBuilding.extra_charge_area_ratio ?? 50));
     }
-  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount, currentBuilding?.auto_charge_enabled, currentBuilding?.auto_charge_day]);
+  }, [currentBuilding?.id, currentBuilding?.default_charge_amount, currentBuilding?.default_extra_charge_amount, currentBuilding?.auto_charge_enabled, currentBuilding?.auto_charge_day, currentBuilding?.charge_allocation_type, currentBuilding?.extra_charge_allocation_type, currentBuilding?.charge_area_ratio, currentBuilding?.extra_charge_area_ratio]);
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
   // Current Jalali month/year
@@ -77,6 +85,10 @@ export function ChargeSettings() {
       default_extra_charge_amount: Number(extraChargeAmount) || 0,
       auto_charge_enabled: autoEnabled,
       auto_charge_day: dayNum,
+      charge_allocation_type: chargeAllocType,
+      extra_charge_allocation_type: extraAllocType,
+      charge_area_ratio: Math.max(0, Math.min(100, Number(chargeAreaRatio) || 50)),
+      extra_charge_area_ratio: Math.max(0, Math.min(100, Number(extraAreaRatio) || 50)),
     });
   };
 
@@ -139,20 +151,86 @@ export function ChargeSettings() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض شارژ (ریال)</Label>
+              <Label>مبلغ کل شارژ (ریال)</Label>
               <NumericInput
                 value={chargeAmount}
                 onChange={setChargeAmount}
-                placeholder="مثال: 500,000"
+                placeholder="مثال: 5,000,000"
               />
+              <p className="text-xs text-muted-foreground">
+                مبلغ کل ساختمان — بر اساس روش تسهیم انتخابی بین واحدها تقسیم می‌شود.
+              </p>
             </div>
             <div className="space-y-2">
-              <Label>مبلغ پیش‌فرض فوق‌شارژ (ریال)</Label>
+              <Label>مبلغ کل فوق‌شارژ (ریال)</Label>
               <NumericInput
                 value={extraChargeAmount}
                 onChange={setExtraChargeAmount}
-                placeholder="مثال: 200,000"
+                placeholder="مثال: 2,000,000"
               />
+              <p className="text-xs text-muted-foreground">
+                مبلغ کل ساختمان — بر اساس روش تسهیم انتخابی بین واحدها تقسیم می‌شود.
+              </p>
+            </div>
+          </div>
+
+          {/* Allocation method per fund */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>روش تسهیم شارژ</Label>
+              <Select value={chargeAllocType} onValueChange={setChargeAllocType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equal">مساوی بین واحدها</SelectItem>
+                  <SelectItem value="by_area">بر اساس متراژ</SelectItem>
+                  <SelectItem value="by_residents">بر اساس نفرات</SelectItem>
+                  <SelectItem value="by_area_residents">متراژ و نفرات</SelectItem>
+                </SelectContent>
+              </Select>
+              {chargeAllocType === "by_area_residents" && (
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs whitespace-nowrap">سهم متراژ (٪):</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={chargeAreaRatio}
+                    onChange={(e) => setChargeAreaRatio(e.target.value)}
+                    className="w-24"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    سهم نفرات: {Math.max(0, 100 - (Number(chargeAreaRatio) || 0))}٪
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>روش تسهیم فوق‌شارژ</Label>
+              <Select value={extraAllocType} onValueChange={setExtraAllocType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="equal">مساوی بین واحدها</SelectItem>
+                  <SelectItem value="by_area">بر اساس متراژ</SelectItem>
+                  <SelectItem value="by_residents">بر اساس نفرات</SelectItem>
+                  <SelectItem value="by_area_residents">متراژ و نفرات</SelectItem>
+                </SelectContent>
+              </Select>
+              {extraAllocType === "by_area_residents" && (
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs whitespace-nowrap">سهم متراژ (٪):</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={extraAreaRatio}
+                    onChange={(e) => setExtraAreaRatio(e.target.value)}
+                    className="w-24"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    سهم نفرات: {Math.max(0, 100 - (Number(extraAreaRatio) || 0))}٪
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -287,18 +365,16 @@ export function ChargeSettings() {
               <div className="font-medium">خلاصه:</div>
               {Number(chargeAmount) > 0 && (
                 <div>
-                  شارژ: {Number(chargeAmount).toLocaleString("fa-IR")} ریال ×{" "}
-                  {units.length} واحد
+                  شارژ کل: {Number(chargeAmount).toLocaleString("fa-IR")} ریال — تسهیم بین {units.length} واحد
                 </div>
               )}
               {Number(extraChargeAmount) > 0 && (
                 <div>
-                  فوق‌شارژ: {Number(extraChargeAmount).toLocaleString("fa-IR")}{" "}
-                  ریال × {units.length} واحد
+                  فوق‌شارژ کل: {Number(extraChargeAmount).toLocaleString("fa-IR")} ریال — تسهیم بین {units.length} واحد
                 </div>
               )}
               <div className="text-muted-foreground text-xs mt-1">
-                تخفیفات مدیر و واحدهای خالی به صورت خودکار اعمال می‌شود.
+                مبلغ کل بر اساس روش تسهیم انتخابی بین واحدها تقسیم و سپس تخفیفات مدیر و خانه خالی اعمال می‌شود.
               </div>
             </div>
 
