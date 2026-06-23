@@ -47,10 +47,14 @@ export function UnitsPage() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} dir="rtl">
-        <TabsList className="grid w-full grid-cols-3 max-w-xl">
+        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
           <TabsTrigger value="list" className="gap-2">
             <List className="w-4 h-4" />
             لیست واحدها
+          </TabsTrigger>
+          <TabsTrigger value="listings" className="gap-2">
+            <Home className="w-4 h-4" />
+            آگهی املاک
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <History className="w-4 h-4" />
@@ -66,6 +70,10 @@ export function UnitsPage() {
           <UnitsStats />
           {showForm && <UnitForm onClose={handleClose} editUnit={editUnit} />}
           <UnitsList onEdit={handleEdit} />
+        </TabsContent>
+
+        <TabsContent value="listings" className="mt-6">
+          <ListingsManagerPage />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
