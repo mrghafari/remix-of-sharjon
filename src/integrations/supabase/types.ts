@@ -590,6 +590,7 @@ export type Database = {
           auto_charge_enabled: boolean
           charge_allocation_type: string
           charge_area_ratio: number
+          city: string | null
           created_at: string
           default_charge_amount: number
           default_extra_charge_amount: number
@@ -610,6 +611,7 @@ export type Database = {
           auto_charge_enabled?: boolean
           charge_allocation_type?: string
           charge_area_ratio?: number
+          city?: string | null
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number
@@ -630,6 +632,7 @@ export type Database = {
           auto_charge_enabled?: boolean
           charge_allocation_type?: string
           charge_area_ratio?: number
+          city?: string | null
           created_at?: string
           default_charge_amount?: number
           default_extra_charge_amount?: number
@@ -1446,6 +1449,57 @@ export type Database = {
           },
         ]
       }
+      real_estate_agents: {
+        Row: {
+          admin_notes: string | null
+          agency_name: string | null
+          approved_at: string | null
+          approved_by: string | null
+          city: string | null
+          created_at: string
+          full_name: string
+          id: string
+          license_number: string | null
+          mobile: string
+          national_code: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          agency_name?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          city?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          license_number?: string | null
+          mobile: string
+          national_code?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          agency_name?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          city?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          license_number?: string | null
+          mobile?: string
+          national_code?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reservation_venues: {
         Row: {
           building_id: string
@@ -2115,6 +2169,57 @@ export type Database = {
         }
         Relationships: []
       }
+      unit_listing_photos: {
+        Row: {
+          building_id: string
+          caption: string | null
+          created_at: string
+          file_name: string | null
+          file_path: string
+          id: string
+          sort_order: number
+          unit_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          building_id: string
+          caption?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_path: string
+          id?: string
+          sort_order?: number
+          unit_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          building_id?: string
+          caption?: string | null
+          created_at?: string
+          file_name?: string | null
+          file_path?: string
+          id?: string
+          sort_order?: number
+          unit_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_listing_photos_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_listing_photos_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unit_module_access: {
         Row: {
           building_id: string
@@ -2277,54 +2382,213 @@ export type Database = {
       units: {
         Row: {
           area: number | null
+          balcony_area: number | null
+          bathroom: string | null
+          bedrooms: number | null
+          building_age: number | null
           building_id: string
+          cabinet: string | null
+          construction_type: string | null
+          convertible_rent: boolean | null
           created_at: string
+          deal_type: string | null
+          delivery_time: string | null
+          deposit_rial: number | null
+          direction: string | null
+          document_status: string | null
+          facade: string | null
           floor: number | null
+          floor_material: string | null
+          has_balcony: boolean | null
+          has_chiller: boolean | null
+          has_cooler: boolean | null
+          has_elevator: boolean | null
+          has_fan_coil: boolean | null
+          has_fireplace: boolean | null
+          has_gas: boolean | null
+          has_jacuzzi: boolean | null
+          has_lobby: boolean | null
+          has_package: boolean | null
+          has_parking: boolean | null
+          has_pool: boolean | null
+          has_radiator: boolean | null
+          has_remote_door: boolean | null
+          has_sauna: boolean | null
+          has_security_system: boolean | null
+          has_storage: boolean | null
+          has_video_intercom: boolean | null
+          has_yard: boolean | null
           id: string
           is_occupied: boolean | null
+          is_penthouse: boolean | null
+          kitchen: string | null
           landline_phone: string | null
           late_penalty_exempt: boolean
+          listing_active: boolean
+          listing_description: string | null
+          listing_updated_at: string | null
+          loan_amount: number | null
+          long_term_contract: boolean | null
+          max_residents: number | null
           owner_name: string
           phone: string | null
+          phone_lines: number | null
+          price_per_meter_rial: number | null
+          property_code: string | null
+          property_status: string | null
+          property_type: string | null
+          rent_rial: number | null
+          rent_to_student: boolean | null
           resident_count: number | null
           resident_name: string | null
           resident_phone: string | null
+          storage_area: number | null
+          total_floors: number | null
+          total_price_rial: number | null
           unit_number: string
+          units_per_floor: number | null
           updated_at: string
+          usage_type: string | null
         }
         Insert: {
           area?: number | null
+          balcony_area?: number | null
+          bathroom?: string | null
+          bedrooms?: number | null
+          building_age?: number | null
           building_id: string
+          cabinet?: string | null
+          construction_type?: string | null
+          convertible_rent?: boolean | null
           created_at?: string
+          deal_type?: string | null
+          delivery_time?: string | null
+          deposit_rial?: number | null
+          direction?: string | null
+          document_status?: string | null
+          facade?: string | null
           floor?: number | null
+          floor_material?: string | null
+          has_balcony?: boolean | null
+          has_chiller?: boolean | null
+          has_cooler?: boolean | null
+          has_elevator?: boolean | null
+          has_fan_coil?: boolean | null
+          has_fireplace?: boolean | null
+          has_gas?: boolean | null
+          has_jacuzzi?: boolean | null
+          has_lobby?: boolean | null
+          has_package?: boolean | null
+          has_parking?: boolean | null
+          has_pool?: boolean | null
+          has_radiator?: boolean | null
+          has_remote_door?: boolean | null
+          has_sauna?: boolean | null
+          has_security_system?: boolean | null
+          has_storage?: boolean | null
+          has_video_intercom?: boolean | null
+          has_yard?: boolean | null
           id?: string
           is_occupied?: boolean | null
+          is_penthouse?: boolean | null
+          kitchen?: string | null
           landline_phone?: string | null
           late_penalty_exempt?: boolean
+          listing_active?: boolean
+          listing_description?: string | null
+          listing_updated_at?: string | null
+          loan_amount?: number | null
+          long_term_contract?: boolean | null
+          max_residents?: number | null
           owner_name: string
           phone?: string | null
+          phone_lines?: number | null
+          price_per_meter_rial?: number | null
+          property_code?: string | null
+          property_status?: string | null
+          property_type?: string | null
+          rent_rial?: number | null
+          rent_to_student?: boolean | null
           resident_count?: number | null
           resident_name?: string | null
           resident_phone?: string | null
+          storage_area?: number | null
+          total_floors?: number | null
+          total_price_rial?: number | null
           unit_number: string
+          units_per_floor?: number | null
           updated_at?: string
+          usage_type?: string | null
         }
         Update: {
           area?: number | null
+          balcony_area?: number | null
+          bathroom?: string | null
+          bedrooms?: number | null
+          building_age?: number | null
           building_id?: string
+          cabinet?: string | null
+          construction_type?: string | null
+          convertible_rent?: boolean | null
           created_at?: string
+          deal_type?: string | null
+          delivery_time?: string | null
+          deposit_rial?: number | null
+          direction?: string | null
+          document_status?: string | null
+          facade?: string | null
           floor?: number | null
+          floor_material?: string | null
+          has_balcony?: boolean | null
+          has_chiller?: boolean | null
+          has_cooler?: boolean | null
+          has_elevator?: boolean | null
+          has_fan_coil?: boolean | null
+          has_fireplace?: boolean | null
+          has_gas?: boolean | null
+          has_jacuzzi?: boolean | null
+          has_lobby?: boolean | null
+          has_package?: boolean | null
+          has_parking?: boolean | null
+          has_pool?: boolean | null
+          has_radiator?: boolean | null
+          has_remote_door?: boolean | null
+          has_sauna?: boolean | null
+          has_security_system?: boolean | null
+          has_storage?: boolean | null
+          has_video_intercom?: boolean | null
+          has_yard?: boolean | null
           id?: string
           is_occupied?: boolean | null
+          is_penthouse?: boolean | null
+          kitchen?: string | null
           landline_phone?: string | null
           late_penalty_exempt?: boolean
+          listing_active?: boolean
+          listing_description?: string | null
+          listing_updated_at?: string | null
+          loan_amount?: number | null
+          long_term_contract?: boolean | null
+          max_residents?: number | null
           owner_name?: string
           phone?: string | null
+          phone_lines?: number | null
+          price_per_meter_rial?: number | null
+          property_code?: string | null
+          property_status?: string | null
+          property_type?: string | null
+          rent_rial?: number | null
+          rent_to_student?: boolean | null
           resident_count?: number | null
           resident_name?: string | null
           resident_phone?: string | null
+          storage_area?: number | null
+          total_floors?: number | null
+          total_price_rial?: number | null
           unit_number?: string
+          units_per_floor?: number | null
           updated_at?: string
+          usage_type?: string | null
         }
         Relationships: [
           {
@@ -2428,9 +2692,71 @@ export type Database = {
         Args: { _building_id: string; _new_user_id: string }
         Returns: undefined
       }
+      admin_update_agent_status: {
+        Args: { _agent_id: string; _notes?: string; _status: string }
+        Returns: undefined
+      }
+      agent_search_listings: {
+        Args: {
+          _city?: string
+          _deal_type?: string
+          _max_area?: number
+          _max_price?: number
+          _min_area?: number
+          _min_bedrooms?: number
+          _min_price?: number
+          _query?: string
+        }
+        Returns: {
+          address: string
+          area: number
+          bedrooms: number
+          building_id: string
+          building_name: string
+          city: string
+          deal_type: string
+          deposit_rial: number
+          direction: string
+          document_status: string
+          floor: number
+          latitude: number
+          listing_description: string
+          listing_updated_at: string
+          longitude: number
+          owner_name: string
+          owner_phone: string
+          photo_count: number
+          price_per_meter_rial: number
+          property_code: string
+          property_status: string
+          property_type: string
+          rent_rial: number
+          total_price_rial: number
+          unit_id: string
+          unit_number: string
+        }[]
+      }
       consume_manager_transfer_otp: {
         Args: { _code: string; _otp_id: string }
         Returns: undefined
+      }
+      get_admin_agents: {
+        Args: never
+        Returns: {
+          admin_notes: string
+          agency_name: string
+          approved_at: string
+          city: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          license_number: string
+          mobile: string
+          national_code: string
+          status: string
+          user_id: string
+        }[]
       }
       get_admin_buildings: {
         Args: never
@@ -2525,6 +2851,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_agent: { Args: { _user_id: string }; Returns: boolean }
       is_building_manager: {
         Args: { _building_id: string; _user_id: string }
         Returns: boolean
@@ -2550,7 +2877,7 @@ export type Database = {
         | "by_residents"
         | "by_area_residents"
         | "equal"
-      app_role: "super_admin" | "manager" | "resident"
+      app_role: "super_admin" | "manager" | "resident" | "real_estate_agent"
       expense_category:
         | "charge"
         | "repair"
@@ -2701,7 +3028,7 @@ export const Constants = {
         "by_area_residents",
         "equal",
       ],
-      app_role: ["super_admin", "manager", "resident"],
+      app_role: ["super_admin", "manager", "resident", "real_estate_agent"],
       expense_category: [
         "charge",
         "repair",
