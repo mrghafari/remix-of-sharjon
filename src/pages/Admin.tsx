@@ -110,6 +110,10 @@ export default function Admin() {
             <AdminBuildings />
           </TabsContent>
 
+          <TabsContent value="agents">
+            <AdminAgents />
+          </TabsContent>
+
           <TabsContent value="plans">
             <AdminPlans />
           </TabsContent>
