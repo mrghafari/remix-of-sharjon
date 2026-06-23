@@ -98,29 +98,39 @@ export function ListingsManagerPage() {
 }
 
 function BuildingLocationCard() {
-  const { currentBuilding, updateBuilding } = useBuilding();
+  const { currentBuilding } = useBuilding();
+  const qc = useQueryClient();
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [city, setCity] = useState("");
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    setLat(currentBuilding?.latitude?.toString() || "");
-    setLng(currentBuilding?.longitude?.toString() || "");
+    setLat((currentBuilding as any)?.latitude?.toString() || "");
+    setLng((currentBuilding as any)?.longitude?.toString() || "");
     setCity((currentBuilding as any)?.city || "");
   }, [currentBuilding]);
 
   const save = async () => {
     if (!currentBuilding) return;
+    setSaving(true);
     try {
-      await updateBuilding.mutateAsync({
-        latitude: lat ? Number(lat) : null,
-        longitude: lng ? Number(lng) : null,
-        city: city || null,
-      } as any);
+      const { error } = await supabase
+        .from("buildings")
+        .update({
+          latitude: lat ? Number(lat) : null,
+          longitude: lng ? Number(lng) : null,
+          city: city || null,
+        } as any)
+        .eq("id", currentBuilding.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["buildings"] });
       toast({ title: "ذخیره شد" });
     } catch (e: any) {
       toast({ title: "خطا", description: e.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
     }
   };
 
