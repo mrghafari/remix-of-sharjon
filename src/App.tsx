@@ -160,6 +160,8 @@ const App = () => (
               </AdminRoute>
             }
           />
+          <Route path="/agent-auth" element={<AgentAuth />} />
+          <Route path="/agent" element={<AgentPortal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
