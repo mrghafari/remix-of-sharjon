@@ -153,7 +153,7 @@ function BuildingLocationCard() {
           <Input value={lng} onChange={(e) => setLng(e.target.value)} dir="ltr" placeholder="51.389" />
         </div>
         <div className="flex items-end">
-          <Button onClick={save} className="w-full"><Save className="w-4 h-4 ml-1" />ذخیره</Button>
+          <Button onClick={save} className="w-full" disabled={saving}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4 ml-1" />ذخیره</>}</Button>
         </div>
         <p className="md:col-span-4 text-xs text-muted-foreground">
           مختصات را می‌توانید از Google Maps با راست کلیک روی موقعیت ساختمان دریافت کنید.
