@@ -63,6 +63,10 @@ export default function Admin() {
               <Building2 className="h-4 w-4" />
               ساختمان‌ها
             </TabsTrigger>
+            <TabsTrigger value="agents" className="gap-2">
+              <UserCheck className="h-4 w-4" />
+              مشاورین املاک
+            </TabsTrigger>
             <TabsTrigger value="plans" className="gap-2">
               <Package className="h-4 w-4" />
               پلن‌ها
