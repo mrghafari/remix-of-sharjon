@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Building2, History, List, KeyRound } from "lucide-react";
+import { Plus, Building2, History, List, KeyRound, Home } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UnitForm } from "./UnitForm";
 import { UnitsList } from "./UnitsList";
 import { UnitsStats } from "./UnitsStats";
 import { OccupancyHistoryPage } from "./OccupancyHistoryPage";
 import { UnitModuleAccessManager } from "./UnitModuleAccessManager";
+import { ListingsManagerPage } from "@/components/listings/ListingsManagerPage";
 import type { Unit } from "@/hooks/useUnits";
 
 export function UnitsPage() {
