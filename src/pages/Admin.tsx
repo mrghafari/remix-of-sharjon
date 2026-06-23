@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ShamsiDateDisplay } from "@/components/layout/ShamsiDateDisplay";
-import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2, Wallet, Package } from "lucide-react";
+import { Shield, Users, BarChart3, Loader2, LogOut, Settings, Landmark, LifeBuoy, MessageSquare, Building2, Wallet, Package, UserCheck } from "lucide-react";
 import { AdminStatsCards } from "@/components/admin/AdminStats";
 import { AdminCustomers } from "@/components/admin/AdminCustomers";
 import { AdminBuildings } from "@/components/admin/AdminBuildings";
@@ -15,6 +15,7 @@ import { AdminBankAccounts } from "@/components/admin/AdminBankAccounts";
 import { AdminSmsPackages } from "@/components/admin/AdminSmsPackages";
 import { AdminPlans } from "@/components/admin/AdminPlans";
 import { AdminRevenue } from "@/components/admin/AdminRevenue";
+import { AdminAgents } from "@/components/admin/AdminAgents";
 import { TicketsPage } from "@/components/tickets/TicketsPage";
 
 export default function Admin() {
@@ -62,6 +63,10 @@ export default function Admin() {
               <Building2 className="h-4 w-4" />
               ساختمان‌ها
             </TabsTrigger>
+            <TabsTrigger value="agents" className="gap-2">
+              <UserCheck className="h-4 w-4" />
+              مشاورین املاک
+            </TabsTrigger>
             <TabsTrigger value="plans" className="gap-2">
               <Package className="h-4 w-4" />
               پلن‌ها
@@ -103,6 +108,10 @@ export default function Admin() {
 
           <TabsContent value="buildings">
             <AdminBuildings />
+          </TabsContent>
+
+          <TabsContent value="agents">
+            <AdminAgents />
           </TabsContent>
 
           <TabsContent value="plans">
