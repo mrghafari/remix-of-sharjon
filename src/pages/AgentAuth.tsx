@@ -67,7 +67,6 @@ export default function AgentAuth() {
 
       if (result?.token_hash) {
         const { error } = await supabase.auth.verifyOtp({
-          email: result.email,
           token_hash: result.token_hash,
           type: "magiclink",
         });
