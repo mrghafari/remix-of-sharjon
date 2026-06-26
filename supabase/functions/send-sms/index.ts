@@ -28,8 +28,12 @@ function renderTemplate(body: string, vars: Record<string, string | number>): st
 
 async function sendKavenegar(apiKey: string, sender: string, receptor: string, message: string) {
   const url = `https://api.kavenegar.com/v1/${apiKey}/sms/send.json`;
-  const params = new URLSearchParams({ receptor, sender, message });
-  const res = await fetch(`${url}?${params}`);
+  const body = new URLSearchParams({ receptor, sender, message });
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+    body: body.toString(),
+  });
   const data = await res.json();
   if (!res.ok || data?.return?.status !== 200) {
     throw new Error(`Kavenegar: ${data?.return?.message || res.statusText}`);
