@@ -23,8 +23,12 @@ async function sendKavenegar(apiKey: string, sender: string, receptor: string, m
   const baseUrl = (customUrl && customUrl.trim())
     ? customUrl.replace("{API_KEY}", apiKey)
     : `https://api.kavenegar.com/v1/${apiKey}/sms/send.json`;
-  const params = new URLSearchParams({ receptor, sender, message });
-  const res = await fetch(`${baseUrl}?${params}`);
+  const body = new URLSearchParams({ receptor, sender, message });
+  const res = await fetch(baseUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
+    body: body.toString(),
+  });
   const data = await res.json();
   if (!res.ok || data?.return?.status !== 200) {
     throw new Error(data?.return?.message || `HTTP ${res.status}`);
