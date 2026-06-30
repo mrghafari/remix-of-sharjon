@@ -2433,6 +2433,7 @@ export type Database = {
           owner_name: string
           phone: string | null
           phone_lines: number | null
+          phone_secondary: string | null
           price_per_meter_rial: number | null
           property_code: string | null
           property_status: string | null
@@ -2442,6 +2443,7 @@ export type Database = {
           resident_count: number | null
           resident_name: string | null
           resident_phone: string | null
+          resident_phone_secondary: string | null
           storage_area: number | null
           total_floors: number | null
           total_price_rial: number | null
@@ -2503,6 +2505,7 @@ export type Database = {
           owner_name: string
           phone?: string | null
           phone_lines?: number | null
+          phone_secondary?: string | null
           price_per_meter_rial?: number | null
           property_code?: string | null
           property_status?: string | null
@@ -2512,6 +2515,7 @@ export type Database = {
           resident_count?: number | null
           resident_name?: string | null
           resident_phone?: string | null
+          resident_phone_secondary?: string | null
           storage_area?: number | null
           total_floors?: number | null
           total_price_rial?: number | null
@@ -2573,6 +2577,7 @@ export type Database = {
           owner_name?: string
           phone?: string | null
           phone_lines?: number | null
+          phone_secondary?: string | null
           price_per_meter_rial?: number | null
           property_code?: string | null
           property_status?: string | null
@@ -2582,6 +2587,7 @@ export type Database = {
           resident_count?: number | null
           resident_name?: string | null
           resident_phone?: string | null
+          resident_phone_secondary?: string | null
           storage_area?: number | null
           total_floors?: number | null
           total_price_rial?: number | null
@@ -2867,6 +2873,10 @@ export type Database = {
           _payments: Json
           _unit_id: string
         }
+        Returns: undefined
+      }
+      resident_update_secondary_phone: {
+        Args: { _phone: string; _role: string; _unit_id: string }
         Returns: undefined
       }
     }

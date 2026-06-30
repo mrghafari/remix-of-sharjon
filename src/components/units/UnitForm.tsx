@@ -24,8 +24,10 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
   const [residentCount, setResidentCount] = useState(editUnit?.resident_count?.toString() || "1");
   const [ownerName, setOwnerName] = useState(editUnit?.owner_name || "");
   const [ownerPhone, setOwnerPhone] = useState(editUnit?.phone || "");
+  const [ownerPhone2, setOwnerPhone2] = useState(editUnit?.phone_secondary || "");
   const [residentName, setResidentName] = useState(editUnit?.resident_name || "");
   const [residentPhone, setResidentPhone] = useState(editUnit?.resident_phone || "");
+  const [residentPhone2, setResidentPhone2] = useState(editUnit?.resident_phone_secondary || "");
   const [landlinePhone, setLandlinePhone] = useState(editUnit?.landline_phone || "");
   const [isOccupied, setIsOccupied] = useState(editUnit?.is_occupied ?? true);
   const [latePenaltyExempt, setLatePenaltyExempt] = useState(editUnit?.late_penalty_exempt ?? false);
@@ -41,6 +43,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
     if (checked) {
       setResidentName(ownerName);
       setResidentPhone(ownerPhone);
+      setResidentPhone2(ownerPhone2);
     }
   };
 
@@ -74,11 +77,13 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
       unit_number: unitNumber.trim(),
       owner_name: ownerName.trim(),
       phone: ownerPhone.trim() || null,
+      phone_secondary: ownerPhone2.trim() || null,
       area: area ? parseFloat(area) : null,
       floor: floor ? parseInt(floor) : null,
       resident_count: residentCount ? parseInt(residentCount) : 1,
       resident_name: sameAsOwner ? (ownerName.trim() || null) : (residentName.trim() || null),
       resident_phone: sameAsOwner ? (ownerPhone.trim() || null) : (residentPhone.trim() || null),
+      resident_phone_secondary: sameAsOwner ? (ownerPhone2.trim() || null) : (residentPhone2.trim() || null),
       landline_phone: landlinePhone.trim() || null,
       is_occupied: isOccupied,
       late_penalty_exempt: latePenaltyExempt,
@@ -190,7 +195,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
           {/* Owner Info */}
           <div>
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">اطلاعات مالک</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="ownerName">نام مالک *</Label>
                 <Input
@@ -208,6 +213,18 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                   type="tel"
                   value={ownerPhone}
                   onChange={(e) => setOwnerPhone(e.target.value)}
+                  maxLength={15}
+                  dir="ltr"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ownerPhone2">شماره دوم مالک</Label>
+                <Input
+                  id="ownerPhone2"
+                  type="tel"
+                  value={ownerPhone2}
+                  onChange={(e) => setOwnerPhone2(e.target.value)}
                   maxLength={15}
                   dir="ltr"
                 />
@@ -230,7 +247,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 </Label>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="residentName">نام ساکن</Label>
                 <Input
@@ -250,6 +267,20 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                   type="tel"
                   value={sameAsOwner ? ownerPhone : residentPhone}
                   onChange={(e) => setResidentPhone(e.target.value)}
+                  maxLength={15}
+                  dir="ltr"
+                  disabled={sameAsOwner}
+                  className={sameAsOwner ? "bg-muted cursor-not-allowed" : ""}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="residentPhone2">شماره دوم ساکن</Label>
+                <Input
+                  id="residentPhone2"
+                  type="tel"
+                  value={sameAsOwner ? ownerPhone2 : residentPhone2}
+                  onChange={(e) => setResidentPhone2(e.target.value)}
                   maxLength={15}
                   dir="ltr"
                   disabled={sameAsOwner}

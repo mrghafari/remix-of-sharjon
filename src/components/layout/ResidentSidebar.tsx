@@ -1,4 +1,4 @@
-import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X, Repeat, FolderKanban, Receipt, PiggyBank } from "lucide-react";
+import { Building2, Wallet, Bell, BarChart3, FileText, Phone, ChevronLeft, ChevronRight, LogOut, UserCog, CalendarCheck, MessageSquare, ScrollText, X, Repeat, FolderKanban, Receipt, PiggyBank, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ const baseMenuItems = [
   { id: "documents", label: "اسناد", icon: FileText },
   { id: "contacts", label: "دفترچه تلفن", icon: Phone },
   { id: "meetings", label: "جلسات", icon: ScrollText },
+  { id: "profile", label: "مشخصات من", icon: User },
 ];
 
 const optionalItems: { id: string; label: string; icon: any; module: ModuleKey }[] = [

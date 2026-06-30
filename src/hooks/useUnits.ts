@@ -8,12 +8,14 @@ export interface Unit {
   unit_number: string;
   owner_name: string;
   phone: string | null;
+  phone_secondary: string | null;
   area: number | null;
   floor: number | null;
   is_occupied: boolean;
   resident_count: number | null;
   resident_name: string | null;
   resident_phone: string | null;
+  resident_phone_secondary: string | null;
   landline_phone: string | null;
   late_penalty_exempt: boolean;
   building_id: string;
