@@ -224,6 +224,12 @@ export function ExpensesList({ onAddExpense }: { onAddExpense?: () => void }) {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
+          {onAddExpense && (
+            <Button onClick={onAddExpense} className="gap-2">
+              <Plus className="w-4 h-4" />
+              ثبت هزینه
+            </Button>
+          )}
           <Filter className="w-4 h-4 text-muted-foreground" />
           <Select value={filterCategory} onValueChange={setFilterCategory}>
             <SelectTrigger className="w-40">
