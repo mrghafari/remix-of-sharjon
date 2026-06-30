@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { ExpenseForm } from "./ExpenseForm";
 import { ExpensesList } from "./ExpensesList";
 import { ExpenseStats } from "./ExpenseStats";
