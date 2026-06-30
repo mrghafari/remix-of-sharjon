@@ -117,6 +117,8 @@ const ResidentDashboard = () => {
         return <ResidentDocuments buildingId={currentBuildingId} />;
       case "contacts":
         return <ResidentContacts buildingId={currentBuildingId} />;
+      case "profile":
+        return <ResidentProfile unitId={currentUnitId} role={activeRole} />;
       case "reservations":
         return (
           <ReservationsList
