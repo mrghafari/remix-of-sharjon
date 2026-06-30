@@ -246,7 +246,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                 </Label>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="residentName">نام ساکن</Label>
                 <Input
@@ -266,6 +266,20 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                   type="tel"
                   value={sameAsOwner ? ownerPhone : residentPhone}
                   onChange={(e) => setResidentPhone(e.target.value)}
+                  maxLength={15}
+                  dir="ltr"
+                  disabled={sameAsOwner}
+                  className={sameAsOwner ? "bg-muted cursor-not-allowed" : ""}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="residentPhone2">شماره دوم ساکن</Label>
+                <Input
+                  id="residentPhone2"
+                  type="tel"
+                  value={sameAsOwner ? ownerPhone2 : residentPhone2}
+                  onChange={(e) => setResidentPhone2(e.target.value)}
                   maxLength={15}
                   dir="ltr"
                   disabled={sameAsOwner}
