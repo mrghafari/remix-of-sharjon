@@ -194,7 +194,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
           {/* Owner Info */}
           <div>
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">اطلاعات مالک</h3>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="ownerName">نام مالک *</Label>
                 <Input
@@ -212,6 +212,18 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
                   type="tel"
                   value={ownerPhone}
                   onChange={(e) => setOwnerPhone(e.target.value)}
+                  maxLength={15}
+                  dir="ltr"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ownerPhone2">شماره دوم مالک</Label>
+                <Input
+                  id="ownerPhone2"
+                  type="tel"
+                  value={ownerPhone2}
+                  onChange={(e) => setOwnerPhone2(e.target.value)}
                   maxLength={15}
                   dir="ltr"
                 />
