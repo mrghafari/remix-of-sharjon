@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Plus, Receipt } from "lucide-react";
+import { Receipt } from "lucide-react";
 import { ExpenseForm } from "./ExpenseForm";
 import { ExpensesList } from "./ExpensesList";
 import { ExpenseStats } from "./ExpenseStats";
@@ -21,12 +20,6 @@ export function ExpensesPage() {
             ثبت و مشاهده هزینه‌های ساختمان
           </p>
         </div>
-        {!showForm && (
-          <Button onClick={() => setShowForm(true)} className="gap-2">
-            <Plus className="w-5 h-5" />
-            ثبت هزینه جدید
-          </Button>
-        )}
       </div>
 
       {/* Stats */}
@@ -38,7 +31,7 @@ export function ExpensesPage() {
       )}
 
       {/* Expenses List */}
-      <ExpensesList />
+      <ExpensesList onAddExpense={() => setShowForm(true)} />
     </div>
   );
 }
