@@ -43,6 +43,7 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
     if (checked) {
       setResidentName(ownerName);
       setResidentPhone(ownerPhone);
+      setResidentPhone2(ownerPhone2);
     }
   };
 
