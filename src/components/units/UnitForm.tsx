@@ -24,8 +24,10 @@ export function UnitForm({ onClose, editUnit }: UnitFormProps) {
   const [residentCount, setResidentCount] = useState(editUnit?.resident_count?.toString() || "1");
   const [ownerName, setOwnerName] = useState(editUnit?.owner_name || "");
   const [ownerPhone, setOwnerPhone] = useState(editUnit?.phone || "");
+  const [ownerPhone2, setOwnerPhone2] = useState(editUnit?.phone_secondary || "");
   const [residentName, setResidentName] = useState(editUnit?.resident_name || "");
   const [residentPhone, setResidentPhone] = useState(editUnit?.resident_phone || "");
+  const [residentPhone2, setResidentPhone2] = useState(editUnit?.resident_phone_secondary || "");
   const [landlinePhone, setLandlinePhone] = useState(editUnit?.landline_phone || "");
   const [isOccupied, setIsOccupied] = useState(editUnit?.is_occupied ?? true);
   const [latePenaltyExempt, setLatePenaltyExempt] = useState(editUnit?.late_penalty_exempt ?? false);
