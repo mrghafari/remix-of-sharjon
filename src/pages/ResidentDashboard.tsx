@@ -12,6 +12,7 @@ import { ResidentAnnouncements } from "@/components/resident/ResidentAnnouncemen
 import { ResidentPolls } from "@/components/resident/ResidentPolls";
 import { ResidentDocuments } from "@/components/resident/ResidentDocuments";
 import { ResidentContacts } from "@/components/resident/ResidentContacts";
+import { ResidentProfile } from "@/components/resident/ResidentProfile";
 import { ResidentProjects } from "@/components/resident/ResidentProjects";
 import { ResidentAllExpenses } from "@/components/resident/ResidentAllExpenses";
 import { ResidentFundBalances } from "@/components/resident/ResidentFundBalances";
