@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Filter, Loader2, Eye, Paperclip, Upload } from "lucide-react";
+import { Trash2, Filter, Loader2, Eye, Paperclip, Upload, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -68,7 +68,7 @@ const getCategoryColor = (categoryId: string) => {
   return colors[categoryId] || "bg-muted-foreground";
 };
 
-export function ExpensesList() {
+export function ExpensesList({ onAddExpense }: { onAddExpense?: () => void }) {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterProject, setFilterProject] = useState<string>("all");
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
