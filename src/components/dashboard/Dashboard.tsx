@@ -80,12 +80,6 @@ export function Dashboard({ onTabChange }: DashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div className="animate-fade-in">
-        <h1 className="text-2xl font-bold">داشبورد</h1>
-        <p className="text-muted-foreground">خوش آمدید! وضعیت کلی ساختمان را مشاهده کنید.</p>
-      </div>
-
       {/* Stats Grid */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
