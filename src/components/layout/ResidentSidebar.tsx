@@ -32,6 +32,7 @@ const baseMenuItems = [
   { id: "documents", label: "اسناد", icon: FileText },
   { id: "contacts", label: "دفترچه تلفن", icon: Phone },
   { id: "meetings", label: "جلسات", icon: ScrollText },
+  { id: "profile", label: "مشخصات من", icon: User },
 ];
 
 const optionalItems: { id: string; label: string; icon: any; module: ModuleKey }[] = [
